@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg-primary: #F3F4F6;
+    --color-bg-secondary: #FFFFFF;
+    --color-text-primary: #111827;
+    --color-text-secondary: #4B5563;
+    --color-border: #E5E7EB;
+  }
+
+  .dark {
+    --color-bg-primary: #0B1120;
+    --color-bg-secondary: #1A2234;
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #9CA3AF;
+    --color-border: #374151;
+  }
+}
+
+body {
+  @apply bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] transition-colors duration-200;
+}
+
+/* Custom tooltip styles */
+.tooltip-right {
+  position: relative;
+}
+
+.tooltip-right::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 10px;
+  padding: 4px 8px;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+}
+
+.tooltip-right:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-primary);
+}
+
+/* Component styles */
+.card {
+  @apply bg-[var(--color-bg-secondary)] rounded-xl shadow-lg transition-all duration-200;
+}
+
+.input {
+  @apply bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500;
+}
+
+.button {
+  @apply px-4 py-2 rounded-lg transition-colors duration-200;
+}
+
+.button-primary {
+  @apply bg-indigo-600 hover:bg-indigo-700 text-white;
+}
+
+.button-secondary {
+  @apply bg-[var(--color-bg-secondary)] hover:bg-[var(--color-border)] text-[var(--color-text-primary)];
+}
