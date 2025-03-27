@@ -1,5 +1,5 @@
 import React from 'react';
-import { Github, Sun, Moon } from 'lucide-react';
+import { Github } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +9,7 @@ const CodeFlaskLogo = "/codeflask.svg";
 
 const Login = () => {
   const { login } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme(); // Sync theme with the landing page
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
     const decoded = jwtDecode(credentialResponse.credential);
@@ -22,15 +22,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-bg-primary)] p-6">
-      {/* Theme Toggle */}
-      <button
-        onClick={toggleTheme}
-        className="fixed top-4 right-4 p-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)] transition-colors"
-        aria-label="Toggle theme"
-      >
-        {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-      </button>
-
       {/* Logo Section with Redirect */}
       <a href="/" className="mb-6 transition-transform transform hover:scale-110">
         <img src={CodeFlaskLogo} alt="CodeFlask Logo" className="h-16" />
@@ -98,7 +89,7 @@ const Login = () => {
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={() => console.log('Login Failed')}
-                theme={theme === 'dark' ? 'filled_black' : 'outline'}
+                theme={theme === 'dark' ? 'filled_black' : 'outline'} // Sync Google button theme
                 size="large"
                 width="320"
                 useOneTap={false}
