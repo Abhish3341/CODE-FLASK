@@ -33,18 +33,18 @@ const Learn = () => {
   ];
 
   return (
-    <div className="h-full p-8 bg-gray-900">
+    <div className="h-full p-8 bg-[var(--color-bg-primary)]">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Learning Center</h1>
-        <p className="text-gray-400">Master coding concepts through structured courses</p>
+        <h1 className="text-3xl font-bold mb-2 text-[var(--color-text-primary)]">Learning Center</h1>
+        <p className="text-[var(--color-text-secondary)]">Master coding concepts through structured courses</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses.map((course) => (
-          <div key={course.id} className="bg-gray-800 rounded-xl overflow-hidden">
+          <div key={course.id} className="card">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <BookOpen className="w-8 h-8 text-indigo-500" />
+                <BookOpen className="w-8 h-8 text-[var(--color-button-primary)]" />
                 <span className={`px-3 py-1 rounded-full text-sm ${
                   course.level === 'Beginner' ? 'bg-green-500/20 text-green-500' :
                   course.level === 'Intermediate' ? 'bg-yellow-500/20 text-yellow-500' :
@@ -53,9 +53,9 @@ const Learn = () => {
                   {course.level}
                 </span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-              <p className="text-gray-400 mb-4">{course.description}</p>
-              <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
+              <h3 className="text-xl font-semibold mb-2 text-[var(--color-text-primary)]">{course.title}</h3>
+              <p className="text-[var(--color-text-secondary)] mb-4">{course.description}</p>
+              <div className="flex items-center gap-4 text-sm text-[var(--color-text-secondary)] mb-6">
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   {course.duration}
@@ -69,7 +69,7 @@ const Learn = () => {
                   {course.students} students
                 </div>
               </div>
-              <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+              <button className="button button-primary w-full">
                 Start Learning
               </button>
             </div>
