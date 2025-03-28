@@ -23,8 +23,8 @@ const Landing = () => {
               </Link>
             </div>
             <div className="flex items-center gap-6">
-              <a href="#features" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">Features</a>
-              <a href="#about" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">About</a>
+              <Link to="/features" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">Features</Link>
+              <Link to="/about" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">About</Link>
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors"

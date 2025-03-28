@@ -6,6 +6,8 @@ import AppLayout from "./layouts/AppLayout";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import About from "./pages/About";
+import Features from "./pages/Features";
 import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
@@ -19,7 +21,7 @@ function App() {
   return (
     <GoogleOAuthProvider 
       clientId={googleClientId}
-      onScriptLoadError={(error) => console.error('Google OAuth script failed to load:', error)}
+      onScriptLoadError={() => console.error('Google OAuth script failed to load:')}
       onScriptLoadSuccess={() => console.log('Google OAuth script loaded successfully')}
     >
       <Router>
@@ -28,6 +30,8 @@ function App() {
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/features" element={<Features />} />
               {/* 🔹 Protected Routes */}
               <Route element={<PrivateRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
