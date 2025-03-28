@@ -65,6 +65,7 @@ const About = () => {
             alt="Founder Image"
             className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
           />
+          <h3 className="text-lg font-bold mb-2">{team[0].name}</h3> {/* Added the name below the photo */}
           <p className="text-[var(--color-text-secondary)]">{team[0].role}</p>
         </div>
       </div>

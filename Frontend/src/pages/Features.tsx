@@ -1,5 +1,5 @@
 import React from 'react';
-import { Code2, Terminal, Zap, Shield, Cloud, Users, Clock, Layout } from 'lucide-react';
+import { Code2, Terminal, Zap, Shield, Cloud, Clock, Layout } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 
