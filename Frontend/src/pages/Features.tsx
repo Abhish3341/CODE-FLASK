@@ -32,11 +32,6 @@ const Features = () => {
       description: 'All your code is automatically saved and synced to the cloud. Access your projects from anywhere, anytime.'
     },
     {
-      icon: Users,
-      title: 'Collaborative Coding',
-      description: 'Work together in real-time with pair programming support. Share your workspace and code collaboratively with team members.'
-    },
-    {
       icon: Clock,
       title: 'Version Control',
       description: 'Built-in version control helps you track changes and maintain different versions of your code. Never lose your work again.'
