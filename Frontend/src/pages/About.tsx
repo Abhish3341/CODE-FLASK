@@ -17,6 +17,7 @@ const About = () => {
       name: "Abhinav Sharma",
       role: "Founder & CEO",
       image: "/founder.jpg", // Correct path to the image in the public folder
+      github: "https://github.com/Abhish3341", // GitHub profile link
     },
   ];
 
@@ -60,12 +61,20 @@ const About = () => {
       <div className="py-20 flex flex-col items-center">
         <h2 className="text-3xl font-bold text-center mb-12">Meet Our Founder</h2>
         <div className="card p-6 text-center hover:shadow-lg transition-shadow bg-[var(--color-bg-secondary)]">
-          <img
-            src={team[0].image} // Using the correct path to the image
-            alt="Founder Image"
-            className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-          />
-          <h3 className="text-lg font-bold mb-2">{team[0].name}</h3> {/* Added the name below the photo */}
+          {/* Clickable Image */}
+          <a
+            href={team[0].github} // GitHub profile link
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <img
+              src={team[0].image} // Using the correct path to the image
+              alt="Founder Image"
+              className="w-32 h-32 rounded-full mx-auto mb-4 object-cover hover:opacity-80 transition-opacity"
+            />
+          </a>
+          <h3 className="text-lg font-bold mb-2">{team[0].name}</h3>
           <p className="text-[var(--color-text-secondary)]">{team[0].role}</p>
         </div>
       </div>
