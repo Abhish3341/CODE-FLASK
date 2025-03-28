@@ -14,28 +14,9 @@ const About = () => {
 
   const team = [
     {
-      name: "Sarah Chen",
+      name: "Abhinav Sharma",
       role: "Founder & CEO",
-      image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
-    },
-    {
-      name: "Michael Rodriguez",
-      role: "CTO",
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
-    },
-    {
-      name: "Emily Williams",
-      role: "Head of Product",
-      image:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
-    },
-    {
-      name: "David Kim",
-      role: "Lead Engineer",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+      image: "/founder.jpg", // Correct path to the image in the public folder
     },
   ];
 
@@ -75,26 +56,16 @@ const About = () => {
         </div>
       </div>
 
-      {/* Team Section */}
-      <div className="py-20">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-12">Meet Our Team</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((member, index) => (
-              <div
-                key={index}
-                className="card p-6 text-center hover:shadow-lg transition-shadow bg-[var(--color-bg-secondary)]"
-              >
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-                />
-                <h3 className="text-xl font-semibold mb-1">{member.name}</h3>
-                <p className="text-[var(--color-text-secondary)]">{member.role}</p>
-              </div>
-            ))}
-          </div>
+      {/* Founder Section */}
+      <div className="py-20 flex flex-col items-center">
+        <h2 className="text-3xl font-bold text-center mb-12">Meet Our Founder</h2>
+        <div className="card p-6 text-center hover:shadow-lg transition-shadow bg-[var(--color-bg-secondary)]">
+          <img
+            src={team[0].image} // Using the correct path to the image
+            alt="Founder Image"
+            className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
+          />
+          <p className="text-[var(--color-text-secondary)]">{team[0].role}</p>
         </div>
       </div>
 
