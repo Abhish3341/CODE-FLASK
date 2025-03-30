@@ -1,12 +1,21 @@
 const express = require('express');
+const cors = require('cors'); // Add this line to import cors
 const app = express();
 const { DBConnection } = require('./database/db.js');
 const User = require('./models/users.js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const axios = require('axios'); // Added for making HTTP requests
 const dotenv = require('dotenv');
 dotenv.config();
 
+// CORS configuration
+app.use(cors({
+    origin: 'http://localhost:5173', // Your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 // Middleware to parse JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -18,6 +27,45 @@ app.get("/", (req, res) => {
     res.send("Hello World");
 });
 
+// GitHub OAuth Callback Route
+app.post('/api/auth/github/callback', async (req, res) => {
+    const { code, state } = req.body;
+
+    if (!code) {
+        return res.status(400).json({ error: "Missing 'code' parameter" });
+    }
+
+    try {
+        // Exchange the code for an access token
+        const tokenResponse = await axios.post(
+            "https://github.com/login/oauth/access_token",
+            {
+                client_id: process.env.GITHUB_CLIENT_ID,
+                client_secret: process.env.GITHUB_CLIENT_SECRET,
+                code,
+                state,
+            },
+            {
+                headers: {
+                    Accept: "application/json",
+                },
+            }
+        );
+
+        const accessToken = tokenResponse.data.access_token;
+
+        if (accessToken) {
+            res.json({ accessToken });
+        } else {
+            res.status(400).json({ error: "Failed to retrieve access token" });
+        }
+    } catch (error) {
+        console.error("Error during GitHub OAuth callback:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// User Registration Route
 app.post('/register', async (req, res) => {
     try {
         const { firstname, lastname, email, password } = req.body;
@@ -60,7 +108,8 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.post("/login", async (req, res) => { // Declare the function as async
+// User Login Route
+app.post("/login", async (req, res) => {
     try {
         // Get all the user data
         const { email, password } = req.body;

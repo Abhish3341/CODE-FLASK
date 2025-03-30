@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Github } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
@@ -9,15 +10,31 @@ const CodeFlaskLogo = "/codeflask.svg";
 
 const Login = () => {
   const { login } = useAuth();
-  const { theme } = useTheme(); // Sync theme with the landing page
+  const { theme } = useTheme();
+  const navigate = useNavigate();
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
     const decoded = jwtDecode(credentialResponse.credential);
     await login(decoded);
   };
 
-  const handleGithubLogin = () => {
-    console.log('GitHub login clicked');
+  const handleGithubLogin = async () => {
+    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+    // Use the exact callback URL that's configured in GitHub OAuth app settings
+    const redirectUri = 'http://localhost:5173/auth/github/callback'; // Update this to your actual redirect URI
+    // Ensure the redirect URI matches the one registered in your GitHub OAuth app settings
+    
+    // GitHub OAuth scopes we need
+    const scope = 'read:user user:email';
+    
+    // Construct the GitHub OAuth URL with state parameter for security
+    const state = crypto.randomUUID(); // Generate random state
+    sessionStorage.setItem('github_oauth_state', state); // Store state for verification
+    
+    const githubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
+    
+    // Redirect to GitHub
+    window.location.href = githubUrl;
   };
 
   return (
@@ -89,11 +106,11 @@ const Login = () => {
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={() => console.log('Login Failed')}
-                theme={theme === 'dark' ? 'filled_black' : 'outline'} // Sync Google button theme
+                theme={theme === 'dark' ? 'filled_black' : 'outline'}
                 size="large"
                 width="320"
                 useOneTap={false}
-                flow="implicit"
+              
                 auto_select={false}
               />
             </div>
