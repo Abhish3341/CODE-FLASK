@@ -1,4 +1,5 @@
 .env
 images/
 node_modules/
-firebase/
+firebase.ts
+firebase.js
