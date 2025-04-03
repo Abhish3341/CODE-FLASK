@@ -18,11 +18,20 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    token: {
+    picture: {
         type: String,
+        default: ''
     },
+    googleId: {
+        type: String,
+        sparse: true,
+    },
+    resetToken: String,
+    resetTokenExpiry: Date
+}, {
+    timestamps: true
 });
 
+// Make sure to export the model properly
 const User = mongoose.model('User', userSchema);
-
 module.exports = User;

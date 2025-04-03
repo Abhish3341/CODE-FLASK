@@ -5,7 +5,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import axios from 'axios';
+import axiosInstance from '../utils/axiosConfig';
 
 const CodeFlaskLogo = "/codeflask.svg";
 
@@ -31,9 +31,8 @@ const Login = () => {
         ? { email, password, firstname: firstName, lastname: lastName }
         : { email, password };
       
-      // Fix the API endpoint URL by adding /auth
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/auth/${endpoint}`, 
+      const response = await axiosInstance.post(
+        `/auth/${endpoint}`, 
         data
       );
       
@@ -49,8 +48,52 @@ const Login = () => {
   };
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
-    const decoded = jwtDecode(credentialResponse.credential);
-    await login(decoded);
+    try {
+        setIsLoading(true);
+        const decoded: any = jwtDecode(credentialResponse.credential);
+        
+        // Validate required fields before sending to backend
+        if (!decoded.email || !decoded.given_name || !decoded.family_name) {
+            setError('Missing required information from Google account');
+            console.error('Missing fields:', {
+                email: decoded.email,
+                given_name: decoded.given_name,
+                family_name: decoded.family_name
+            });
+            return;
+        }
+
+        // Structure the data properly
+        const googleData = {
+            email: decoded.email,
+            given_name: decoded.given_name,
+            family_name: decoded.family_name,
+            picture: decoded.picture || '',
+            sub: decoded.sub
+        };
+
+        console.log('Sending Google data to backend:', googleData);
+
+        const response = await axiosInstance.post(
+            '/auth/google',
+            googleData
+        );
+        
+        if (response.data.user && response.data.token) {
+            localStorage.setItem('auth_token', response.data.token);
+            await login(response.data.user);
+        }
+    } catch (error: any) {
+        // Handle error properly
+        const errorMessage = typeof error.response?.data?.error === 'string' 
+            ? error.response.data.error 
+            : 'Failed to authenticate with Google';
+            
+        setError(errorMessage);
+        console.error('Google auth error:', error.response?.data || error.message);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const handleGithubLogin = async () => {
@@ -74,8 +117,8 @@ const Login = () => {
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-            {error}
+          <div className="text-red-500 text-sm mt-2">
+            {typeof error === 'string' ? error : 'Authentication error occurred'}
           </div>
         )}
 

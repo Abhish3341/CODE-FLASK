@@ -1,41 +1,27 @@
+require('dotenv').config();
 const express = require('express');
+const connectDB = require('./database/db'); // Update path to match your structure
 const cors = require('cors');
-const { DBConnection } = require('./database/db.js');
-const authRoutes = require('./routes/auth.js');
-const dotenv = require('dotenv');
-dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(cors({
-    origin: process.env.FRONTEND_URL,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Connect to MongoDB first
+connectDB().then(() => {
+    console.log('Database connected successfully');
+}).catch(err => {
+    console.error('Database connection error:', err);
+    process.exit(1);
+});
 
-// Database connection
-DBConnection();
+// Middleware
+app.use(cors());
+app.use(express.json());
 
 // Routes
-app.get("/", (req, res) => {
-    res.send("CodeFlask API is running");
-});
+app.use('/api/auth', require('./routes/auth'));
 
-// Auth routes
-app.use('/api/auth', authRoutes);
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something broke!' });
-});
-
-// Start server
 const PORT = process.env.PORT || 8000;
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
