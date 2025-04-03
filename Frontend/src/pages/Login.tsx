@@ -31,7 +31,11 @@ const Login = () => {
         ? { email, password, firstname: firstName, lastname: lastName }
         : { email, password };
       
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/${endpoint}`, data);
+      // Fix the API endpoint URL by adding /auth
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/auth/${endpoint}`, 
+        data
+      );
       
       if (response.data.user && response.data.token) {
         localStorage.setItem('auth_token', response.data.token);
