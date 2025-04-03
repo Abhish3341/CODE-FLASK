@@ -50,16 +50,7 @@ const Login = () => {
   };
 
   const handleGithubLogin = async () => {
-    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/github-callback`;
-    const scope = 'read:user user:email';
-    
-    const state = crypto.randomUUID();
-    sessionStorage.setItem('github_oauth_state', state);
-    
-    const githubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
-    
-    window.location.href = githubUrl;
+  
   };
 
   return (
