@@ -8,7 +8,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Features from "./pages/Features";
 import About from "./pages/About";
-import GithubCallback from "./pages/GithubCallback";
+
 import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
@@ -33,7 +33,7 @@ function App() {
   <Route path="/features" element={<Features />} />
   <Route path="/about" element={<About />} />
   <Route path="/login" element={<Login />} />
-  <Route path="/auth/github/callback" element={<GithubCallback />} /> {/* Update this line */}
+ 
   {/* 🔹 Protected Routes */}
   <Route element={<PrivateRoute />}>
     <Route path="/dashboard" element={<Dashboard />} />
