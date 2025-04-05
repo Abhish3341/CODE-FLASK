@@ -1,16 +1,30 @@
 const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 
-// Initialize SES client
+// Initialize SES client with error handling
 const ses = new SESClient({
-    region: process.env.AWS_REGION,
+    region: process.env.AWS_REGION || 'us-east-1',
     credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-    }
+    },
+    maxAttempts: 3 // Add retry logic
 });
 
+const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
+
 const sendResetEmail = async (email, resetToken) => {
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    // Input validation
+    if (!email || !resetToken) {
+        throw new Error('Email and reset token are required');
+    }
+    if (!validateEmail(email)) {
+        throw new Error('Invalid email format');
+    }
+
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
     
     const params = {
         Source: process.env.AWS_SES_FROM_EMAIL,
@@ -47,13 +61,32 @@ const sendResetEmail = async (email, resetToken) => {
     };
 
     try {
+        // Add timeout and retry mechanism
         const command = new SendEmailCommand(params);
-        const response = await ses.send(command);
+        const response = await Promise.race([
+            ses.send(command),
+            new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Email send timeout')), 10000)
+            )
+        ]);
+
         console.log('Password reset email sent successfully:', response.MessageId);
-        return response;
+        return {
+            success: true,
+            messageId: response.MessageId,
+            timestamp: new Date().toISOString()
+        };
     } catch (error) {
-        console.error('AWS SES error:', error);
-        throw new Error('Failed to send reset email');
+        console.error('AWS SES error:', {
+            message: error.message,
+            code: error.code,
+            time: new Date().toISOString()
+        });
+        throw new Error(
+            error.code === 'TimeoutError' 
+                ? 'Email service timeout' 
+                : 'Failed to send reset email'
+        );
     }
 };
 

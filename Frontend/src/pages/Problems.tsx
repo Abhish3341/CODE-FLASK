@@ -1,83 +1,229 @@
-import React from 'react';
-import { BookOpen, Star, Clock, Award } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Filter, Tag, BarChart2, Clock, Award, CheckCircle2, AlertCircle } from 'lucide-react';
 
-const Learn = () => {
-  const courses = [
+const Problems = () => {
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  const problems = [
     {
       id: 1,
-      title: 'Data Structures Fundamentals',
-      description: 'Learn essential data structures used in coding interviews',
-      level: 'Beginner',
-      duration: '6 hours',
-      rating: 4.8,
-      students: 1234,
+      title: 'Two Sum',
+      difficulty: 'Easy',
+      category: 'Arrays',
+      acceptance: '48%',
+      submissions: 12500,
+      timeLimit: '1s',
+      memoryLimit: '32MB',
+      solved: true,
     },
     {
       id: 2,
-      title: 'Algorithm Techniques',
-      description: 'Master common algorithmic patterns and techniques',
-      level: 'Intermediate',
-      duration: '8 hours',
-      rating: 4.9,
-      students: 987,
+      title: 'Longest Substring Without Repeating Characters',
+      difficulty: 'Medium',
+      category: 'Strings',
+      acceptance: '32%',
+      submissions: 9800,
+      timeLimit: '2s',
+      memoryLimit: '64MB',
+      solved: false,
     },
     {
       id: 3,
-      title: 'System Design',
-      description: 'Learn how to design scalable systems',
-      level: 'Advanced',
-      duration: '10 hours',
-      rating: 4.7,
-      students: 756,
+      title: 'Median of Two Sorted Arrays',
+      difficulty: 'Hard',
+      category: 'Binary Search',
+      acceptance: '24%',
+      submissions: 5600,
+      timeLimit: '2s',
+      memoryLimit: '64MB',
+      solved: false,
     },
+    {
+      id: 4,
+      title: 'Valid Parentheses',
+      difficulty: 'Easy',
+      category: 'Stack',
+      acceptance: '52%',
+      submissions: 15200,
+      timeLimit: '1s',
+      memoryLimit: '32MB',
+      solved: true,
+    },
+    {
+      id: 5,
+      title: 'LRU Cache',
+      difficulty: 'Medium',
+      category: 'Design',
+      acceptance: '28%',
+      submissions: 7300,
+      timeLimit: '2s',
+      memoryLimit: '64MB',
+      solved: false,
+    }
   ];
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty.toLowerCase()) {
+      case 'easy':
+        return 'text-green-500 bg-green-500/10';
+      case 'medium':
+        return 'text-yellow-500 bg-yellow-500/10';
+      case 'hard':
+        return 'text-red-500 bg-red-500/10';
+      default:
+        return 'text-gray-500 bg-gray-500/10';
+    }
+  };
+
+  const filteredProblems = problems.filter(problem => {
+    const matchesDifficulty = selectedDifficulty === 'all' || problem.difficulty.toLowerCase() === selectedDifficulty;
+    const matchesCategory = selectedCategory === 'all' || problem.category.toLowerCase() === selectedCategory;
+    return matchesDifficulty && matchesCategory;
+  });
 
   return (
     <div className="h-full p-8 bg-[var(--color-bg-primary)]">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--color-text-primary)] mb-2">Learning Center</h1>
-        <p className="text-[var(--color-text-secondary)]">Master coding concepts through structured courses</p>
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-[var(--color-text-primary)] mb-2">Problem Set</h1>
+          <p className="text-[var(--color-text-secondary)]">Practice coding problems to improve your skills</p>
+        </div>
+        <div className="flex gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search problems..."
+              className="pl-10 pr-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64"
+            />
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {courses.map((course) => (
-          <div key={course.id} className="card">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <BookOpen className="w-8 h-8 text-indigo-500" />
-                <span className={`px-3 py-1 rounded-full text-sm ${
-                  course.level === 'Beginner' ? 'bg-green-500/20 text-green-500' :
-                  course.level === 'Intermediate' ? 'bg-yellow-500/20 text-yellow-500' :
-                  'bg-red-500/20 text-red-500'
-                }`}>
-                  {course.level}
-                </span>
-              </div>
-              <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">{course.title}</h3>
-              <p className="text-[var(--color-text-secondary)] mb-4">{course.description}</p>
-              <div className="flex items-center gap-4 text-sm text-[var(--color-text-secondary)] mb-6">
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {course.duration}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  {course.rating}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Award className="w-4 h-4" />
-                  {course.students} students
-                </div>
-              </div>
-              <button className="button button-primary w-full">
-                Start Learning
-              </button>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="card p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-indigo-500/10 rounded-lg">
+              <CheckCircle2 className="w-6 h-6 text-indigo-500" />
+            </div>
+            <div>
+              <p className="text-[var(--color-text-secondary)] text-sm">Solved</p>
+              <p className="text-2xl font-bold text-[var(--color-text-primary)]">42/150</p>
             </div>
           </div>
-        ))}
+        </div>
+        <div className="card p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-green-500/10 rounded-lg">
+              <BarChart2 className="w-6 h-6 text-green-500" />
+            </div>
+            <div>
+              <p className="text-[var(--color-text-secondary)] text-sm">Success Rate</p>
+              <p className="text-2xl font-bold text-[var(--color-text-primary)]">68%</p>
+            </div>
+          </div>
+        </div>
+        <div className="card p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-yellow-500/10 rounded-lg">
+              <Clock className="w-6 h-6 text-yellow-500" />
+            </div>
+            <div>
+              <p className="text-[var(--color-text-secondary)] text-sm">Avg. Time</p>
+              <p className="text-2xl font-bold text-[var(--color-text-primary)]">45m</p>
+            </div>
+          </div>
+        </div>
+        <div className="card p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-purple-500/10 rounded-lg">
+              <Award className="w-6 h-6 text-purple-500" />
+            </div>
+            <div>
+              <p className="text-[var(--color-text-secondary)] text-sm">Ranking</p>
+              <p className="text-2xl font-bold text-[var(--color-text-primary)]">#256</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-4 mb-6">
+        <select
+          className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          value={selectedDifficulty}
+          onChange={(e) => setSelectedDifficulty(e.target.value)}
+        >
+          <option value="all">All Difficulties</option>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+        <select
+          className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          <option value="all">All Categories</option>
+          <option value="arrays">Arrays</option>
+          <option value="strings">Strings</option>
+          <option value="binary search">Binary Search</option>
+          <option value="stack">Stack</option>
+          <option value="design">Design</option>
+        </select>
+      </div>
+
+      {/* Problems Table */}
+      <div className="card overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-[var(--color-bg-secondary)]">
+              <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Status</th>
+              <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Title</th>
+              <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Difficulty</th>
+              <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Category</th>
+              <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Acceptance</th>
+              <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Submissions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredProblems.map((problem) => (
+              <tr key={problem.id} className="border-t border-[var(--color-border)] hover:bg-[var(--color-bg-secondary)] transition-colors">
+                <td className="px-6 py-4">
+                  {problem.solved ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-[var(--color-text-secondary)]" />
+                  )}
+                </td>
+                <td className="px-6 py-4">
+                  <a href="#" className="font-medium text-[var(--color-text-primary)] hover:text-indigo-500 transition-colors">
+                    {problem.title}
+                  </a>
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-3 py-1 rounded-full text-sm ${getDifficultyColor(problem.difficulty)}`}>
+                    {problem.difficulty}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
+                    <Tag className="w-4 h-4" />
+                    {problem.category}
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-[var(--color-text-secondary)]">{problem.acceptance}</td>
+                <td className="px-6 py-4 text-[var(--color-text-secondary)]">{problem.submissions}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 };
 
-export default Learn;
+export default Problems;
