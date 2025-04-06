@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Github } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
@@ -12,6 +12,7 @@ const CodeFlaskLogo = "/codeflask.svg";
 const Login = () => {
   const { login } = useAuth();
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -22,82 +23,83 @@ const Login = () => {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
+    
     setError('');
     setIsLoading(true);
     
     try {
-      const endpoint = isSignUp ? 'register' : 'login';
+      const endpoint = isSignUp ? '/api/auth/register' : '/api/auth/login'; // Updated endpoint path
       const data = isSignUp 
         ? { email, password, firstname: firstName, lastname: lastName }
         : { email, password };
       
-      const response = await axiosInstance.post(
-        `/auth/${endpoint}`, 
-        data
-      );
+      const response = await axiosInstance.post(endpoint, data);
       
       if (response.data.user && response.data.token) {
         localStorage.setItem('auth_token', response.data.token);
         await login(response.data.user);
+      } else {
+        throw new Error('Invalid response from server');
       }
     } catch (error: any) {
-      setError(error.response?.data?.error || 'An error occurred. Please try again.');
+      const errorMessage = error.response?.data?.error || error.message || 'An error occurred. Please try again.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
+    if (isLoading) return;
+
     try {
-        setIsLoading(true);
-        const decoded: any = jwtDecode(credentialResponse.credential);
-        
-        // Validate required fields before sending to backend
-        if (!decoded.email || !decoded.given_name || !decoded.family_name) {
-            setError('Missing required information from Google account');
-            console.error('Missing fields:', {
-                email: decoded.email,
-                given_name: decoded.given_name,
-                family_name: decoded.family_name
-            });
-            return;
-        }
+      setIsLoading(true);
+      setError('');
+      const decoded: any = jwtDecode(credentialResponse.credential);
+      
+      if (!decoded.email || !decoded.given_name || !decoded.family_name) {
+        throw new Error('Missing required information from Google account');
+      }
 
-        // Structure the data properly
-        const googleData = {
-            email: decoded.email,
-            given_name: decoded.given_name,
-            family_name: decoded.family_name,
-            picture: decoded.picture || '',
-            sub: decoded.sub
-        };
+      const googleData = {
+        email: decoded.email,
+        given_name: decoded.given_name,
+        family_name: decoded.family_name,
+        picture: decoded.picture || '',
+        sub: decoded.sub
+      };
 
-        console.log('Sending Google data to backend:', googleData);
-
-        const response = await axiosInstance.post(
-            '/auth/google',
-            googleData
-        );
-        
-        if (response.data.user && response.data.token) {
-            localStorage.setItem('auth_token', response.data.token);
-            await login(response.data.user);
-        }
+      const response = await axiosInstance.post('/auth/google', googleData);
+      
+      if (response.data.user && response.data.token) {
+        localStorage.setItem('auth_token', response.data.token);
+        await login(response.data.user);
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error: any) {
-        // Handle error properly
-        const errorMessage = typeof error.response?.data?.error === 'string' 
-            ? error.response.data.error 
-            : 'Failed to authenticate with Google';
-            
-        setError(errorMessage);
-        console.error('Google auth error:', error.response?.data || error.message);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to authenticate with Google';
+      setError(errorMessage);
+      console.error('Google auth error:', error);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleGithubLogin = async () => {
-  
+  const handleGithubLogin = () => {
+    if (isLoading) return;
+
+    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+    const redirectUri = `${window.location.origin}/github-callback`;
+    const scope = 'read:user user:email';
+    
+    const state = crypto.randomUUID();
+    sessionStorage.setItem('github_oauth_state', state);
+    
+    const githubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
+    
+    window.location.href = githubUrl;
   };
 
   return (
@@ -117,8 +119,8 @@ const Login = () => {
         </div>
 
         {error && (
-          <div className="text-red-500 text-sm mt-2">
-            {typeof error === 'string' ? error : 'Authentication error occurred'}
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span className="block sm:inline">{error}</span>
           </div>
         )}
 
@@ -197,7 +199,7 @@ const Login = () => {
             <div className="w-full border-t border-[var(--color-border)]"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-[var(--color-bg-primary)] text-[var(--color-text-secondary)]">
+            <span className="px-2 bg-[var(--color-bg-card)] text-[var(--color-text-secondary)]">
               Or continue with
             </span>
           </div>
@@ -207,7 +209,7 @@ const Login = () => {
           <div className="flex justify-center">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
-              onError={() => console.log('Login Failed')}
+              onError={() => setError('Google authentication failed')}
               theme={theme === 'dark' ? 'filled_black' : 'outline'}
               size="large"
               width="320"
@@ -239,6 +241,7 @@ const Login = () => {
             }}
             className="ml-2 text-indigo-600 hover:text-indigo-500 font-medium disabled:opacity-50"
             disabled={isLoading}
+            type="button"
           >
             {isSignUp ? 'Sign in' : 'Sign up'}
           </button>
