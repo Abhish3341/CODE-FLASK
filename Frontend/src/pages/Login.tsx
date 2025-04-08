@@ -70,7 +70,7 @@ const Login = () => {
         sub: decoded.sub
       };
 
-      const response = await axiosInstance.post('/auth/google', googleData);
+      const response = await axiosInstance.post('/api/auth/google', googleData);
       
       if (response.data.user && response.data.token) {
         localStorage.setItem('auth_token', response.data.token);

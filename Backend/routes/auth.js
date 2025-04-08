@@ -11,6 +11,12 @@ const router = express.Router();
 // Add this debug line at the top of the file
 console.log('User model:', typeof User, User);
 
+// Add this at the top of your routes
+router.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`);
+    next();
+});
+
 // User Registration Route
 router.post('/register', async (req, res) => {
     try {

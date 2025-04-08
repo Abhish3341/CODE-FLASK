@@ -15,8 +15,17 @@ function App() {
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   if (!googleClientId) {
-    console.error("Google Client ID is not configured");
-    return null;
+    console.error("Google Client ID is not configured in .env file. Please add VITE_GOOGLE_CLIENT_ID=your-client-id");
+    // Return a more user-friendly error message instead of null
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8 bg-white rounded-lg shadow-md">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Configuration Error</h1>
+          <p className="text-gray-600">The application is not properly configured.</p>
+          <p className="text-gray-600">Please contact the administrator.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -28,18 +37,18 @@ function App() {
       <Router>
         <ThemeProvider>
           <AuthProvider>
-          <Routes>
-  <Route path="/" element={<Landing />} />
-  <Route path="/features" element={<Features />} />
-  <Route path="/about" element={<About />} />
-  <Route path="/login" element={<Login />} />
- 
-  {/* 🔹 Protected Routes */}
-  <Route element={<PrivateRoute />}>
-    <Route path="/dashboard" element={<Dashboard />} />
-  </Route>
-  <Route path="/app/*" element={<AppLayout />} />
-</Routes>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/login" element={<Login />} />
+             
+              {/* 🔹 Protected Routes */}
+              <Route element={<PrivateRoute />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+              </Route>
+              <Route path="/app/*" element={<AppLayout />} />
+            </Routes>
           </AuthProvider>
         </ThemeProvider>
       </Router>

@@ -1,36 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, Clock } from 'lucide-react';
+import axiosInstance from '../utils/axiosConfig';
+
+interface Submission {
+  id: string;
+  problem: string;
+  status: string;
+  language: string;
+  runtime: string;
+  memory: string;
+  submittedAt: string;
+}
 
 const Submissions = () => {
-  const submissions = [
-    {
-      id: 1,
-      problem: 'Two Sum',
-      status: 'Accepted',
-      language: 'Python',
-      runtime: '56ms',
-      memory: '16.2MB',
-      submittedAt: '2 hours ago',
-    },
-    {
-      id: 2,
-      problem: 'Add Two Numbers',
-      status: 'Wrong Answer',
-      language: 'JavaScript',
-      runtime: '82ms',
-      memory: '42.8MB',
-      submittedAt: '5 hours ago',
-    },
-    {
-      id: 3,
-      problem: 'Valid Parentheses',
-      status: 'Time Limit Exceeded',
-      language: 'C++',
-      runtime: '---',
-      memory: '---',
-      submittedAt: '1 day ago',
-    },
-  ];
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      try {
+        const response = await axiosInstance.get('/api/submissions');
+        setSubmissions(response.data);
+      } catch (err) {
+        setError('Failed to load submissions');
+        console.error('Error fetching submissions:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubmissions();
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -44,6 +45,22 @@ const Submissions = () => {
         return 'text-[var(--color-text-secondary)]';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="h-full p-8 bg-[var(--color-bg-primary)] flex items-center justify-center">
+        <div className="text-[var(--color-text-secondary)]">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full p-8 bg-[var(--color-bg-primary)] flex items-center justify-center">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full p-8 bg-[var(--color-bg-primary)]">

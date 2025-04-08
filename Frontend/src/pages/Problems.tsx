@@ -1,67 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, Tag, BarChart2, Clock, Award, CheckCircle2, AlertCircle } from 'lucide-react';
+import axiosInstance from '../utils/axiosConfig';
+
+interface Problem {
+  id: string;
+  title: string;
+  difficulty: string;
+  category: string;
+  acceptance: number;
+  submissions: number;
+  solved: boolean;
+}
+
+interface UserStats {
+  problemsSolved: number;
+  totalProblems: number;
+  successRate: number;
+  averageTime: number;
+  ranking: number;
+}
 
 const Problems = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [userStats, setUserStats] = useState<UserStats>({
+    problemsSolved: 0,
+    totalProblems: 0,
+    successRate: 0,
+    averageTime: 0,
+    ranking: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const problems = [
-    {
-      id: 1,
-      title: 'Two Sum',
-      difficulty: 'Easy',
-      category: 'Arrays',
-      acceptance: '48%',
-      submissions: 12500,
-      timeLimit: '1s',
-      memoryLimit: '32MB',
-      solved: true,
-    },
-    {
-      id: 2,
-      title: 'Longest Substring Without Repeating Characters',
-      difficulty: 'Medium',
-      category: 'Strings',
-      acceptance: '32%',
-      submissions: 9800,
-      timeLimit: '2s',
-      memoryLimit: '64MB',
-      solved: false,
-    },
-    {
-      id: 3,
-      title: 'Median of Two Sorted Arrays',
-      difficulty: 'Hard',
-      category: 'Binary Search',
-      acceptance: '24%',
-      submissions: 5600,
-      timeLimit: '2s',
-      memoryLimit: '64MB',
-      solved: false,
-    },
-    {
-      id: 4,
-      title: 'Valid Parentheses',
-      difficulty: 'Easy',
-      category: 'Stack',
-      acceptance: '52%',
-      submissions: 15200,
-      timeLimit: '1s',
-      memoryLimit: '32MB',
-      solved: true,
-    },
-    {
-      id: 5,
-      title: 'LRU Cache',
-      difficulty: 'Medium',
-      category: 'Design',
-      acceptance: '28%',
-      submissions: 7300,
-      timeLimit: '2s',
-      memoryLimit: '64MB',
-      solved: false,
-    }
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [problemsResponse, statsResponse] = await Promise.all([
+          axiosInstance.get('/api/problems'),
+          axiosInstance.get('/api/user/stats')
+        ]);
+        
+        setProblems(problemsResponse.data);
+        setUserStats(statsResponse.data);
+      } catch (err) {
+        setError('Failed to load data');
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
@@ -81,6 +73,22 @@ const Problems = () => {
     const matchesCategory = selectedCategory === 'all' || problem.category.toLowerCase() === selectedCategory;
     return matchesDifficulty && matchesCategory;
   });
+
+  if (loading) {
+    return (
+      <div className="h-full p-8 bg-[var(--color-bg-primary)] flex items-center justify-center">
+        <div className="text-[var(--color-text-secondary)]">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full p-8 bg-[var(--color-bg-primary)] flex items-center justify-center">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full p-8 bg-[var(--color-bg-primary)]">
@@ -111,7 +119,9 @@ const Problems = () => {
             </div>
             <div>
               <p className="text-[var(--color-text-secondary)] text-sm">Solved</p>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">42/150</p>
+              <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                {userStats.problemsSolved}/{userStats.totalProblems}
+              </p>
             </div>
           </div>
         </div>
@@ -122,7 +132,9 @@ const Problems = () => {
             </div>
             <div>
               <p className="text-[var(--color-text-secondary)] text-sm">Success Rate</p>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">68%</p>
+              <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                {userStats.successRate}%
+              </p>
             </div>
           </div>
         </div>
@@ -133,7 +145,9 @@ const Problems = () => {
             </div>
             <div>
               <p className="text-[var(--color-text-secondary)] text-sm">Avg. Time</p>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">45m</p>
+              <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                {userStats.averageTime}m
+              </p>
             </div>
           </div>
         </div>
@@ -144,7 +158,9 @@ const Problems = () => {
             </div>
             <div>
               <p className="text-[var(--color-text-secondary)] text-sm">Ranking</p>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">#256</p>
+              <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                #{userStats.ranking}
+              </p>
             </div>
           </div>
         </div>
@@ -200,7 +216,7 @@ const Problems = () => {
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <a href="#" className="font-medium text-[var(--color-text-primary)] hover:text-indigo-500 transition-colors">
+                  <a href={`/app/problems/${problem.id}`} className="font-medium text-[var(--color-text-primary)] hover:text-indigo-500 transition-colors">
                     {problem.title}
                   </a>
                 </td>
@@ -215,7 +231,7 @@ const Problems = () => {
                     {problem.category}
                   </div>
                 </td>
-                <td className="px-6 py-4 text-[var(--color-text-secondary)]">{problem.acceptance}</td>
+                <td className="px-6 py-4 text-[var(--color-text-secondary)]">{problem.acceptance}%</td>
                 <td className="px-6 py-4 text-[var(--color-text-secondary)]">{problem.submissions}</td>
               </tr>
             ))}
