@@ -1,9 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { User, Bell, Shield, Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { jwtDecode } from 'jwt-decode';
+
+interface DecodedToken {
+  id: string;
+  email: string;
+  firstname: string;
+  lastname: string;
+  exp: number;
+}
 
 const Settings = () => {
   const { isDarkMode, toggleTheme } = useTheme();
+  const [userData, setUserData] = useState<{ name: string; email: string }>({ name: '', email: '' });
+
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      try {
+        const decoded = jwtDecode<DecodedToken>(token);
+        if (decoded.firstname && decoded.lastname && decoded.email) {
+          setUserData({
+            name: `${decoded.firstname} ${decoded.lastname}`.trim(),
+            email: decoded.email
+          });
+        } else {
+          console.error('Required user data missing from token');
+          setUserData({ name: 'User', email: 'Not available' });
+        }
+      } catch (err) {
+        console.error('Error decoding token:', err);
+        setUserData({ name: 'User', email: 'Not available' });
+      }
+    }
+  }, []);
 
   return (
     <div className="h-full p-8 bg-[var(--color-bg-primary)]">
@@ -25,7 +56,8 @@ const Settings = () => {
                 <input
                   type="text"
                   className="input w-full"
-                  placeholder="Your display name"
+                  value={userData.name}
+                  readOnly
                 />
               </div>
               <div>
@@ -33,7 +65,8 @@ const Settings = () => {
                 <input
                   type="email"
                   className="input w-full"
-                  placeholder="your@email.com"
+                  value={userData.email}
+                  readOnly
                 />
               </div>
               <div>

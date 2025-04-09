@@ -4,7 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../utils/axiosConfig';
 import { useNavigate } from 'react-router-dom';
-import { decodeToken } from '../utils/tokenUtils';
+import { jwtDecode } from 'jwt-decode';
 
 interface DashboardData {
   stats: {
@@ -27,6 +27,14 @@ interface DashboardData {
   }>;
 }
 
+interface DecodedToken {
+  id: string;
+  email: string;
+  firstname: string;
+  lastname: string;
+  exp: number;
+}
+
 const formatRelativeTime = (timestamp: string) => {
   const date = new Date(timestamp);
   const now = new Date();
@@ -44,7 +52,6 @@ const formatRelativeTime = (timestamp: string) => {
 
 const Dashboard = () => {
   const { isDarkMode } = useTheme();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DashboardData | null>(null);
@@ -54,19 +61,17 @@ const Dashboard = () => {
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (token) {
-      const decodedToken = decodeToken(token);
-      console.log('Decoded token:', decodedToken); // Debug log
-      
-      // Check for different possible user name fields
-      const name = decodedToken?.name || 
-                  decodedToken?.username || 
-                  decodedToken?.fullName ||
-                  decodedToken?.user?.name;
-                  
-      if (name) {
-        setUserName(name);
-      } else {
-        console.log('No name found in token:', decodedToken); // Debug log
+      try {
+        const decoded = jwtDecode<DecodedToken>(token);
+        if (decoded.firstname) {
+          setUserName(decoded.firstname);
+        } else {
+          console.error('Firstname not found in token');
+          setUserName('User');
+        }
+      } catch (err) {
+        console.error('Error decoding token:', err);
+        setUserName('User');
       }
     }
   }, []);
@@ -129,7 +134,7 @@ const Dashboard = () => {
     <div className="h-full p-8 bg-[var(--color-bg-primary)]">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-[var(--color-text-primary)] mb-2">
-          Welcome back, {userName || 'Coder'}!
+          Welcome back, {userName}!
         </h1>
         <p className="text-[var(--color-text-secondary)]">Track your progress and start coding</p>
       </div>
@@ -138,7 +143,9 @@ const Dashboard = () => {
         <div className="card p-6">
           <Trophy className="w-8 h-8 text-yellow-500 mb-4" />
           <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-1">Rank</h3>
-          <p className="text-4xl font-bold text-yellow-500">#{data.stats.rank}</p>
+          <p className="text-4xl font-bold text-yellow-500">
+            {data.stats.rank === 0 ? '-' : `#${data.stats.rank}`}
+          </p>
         </div>
         <div className="card p-6">
           <Code className="w-8 h-8 text-[#4B96F8] mb-4" />
