@@ -1,20 +1,68 @@
 const express = require("express");
-const axios = require("axios");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
 const User = require("../models/Users");
 const auth = require('../middleware/authMiddleware');
-const { sendResetEmail } = require('../utils/emailService');
 const router = express.Router();
 
-// Add this debug line at the top of the file
-console.log('User model:', typeof User, User);
+// User Login Route
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        // Find user by email
+        const user = await User.findOne({ email });
+        
+        // If user doesn't exist, return registration message
+        if (!user) {
+            return res.status(401).json({
+                error: "You are not registered. Please register first."
+            });
+        }
 
-// Add this at the top of your routes
-router.use((req, res, next) => {
-    console.log(`${req.method} ${req.path}`);
-    next();
+        // Check if user registered through Google
+        if (user.googleId) {
+            return res.status(401).json({
+                error: "This email is registered with Google. Please use Google Sign In."
+            });
+        }
+
+        // Verify password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                error: "Invalid password. Please try again."
+            });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { 
+                id: user._id, 
+                email: user.email,
+                firstname: user.firstname,
+                lastname: user.lastname
+            },
+            process.env.SECRET_KEY,
+            { expiresIn: '1h' }
+        );
+
+        // Return user data and token
+        res.json({
+            user: {
+                id: user._id,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+                picture: user.picture || '',
+                isFirstLogin: user.isFirstLogin
+            },
+            token
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
 
 // User Registration Route
@@ -59,11 +107,20 @@ router.post('/register', async (req, res) => {
             lastname,
             email,
             password: hashedPassword,
+            isFirstLogin: true,
+            profileUpdates: {
+                count: 0
+            }
         });
 
         // Generate JWT token
         const token = jwt.sign(
-            { id: user._id, email: user.email },
+            { 
+                id: user._id, 
+                email: user.email,
+                firstname: user.firstname,
+                lastname: user.lastname
+            },
             process.env.SECRET_KEY,
             { expiresIn: '1h' }
         );
@@ -73,7 +130,8 @@ router.post('/register', async (req, res) => {
             id: user._id,
             firstname: user.firstname,
             lastname: user.lastname,
-            email: user.email
+            email: user.email,
+            isFirstLogin: true
         };
 
         res.status(201).json({
@@ -86,66 +144,9 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// User Login Route
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        
-        // Find user by email
-        const user = await User.findOne({ email });
-        
-        // If user doesn't exist, return registration message
-        if (!user) {
-            return res.status(401).json({
-                error: "You are not registered. Please register first."
-            });
-        }
-
-        // Check if user registered through Google
-        if (user.googleId) {
-            return res.status(401).json({
-                error: "This email is registered with Google. Please use Google Sign In."
-            });
-        }
-
-        // Verify password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            return res.status(401).json({
-                error: "Invalid password. Please try again."
-            });
-        }
-
-        // Generate JWT token
-        const token = jwt.sign(
-            { id: user._id, email: user.email },
-            process.env.SECRET_KEY,
-            { expiresIn: '1h' }
-        );
-
-        // Return user data and token
-        res.json({
-            user: {
-                id: user._id,
-                firstname: user.firstname,
-                lastname: user.lastname,
-                email: user.email,
-                picture: user.picture || ''
-            },
-            token
-        });
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: "Internal server error" });
-    }
-});
-
 // Google OAuth Route
 router.post('/google', async (req, res) => {
     try {
-        // Add debug logging
-        console.log('Received Google OAuth data:', req.body);
-
         const { email, given_name, family_name, picture, sub } = req.body;
 
         // Validate required fields
@@ -155,9 +156,6 @@ router.post('/google', async (req, res) => {
                 details: { email, given_name, family_name }
             });
         }
-
-        // Add this debug line
-        console.log('Looking for existing user with email:', email);
 
         // Check if user already exists with this email
         const existingUser = await User.findOne({ email });
@@ -170,9 +168,13 @@ router.post('/google', async (req, res) => {
                 });
             }
 
-            console.log('Existing Google user found:', existingUser.email);
             const token = jwt.sign(
-                { id: existingUser._id, email: existingUser.email },
+                { 
+                    id: existingUser._id, 
+                    email: existingUser.email,
+                    firstname: existingUser.firstname,
+                    lastname: existingUser.lastname
+                },
                 process.env.SECRET_KEY,
                 { expiresIn: '1h' }
             );
@@ -183,7 +185,8 @@ router.post('/google', async (req, res) => {
                     firstname: existingUser.firstname,
                     lastname: existingUser.lastname,
                     email: existingUser.email,
-                    picture: existingUser.picture || ''
+                    picture: existingUser.picture || '',
+                    isFirstLogin: existingUser.isFirstLogin
                 },
                 token
             });
@@ -196,13 +199,20 @@ router.post('/google', async (req, res) => {
             email: email,
             picture: picture || '',
             googleId: sub,
-            password: await bcrypt.hash(Math.random().toString(36), 10)
+            password: await bcrypt.hash(Math.random().toString(36), 10),
+            isFirstLogin: true,
+            profileUpdates: {
+                count: 0
+            }
         });
 
-        console.log('New user created:', newUser.email);
-
         const token = jwt.sign(
-            { id: newUser._id, email: newUser.email },
+            { 
+                id: newUser._id, 
+                email: newUser.email,
+                firstname: newUser.firstname,
+                lastname: newUser.lastname
+            },
             process.env.SECRET_KEY,
             { expiresIn: '1h' }
         );
@@ -213,16 +223,13 @@ router.post('/google', async (req, res) => {
                 firstname: newUser.firstname,
                 lastname: newUser.lastname,
                 email: newUser.email,
-                picture: newUser.picture || ''
+                picture: newUser.picture || '',
+                isFirstLogin: true
             },
             token
         });
     } catch (error) {
-        console.error('Detailed Google OAuth error:', {
-            message: error.message,
-            stack: error.stack,
-            body: req.body
-        });
+        console.error('Google OAuth error:', error);
         res.status(500).json({ 
             error: "Internal server error",
             details: error.message 
@@ -230,62 +237,107 @@ router.post('/google', async (req, res) => {
     }
 });
 
-// Forgot Password Route
-router.post('/forgot-password', async (req, res) => {
+// Update user profile
+router.put('/profile', auth, async (req, res) => {
     try {
-        const { email } = req.body;
-        const user = await User.findOne({ email });
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
 
-        if (!user || user.googleId) {
+        const { firstname, lastname, email } = req.body;
+
+        // For first update after registration
+        if (user.isFirstLogin) {
+            user.firstname = firstname;
+            user.lastname = lastname;
+            user.email = email;
+            user.isFirstLogin = false;
+            user.profileUpdates.count = 0;
+            await user.save();
+
+            const token = jwt.sign(
+                { id: user._id, email: user.email, firstname: user.firstname, lastname: user.lastname },
+                process.env.SECRET_KEY,
+                { expiresIn: '1h' }
+            );
+
             return res.json({
-                message: 'If an account exists with this email, you will receive password reset instructions.'
+                message: "Profile updated successfully",
+                user: {
+                    firstname: user.firstname,
+                    lastname: user.lastname,
+                    email: user.email,
+                    isFirstLogin: false
+                },
+                token
             });
         }
 
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+        // Check update limit for subsequent updates
+        if (user.profileUpdates.count >= 3) {
+            return res.status(403).json({
+                error: "You have reached the maximum number of profile updates"
+            });
+        }
 
-        user.resetToken = resetToken;
-        user.resetTokenExpiry = resetTokenExpiry;
+        // Update profile
+        user.firstname = firstname;
+        user.lastname = lastname;
+        user.email = email;
+        user.profileUpdates.count += 1;
+        user.profileUpdates.lastUpdate = new Date();
         await user.save();
 
-        await sendResetEmail(email, resetToken);
+        // Generate new token with updated info
+        const token = jwt.sign(
+            { id: user._id, email: user.email, firstname: user.firstname, lastname: user.lastname },
+            process.env.SECRET_KEY,
+            { expiresIn: '1h' }
+        );
 
         res.json({
-            message: 'If an account exists with this email, you will receive password reset instructions.'
+            message: "Profile updated successfully",
+            user: {
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+                isFirstLogin: false
+            },
+            remainingUpdates: 3 - user.profileUpdates.count,
+            token
         });
+
     } catch (error) {
-        console.error('Forgot password error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Profile update error:', error);
+        res.status(500).json({ error: "Failed to update profile" });
     }
 });
 
-// Reset Password Route
-router.post('/reset-password/:token', async (req, res) => {
+// Get user profile
+router.get('/profile', auth, async (req, res) => {
     try {
-        const { token } = req.params;
-        const { password } = req.body;
-
-        const user = await User.findOne({
-            resetToken: token,
-            resetTokenExpiry: { $gt: Date.now() }
-        });
-
+        const user = await User.findById(req.user.id).select('-password');
         if (!user) {
-            return res.status(400).json({ error: 'Invalid or expired reset token' });
+            return res.status(404).json({ error: "User not found" });
         }
 
-        user.password = await bcrypt.hash(password, 10);
-        user.resetToken = undefined;
-        user.resetTokenExpiry = undefined;
-        await user.save();
-
-        res.json({ message: 'Password has been reset successfully' });
+        res.json({
+            user: {
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+                isFirstLogin: user.isFirstLogin,
+                profileUpdates: {
+                    count: user.profileUpdates.count,
+                    remaining: 3 - user.profileUpdates.count
+                }
+            }
+        });
     } catch (error) {
-        console.error('Reset password error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Profile fetch error:', error);
+        res.status(500).json({ error: "Failed to fetch profile" });
     }
 });
 
 module.exports = router;
-

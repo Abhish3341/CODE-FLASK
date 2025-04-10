@@ -27,11 +27,23 @@ const userSchema = new mongoose.Schema({
         sparse: true,
     },
     resetToken: String,
-    resetTokenExpiry: Date
+    resetTokenExpiry: Date,
+    profileUpdates: {
+        count: {
+            type: Number,
+            default: 0
+        },
+        lastUpdate: {
+            type: Date
+        }
+    },
+    isFirstLogin: {
+        type: Boolean,
+        default: true
+    }
 }, {
     timestamps: true
 });
 
-// Make sure to export the model properly
 const User = mongoose.model('User', userSchema);
 module.exports = User;

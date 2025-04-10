@@ -1,40 +1,131 @@
 import React, { useEffect, useState } from 'react';
 import { User, Bell, Shield, Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import axiosInstance from '../utils/axiosConfig';
 import { jwtDecode } from 'jwt-decode';
 
-interface DecodedToken {
-  id: string;
-  email: string;
+interface UserProfile {
   firstname: string;
   lastname: string;
-  exp: number;
+  email: string;
+  isFirstLogin: boolean;
+  profileUpdates: {
+    count: number;
+    remaining: number;
+  };
 }
 
 const Settings = () => {
   const { isDarkMode, toggleTheme } = useTheme();
-  const [userData, setUserData] = useState<{ name: string; email: string }>({ name: '', email: '' });
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [formData, setFormData] = useState({
+    firstname: '',
+    lastname: '',
+    email: ''
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      try {
-        const decoded = jwtDecode<DecodedToken>(token);
-        if (decoded.firstname && decoded.lastname && decoded.email) {
-          setUserData({
-            name: `${decoded.firstname} ${decoded.lastname}`.trim(),
-            email: decoded.email
-          });
-        } else {
-          console.error('Required user data missing from token');
-          setUserData({ name: 'User', email: 'Not available' });
-        }
-      } catch (err) {
-        console.error('Error decoding token:', err);
-        setUserData({ name: 'User', email: 'Not available' });
-      }
-    }
+    fetchUserProfile();
   }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await axiosInstance.get('/api/auth/profile');
+      setProfile(response.data.user);
+      setFormData({
+        firstname: response.data.user.firstname,
+        lastname: response.data.user.lastname,
+        email: response.data.user.email
+      });
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setError('Failed to load profile data');
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setError('');
+    setSuccess('');
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setError('');
+    setSuccess('');
+    // Reset form data to current profile values
+    if (profile) {
+      setFormData({
+        firstname: profile.firstname,
+        lastname: profile.lastname,
+        email: profile.email
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isEditing) {
+      return;
+    }
+
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await axiosInstance.put('/api/auth/profile', formData);
+      
+      // Update local storage with new token
+      if (response.data.token) {
+        localStorage.setItem('auth_token', response.data.token);
+      }
+
+      setProfile(prev => ({
+        ...prev!,
+        ...response.data.user,
+        profileUpdates: {
+          count: prev!.profileUpdates.count + (prev!.isFirstLogin ? 0 : 1),
+          remaining: response.data.remainingUpdates || 0
+        }
+      }));
+
+      setSuccess('Profile updated successfully');
+      setIsEditing(false);
+
+      // Refresh the page after a short delay to show the success message
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error: any) {
+      setError(error.response?.data?.error || 'Failed to update profile');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const hasChanges = profile && (
+    formData.firstname !== profile.firstname ||
+    formData.lastname !== profile.lastname ||
+    formData.email !== profile.email
+  );
 
   return (
     <div className="h-full p-8 bg-[var(--color-bg-primary)]">
@@ -43,89 +134,119 @@ const Settings = () => {
         <p className="text-[var(--color-text-secondary)]">Manage your account and preferences</p>
       </div>
 
+      {profile?.isFirstLogin && (
+        <div className="bg-indigo-100 dark:bg-indigo-900 p-4 rounded-lg mb-6">
+          <p className="text-indigo-700 dark:text-indigo-200">
+            Welcome! Please confirm or update your profile details below. 
+            This first update won't count towards your update limit.
+          </p>
+        </div>
+      )}
+
+      {!profile?.isFirstLogin && profile?.profileUpdates.remaining < 3 && (
+        <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-lg mb-6">
+          <p className="text-yellow-700 dark:text-yellow-200">
+            You have {profile.profileUpdates.remaining} profile updates remaining.
+          </p>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-100 dark:bg-red-900 p-4 rounded-lg mb-6">
+          <p className="text-red-700 dark:text-red-200">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-100 dark:bg-green-900 p-4 rounded-lg mb-6">
+          <p className="text-green-700 dark:text-green-200">{success}</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <div className="card p-6 mb-6">
+          <div className="card p-6">
             <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
               <User className="w-5 h-5" />
               Profile Settings
             </h2>
-            <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">Display Name</label>
+                <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+                  First Name
+                </label>
                 <input
                   type="text"
-                  className="input w-full"
-                  value={userData.name}
-                  readOnly
+                  name="firstname"
+                  value={formData.firstname}
+                  onChange={handleInputChange}
+                  className={`input w-full ${!isEditing ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
+                  disabled={!isEditing}
+                  required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">Email</label>
+                <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  name="lastname"
+                  value={formData.lastname}
+                  onChange={handleInputChange}
+                  className={`input w-full ${!isEditing ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
+                  disabled={!isEditing}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+                  Email
+                </label>
                 <input
                   type="email"
-                  className="input w-full"
-                  value={userData.email}
-                  readOnly
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className={`input w-full ${!isEditing ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
+                  disabled={!isEditing}
+                  required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">Bio</label>
-                <textarea
-                  className="input w-full"
-                  rows={4}
-                  placeholder="Tell us about yourself"
-                />
+              <div className="flex gap-4">
+                {!isEditing ? (
+                  <button
+                    type="button"
+                    onClick={handleEdit}
+                    className="button button-primary"
+                  >
+                    Edit Profile
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="submit"
+                      className={`button button-primary ${(!hasChanges || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={!hasChanges || isSubmitting}
+                    >
+                      {isSubmitting ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="button button-secondary"
+                      disabled={isSubmitting}
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
               </div>
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
-              <Bell className="w-5 h-5" />
-              Notification Settings
-            </h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium text-[var(--color-text-primary)]">Email Notifications</h3>
-                  <p className="text-sm text-[var(--color-text-secondary)]">Receive email updates about your activity</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" />
-                  <div className="w-11 h-6 bg-[var(--color-border)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium text-[var(--color-text-primary)]">Problem Updates</h3>
-                  <p className="text-sm text-[var(--color-text-secondary)]">Get notified about new problems and contests</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" />
-                  <div className="w-11 h-6 bg-[var(--color-border)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
-            </div>
+            </form>
           </div>
         </div>
 
         <div className="space-y-6">
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Security
-            </h2>
-            <div className="space-y-4">
-              <button className="button button-primary w-full">
-                Change Password
-              </button>
-              <button className="button button-secondary w-full">
-                Enable 2FA
-              </button>
-            </div>
-          </div>
-
           <div className="card p-6">
             <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
               <Monitor className="w-5 h-5" />
