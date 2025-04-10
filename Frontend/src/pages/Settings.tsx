@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { User, Bell, Shield, Monitor, Moon, Sun } from 'lucide-react';
+import { User, Bell, Shield, Monitor, Moon, Sun, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../utils/axiosConfig';
-import { jwtDecode } from 'jwt-decode';
 
 interface UserProfile {
   firstname: string;
@@ -15,18 +15,38 @@ interface UserProfile {
   };
 }
 
+interface PasswordForm {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 const Settings = () => {
   const { isDarkMode, toggleTheme } = useTheme();
+  const { logout } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState({
     firstname: '',
     lastname: '',
     email: ''
   });
+  const [passwordForm, setPasswordForm] = useState<PasswordForm>({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [success, setSuccess] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
     fetchUserProfile();
@@ -53,6 +73,62 @@ const Settings = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const togglePasswordVisibility = (field: keyof typeof showPasswords) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await axiosInstance.post('/api/auth/change-password', {
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword
+      });
+
+      setPasswordSuccess('Password updated successfully. Please log in again with your new password.');
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+
+      // Log out after successful password change
+      setTimeout(() => {
+        logout();
+      }, 2000);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 
+                         (error.response?.data?.errors && error.response.data.errors.join(', ')) ||
+                         'Failed to update password';
+      setPasswordError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleEdit = () => {
@@ -270,6 +346,110 @@ const Settings = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <div className="card p-6">
+          <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Change Password
+          </h2>
+
+          {passwordError && (
+            <div className="bg-red-100 dark:bg-red-900 p-4 rounded-lg mb-6">
+              <p className="text-red-700 dark:text-red-200">{passwordError}</p>
+            </div>
+          )}
+
+          {passwordSuccess && (
+            <div className="bg-green-100 dark:bg-green-900 p-4 rounded-lg mb-6">
+              <p className="text-green-700 dark:text-green-200">{passwordSuccess}</p>
+            </div>
+          )}
+
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+                Current Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPasswords.current ? "text" : "password"}
+                  name="currentPassword"
+                  value={passwordForm.currentPassword}
+                  onChange={handlePasswordChange}
+                  className="input w-full pr-12"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('current')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  {showPasswords.current ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+                New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPasswords.new ? "text" : "password"}
+                  name="newPassword"
+                  value={passwordForm.newPassword}
+                  onChange={handlePasswordChange}
+                  className="input w-full pr-12"
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('new')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  {showPasswords.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                Password must be at least 8 characters long and contain uppercase, lowercase, numbers, and special characters.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPasswords.confirm ? "text" : "password"}
+                  name="confirmPassword"
+                  value={passwordForm.confirmPassword}
+                  onChange={handlePasswordChange}
+                  className="input w-full pr-12"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('confirm')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  {showPasswords.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className={`button button-primary ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Updating Password...' : 'Update Password'}
+            </button>
+          </form>
         </div>
       </div>
     </div>

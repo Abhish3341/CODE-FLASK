@@ -18,6 +18,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    previousPasswords: {
+        type: [String],
+        default: []
+    },
     picture: {
         type: String,
         default: ''
@@ -40,6 +44,15 @@ const userSchema = new mongoose.Schema({
     isFirstLogin: {
         type: Boolean,
         default: true
+    },
+    passwordChangeAttempts: {
+        count: {
+            type: Number,
+            default: 0
+        },
+        lastAttempt: {
+            type: Date
+        }
     }
 }, {
     timestamps: true

@@ -5,6 +5,28 @@ const User = require("../models/Users");
 const auth = require('../middleware/authMiddleware');
 const router = express.Router();
 
+// Rate limiting for password changes
+const passwordChangeAttempts = new Map();
+
+const checkPasswordStrength = (password) => {
+  const minLength = 8;
+  const maxLength = 128;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  const errors = [];
+  if (password.length < minLength) errors.push(`Password must be at least ${minLength} characters long`);
+  if (password.length > maxLength) errors.push(`Password must be less than ${maxLength} characters`);
+  if (!hasUpperCase) errors.push("Password must contain at least one uppercase letter");
+  if (!hasLowerCase) errors.push("Password must contain at least one lowercase letter");
+  if (!hasNumbers) errors.push("Password must contain at least one number");
+  if (!hasSpecialChar) errors.push("Password must contain at least one special character");
+
+  return errors;
+};
+
 // User Login Route
 router.post('/login', async (req, res) => {
     try {
@@ -65,24 +87,84 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Change Password Route
+router.post('/change-password', auth, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.id;
+
+        // Rate limiting check
+        const now = Date.now();
+        const userAttempts = passwordChangeAttempts.get(userId) || [];
+        const recentAttempts = userAttempts.filter(timestamp => now - timestamp < 3600000); // Last hour
+
+        if (recentAttempts.length >= 3) {
+            return res.status(429).json({
+                error: "Too many password change attempts. Please try again later."
+            });
+        }
+
+        // Update attempts
+        passwordChangeAttempts.set(userId, [...recentAttempts, now]);
+
+        // Get user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Verify current password
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isCurrentPasswordValid) {
+            return res.status(401).json({ error: "Current password is incorrect" });
+        }
+
+        // Check password strength
+        const passwordErrors = checkPasswordStrength(newPassword);
+        if (passwordErrors.length > 0) {
+            return res.status(400).json({ errors: passwordErrors });
+        }
+
+        // Check if new password matches any of the last 3 passwords
+        if (user.previousPasswords) {
+            for (const oldHash of user.previousPasswords.slice(-3)) {
+                const matches = await bcrypt.compare(newPassword, oldHash);
+                if (matches) {
+                    return res.status(400).json({
+                        error: "Cannot reuse any of your last 3 passwords"
+                    });
+                }
+            }
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update user's password and password history
+        user.previousPasswords = user.previousPasswords || [];
+        user.previousPasswords.push(user.password);
+        if (user.previousPasswords.length > 5) {
+            user.previousPasswords = user.previousPasswords.slice(-5);
+        }
+        user.password = hashedPassword;
+        await user.save();
+
+        res.json({ message: "Password updated successfully" });
+    } catch (error) {
+        console.error('Password change error:', error);
+        res.status(500).json({ error: "Failed to update password" });
+    }
+});
+
 // User Registration Route
 router.post('/register', async (req, res) => {
     try {
         const { firstname, lastname, email, password } = req.body;
 
-        // Add after the destructuring in register route
-        if (!password || password.length < 6) {
-            return res.status(400).json({
-                error: "Password must be at least 6 characters long"
-            });
-        }
-
-        // Add after password validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({
-                error: "Please provide a valid email address"
-            });
+        // Check password strength
+        const passwordErrors = checkPasswordStrength(password);
+        if (passwordErrors.length > 0) {
+            return res.status(400).json({ errors: passwordErrors });
         }
 
         // Check if user already exists
@@ -110,7 +192,8 @@ router.post('/register', async (req, res) => {
             isFirstLogin: true,
             profileUpdates: {
                 count: 0
-            }
+            },
+            previousPasswords: [hashedPassword]
         });
 
         // Generate JWT token
