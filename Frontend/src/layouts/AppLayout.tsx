@@ -72,15 +72,17 @@ const AppLayout = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content Area - Made Scrollable */}
       <div className="flex-1 overflow-hidden">
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/problems" element={<Problems />} />
-          <Route path="/submissions" element={<Submissions />} />
-          <Route path="/learn" element={<Learn />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
+        <div className="h-full overflow-y-auto scrollable-content">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/problems" element={<Problems />} />
+            <Route path="/submissions" element={<Submissions />} />
+            <Route path="/learn" element={<Learn />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );
