@@ -3,12 +3,18 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const Problem = require('../models/Problems');
 const UserStats = require('../models/UserStats');
+const Activity = require('../models/Activity');
 
 // Get all problems with user's solve status
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const problems = await Problem.find();
-        const userStats = await UserStats.findOne({ userId: req.user.id });
+        const userActivities = await Activity.find({ 
+            userId: req.user.id,
+            type: 'solved'
+        });
+        
+        const solvedProblemIds = userActivities.map(activity => activity.problemId);
         
         const problemsWithStatus = problems.map(problem => ({
             id: problem._id,
@@ -17,7 +23,7 @@ router.get('/', authMiddleware, async (req, res) => {
             category: problem.category,
             acceptance: problem.acceptance,
             submissions: problem.totalSubmissions,
-            solved: userStats?.solvedProblems?.includes(problem._id) || false
+            solved: solvedProblemIds.includes(problem._id.toString())
         }));
 
         res.json(problemsWithStatus);
@@ -28,17 +34,50 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Get user stats
-router.get('/user/stats', authMiddleware, async (req, res) => {
+router.get('/stats', authMiddleware, async (req, res) => {
     try {
-        const userStats = await UserStats.findOne({ userId: req.user.id });
-        const totalProblems = await Problem.countDocuments();
+        const userId = req.user.id;
         
+        // Get or create user stats
+        let userStats = await UserStats.findOne({ userId });
+        if (!userStats) {
+            userStats = await UserStats.create({
+                userId,
+                rank: 0,
+                problemsSolved: 0,
+                totalSubmissions: 0,
+                timeSpent: 0
+            });
+        }
+
+        // Get total problems count
+        const totalProblems = await Problem.countDocuments();
+
+        // Calculate success rate
+        const successRate = userStats.totalSubmissions > 0
+            ? Math.round((userStats.problemsSolved / userStats.totalSubmissions) * 100)
+            : 0;
+
+        // Calculate average time per problem (in minutes)
+        const averageTime = userStats.problemsSolved > 0
+            ? Math.round(userStats.timeSpent / userStats.problemsSolved)
+            : 0;
+
+        // Calculate user's rank
+        let ranking = 0;
+        if (userStats.problemsSolved > 0) {
+            const higherRankedUsers = await UserStats.countDocuments({
+                problemsSolved: { $gt: userStats.problemsSolved }
+            });
+            ranking = higherRankedUsers + 1;
+        }
+
         res.json({
-            problemsSolved: userStats?.problemsSolved || 0,
+            problemsSolved: userStats.problemsSolved,
             totalProblems,
-            successRate: userStats?.successRate || 0,
-            averageTime: userStats?.averageTime || 0,
-            ranking: userStats?.rank || 0
+            successRate,
+            averageTime,
+            ranking
         });
     } catch (error) {
         console.error('Error fetching user stats:', error);

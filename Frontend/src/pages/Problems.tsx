@@ -39,7 +39,7 @@ const Problems = () => {
       try {
         const [problemsResponse, statsResponse] = await Promise.all([
           axiosInstance.get('/api/problems'),
-          axiosInstance.get('/api/user/stats')
+          axiosInstance.get('/api/problems/stats')
         ]);
         
         setProblems(problemsResponse.data);
@@ -159,7 +159,7 @@ const Problems = () => {
             <div>
               <p className="text-[var(--color-text-secondary)] text-sm">Ranking</p>
               <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                #{userStats.ranking}
+                {userStats.ranking === 0 ? '-' : `#${userStats.ranking}`}
               </p>
             </div>
           </div>
