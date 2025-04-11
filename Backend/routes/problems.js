@@ -1,88 +1,76 @@
-const express = require('express');
-const router = express.Router();
-const authMiddleware = require('../middleware/authMiddleware');
-const Problem = require('../models/Problems');
-const UserStats = require('../models/UserStats');
-const Activity = require('../models/Activity');
+const mongoose = require('mongoose');
 
-// Get all problems with user's solve status
-router.get('/', authMiddleware, async (req, res) => {
-    try {
-        const problems = await Problem.find();
-        const userActivities = await Activity.find({ 
-            userId: req.user.id,
-            type: 'solved'
-        });
-        
-        const solvedProblemIds = userActivities.map(activity => activity.problemId);
-        
-        const problemsWithStatus = problems.map(problem => ({
-            id: problem._id,
-            title: problem.title,
-            difficulty: problem.difficulty,
-            category: problem.category,
-            acceptance: problem.acceptance,
-            submissions: problem.totalSubmissions,
-            solved: solvedProblemIds.includes(problem._id.toString())
-        }));
-
-        res.json(problemsWithStatus);
-    } catch (error) {
-        console.error('Error fetching problems:', error);
-        res.status(500).json({ error: 'Failed to fetch problems' });
+// Only create the model if it hasn't been compiled yet
+if (!mongoose.models.Problem) {
+  const testCaseSchema = new mongoose.Schema({
+    input: {
+      type: String,
+      required: true
+    },
+    output: {
+      type: String,
+      required: true
+    },
+    isHidden: {
+      type: Boolean,
+      default: false
     }
-});
+  });
 
-// Get user stats
-router.get('/stats', authMiddleware, async (req, res) => {
-    try {
-        const userId = req.user.id;
-        
-        // Get or create user stats
-        let userStats = await UserStats.findOne({ userId });
-        if (!userStats) {
-            userStats = await UserStats.create({
-                userId,
-                rank: 0,
-                problemsSolved: 0,
-                totalSubmissions: 0,
-                timeSpent: 0
-            });
-        }
-
-        // Get total problems count
-        const totalProblems = await Problem.countDocuments();
-
-        // Calculate success rate
-        const successRate = userStats.totalSubmissions > 0
-            ? Math.round((userStats.problemsSolved / userStats.totalSubmissions) * 100)
-            : 0;
-
-        // Calculate average time per problem (in minutes)
-        const averageTime = userStats.problemsSolved > 0
-            ? Math.round(userStats.timeSpent / userStats.problemsSolved)
-            : 0;
-
-        // Calculate user's rank
-        let ranking = 0;
-        if (userStats.problemsSolved > 0) {
-            const higherRankedUsers = await UserStats.countDocuments({
-                problemsSolved: { $gt: userStats.problemsSolved }
-            });
-            ranking = higherRankedUsers + 1;
-        }
-
-        res.json({
-            problemsSolved: userStats.problemsSolved,
-            totalProblems,
-            successRate,
-            averageTime,
-            ranking
-        });
-    } catch (error) {
-        console.error('Error fetching user stats:', error);
-        res.status(500).json({ error: 'Failed to fetch user stats' });
+  const problemSchema = new mongoose.Schema({
+    title: {
+      type: String,
+      required: true
+    },
+    description: {
+      type: String,
+      required: true
+    },
+    difficulty: {
+      type: String,
+      enum: ['Easy', 'Medium', 'Hard'],
+      required: true
+    },
+    category: {
+      type: String,
+      required: true
+    },
+    acceptance: {
+      type: Number,
+      default: 0
+    },
+    totalSubmissions: {
+      type: Number,
+      default: 0
+    },
+    constraints: {
+      type: String,
+      required: true
+    },
+    sampleInput: {
+      type: String,
+      required: true
+    },
+    sampleOutput: {
+      type: String,
+      required: true
+    },
+    testCases: [testCaseSchema],
+    timeLimit: {
+      type: Number,
+      default: 2000, // in milliseconds
+      required: true
+    },
+    memoryLimit: {
+      type: Number,
+      default: 512, // in MB
+      required: true
     }
-});
+  }, {
+    timestamps: true
+  });
 
-module.exports = router;
+  mongoose.model('Problem', problemSchema);
+}
+
+module.exports = mongoose.model('Problem');

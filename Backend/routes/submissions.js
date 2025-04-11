@@ -1,32 +1,49 @@
-const express = require('express');
-const router = express.Router();
-const authMiddleware = require('../middleware/authMiddleware');
-const Activity = require('../models/Activity');
+const mongoose = require('mongoose');
 
-router.get('/', authMiddleware, async (req, res) => {
-    try {
-        const submissions = await Activity.find({ 
-            userId: req.user.id,
-            type: 'submitted'
-        })
-        .sort({ timestamp: -1 })
-        .populate('problemId', 'title');
-
-        const formattedSubmissions = submissions.map(submission => ({
-            id: submission._id,
-            problem: submission.problemTitle,
-            status: submission.status,
-            language: submission.language,
-            runtime: submission.runtime,
-            memory: submission.memory,
-            submittedAt: submission.timestamp
-        }));
-
-        res.json(formattedSubmissions);
-    } catch (error) {
-        console.error('Error fetching submissions:', error);
-        res.status(500).json({ error: 'Failed to fetch submissions' });
-    }
+const submissionSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  problemId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Problem',
+    required: true
+  },
+  language: {
+    type: String,
+    enum: ['java', 'c', 'python', 'cpp'],
+    required: true
+  },
+  code: {
+    type: String,
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['Accepted', 'Wrong Answer', 'Time Limit Exceeded', 'Runtime Error', 'Compilation Error'],
+    required: true
+  },
+  runtime: {
+    type: Number, // in milliseconds
+    default: 0
+  },
+  memory: {
+    type: Number, // in KB
+    default: 0
+  },
+  testCasesPassed: {
+    type: Number,
+    default: 0
+  },
+  totalTestCases: {
+    type: Number,
+    required: true
+  }
+}, {
+  timestamps: true
 });
 
-module.exports = router;
+const Submission = mongoose.model('Submission', submissionSchema);
+module.exports = Submission;

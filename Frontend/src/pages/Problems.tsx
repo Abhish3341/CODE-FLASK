@@ -24,13 +24,7 @@ const Problems = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [problems, setProblems] = useState<Problem[]>([]);
-  const [userStats, setUserStats] = useState<UserStats>({
-    problemsSolved: 0,
-    totalProblems: 0,
-    successRate: 0,
-    averageTime: 0,
-    ranking: 0
-  });
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,13 +33,13 @@ const Problems = () => {
       try {
         const [problemsResponse, statsResponse] = await Promise.all([
           axiosInstance.get('/api/problems'),
-          axiosInstance.get('/api/problems/stats')
+          axiosInstance.get('/api/problems/user/stats')
         ]);
         
         setProblems(problemsResponse.data);
         setUserStats(statsResponse.data);
-      } catch (err) {
-        setError('Failed to load data');
+      } catch (err: any) {
+        setError(err.response?.data?.error || 'Failed to load data');
         console.error('Error fetching data:', err);
       } finally {
         setLoading(false);
@@ -54,6 +48,10 @@ const Problems = () => {
 
     fetchData();
   }, []);
+
+  const handleSolveProblem = (problemId: string) => {
+    window.open(`/app/problems/${problemId}/solve`, '_blank');
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
@@ -76,15 +74,23 @@ const Problems = () => {
 
   if (loading) {
     return (
-      <div className="h-full p-8 bg-[var(--color-bg-primary)] flex items-center justify-center">
-        <div className="text-[var(--color-text-secondary)]">Loading...</div>
+      <div className="h-full p-8 bg-[var(--color-bg-primary)]">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-300 rounded w-1/4"></div>
+          <div className="grid grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-24 bg-gray-300 rounded"></div>
+            ))}
+          </div>
+          <div className="h-96 bg-gray-300 rounded"></div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="h-full p-8 bg-[var(--color-bg-primary)] flex items-center justify-center">
+      <div className="h-full p-8 bg-[var(--color-bg-primary)]">
         <div className="text-red-500">{error}</div>
       </div>
     );
@@ -120,7 +126,7 @@ const Problems = () => {
             <div>
               <p className="text-[var(--color-text-secondary)] text-sm">Solved</p>
               <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                {userStats.problemsSolved}/{userStats.totalProblems}
+                {userStats?.problemsSolved}/{userStats?.totalProblems}
               </p>
             </div>
           </div>
@@ -133,7 +139,7 @@ const Problems = () => {
             <div>
               <p className="text-[var(--color-text-secondary)] text-sm">Success Rate</p>
               <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                {userStats.successRate}%
+                {userStats?.successRate}%
               </p>
             </div>
           </div>
@@ -146,7 +152,7 @@ const Problems = () => {
             <div>
               <p className="text-[var(--color-text-secondary)] text-sm">Avg. Time</p>
               <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                {userStats.averageTime}m
+                {userStats?.averageTime}m
               </p>
             </div>
           </div>
@@ -159,7 +165,7 @@ const Problems = () => {
             <div>
               <p className="text-[var(--color-text-secondary)] text-sm">Ranking</p>
               <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                {userStats.ranking === 0 ? '-' : `#${userStats.ranking}`}
+                #{userStats?.ranking}
               </p>
             </div>
           </div>
@@ -202,7 +208,7 @@ const Problems = () => {
               <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Difficulty</th>
               <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Category</th>
               <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Acceptance</th>
-              <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Submissions</th>
+              <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -216,9 +222,9 @@ const Problems = () => {
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <a href={`/app/problems/${problem.id}`} className="font-medium text-[var(--color-text-primary)] hover:text-indigo-500 transition-colors">
+                  <span className="font-medium text-[var(--color-text-primary)] hover:text-indigo-500 transition-colors">
                     {problem.title}
-                  </a>
+                  </span>
                 </td>
                 <td className="px-6 py-4">
                   <span className={`px-3 py-1 rounded-full text-sm ${getDifficultyColor(problem.difficulty)}`}>
@@ -232,7 +238,14 @@ const Problems = () => {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-[var(--color-text-secondary)]">{problem.acceptance}%</td>
-                <td className="px-6 py-4 text-[var(--color-text-secondary)]">{problem.submissions}</td>
+                <td className="px-6 py-4">
+                  <button
+                    onClick={() => handleSolveProblem(problem.id)}
+                    className="button button-primary"
+                  >
+                    Solve
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
