@@ -1,49 +1,59 @@
-const mongoose = require('mongoose');
+const express = require('express');
+const router = express.Router();
+const authMiddleware = require('../middleware/authMiddleware');
+const Submission = require('../models/Submission');
 
-const submissionSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  problemId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Problem',
-    required: true
-  },
-  language: {
-    type: String,
-    enum: ['java', 'c', 'python', 'cpp'],
-    required: true
-  },
-  code: {
-    type: String,
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ['Accepted', 'Wrong Answer', 'Time Limit Exceeded', 'Runtime Error', 'Compilation Error'],
-    required: true
-  },
-  runtime: {
-    type: Number, // in milliseconds
-    default: 0
-  },
-  memory: {
-    type: Number, // in KB
-    default: 0
-  },
-  testCasesPassed: {
-    type: Number,
-    default: 0
-  },
-  totalTestCases: {
-    type: Number,
-    required: true
-  }
-}, {
-  timestamps: true
+router.get('/', authMiddleware, async (req, res) => {
+    try {
+        const submissions = await Submission.find({ 
+            userId: req.user.id 
+        })
+        .sort({ submittedAt: -1 })
+        .populate('problemId', 'title');
+
+        const formattedSubmissions = submissions.map(submission => ({
+            id: submission._id,
+            problem: submission.problemId.title,
+            status: submission.status,
+            language: submission.language,
+            runtime: submission.executionTime ? `${submission.executionTime}ms` : 'N/A',
+            memory: submission.memoryUsed ? `${submission.memoryUsed}KB` : 'N/A',
+            submittedAt: submission.submittedAt.toISOString()
+        }));
+
+        res.json(formattedSubmissions);
+    } catch (error) {
+        console.error('Error fetching submissions:', error);
+        res.status(500).json({ error: 'Failed to fetch submissions' });
+    }
 });
 
-const Submission = mongoose.model('Submission', submissionSchema);
-module.exports = Submission;
+router.get('/:id', authMiddleware, async (req, res) => {
+    try {
+        const submission = await Submission.findOne({
+            _id: req.params.id,
+            userId: req.user.id
+        }).populate('problemId', 'title');
+
+        if (!submission) {
+            return res.status(404).json({ error: 'Submission not found' });
+        }
+
+        res.json({
+            id: submission._id,
+            problem: submission.problemId.title,
+            code: submission.code,
+            language: submission.language,
+            status: submission.status,
+            results: submission.results,
+            executionTime: submission.executionTime,
+            memoryUsed: submission.memoryUsed,
+            submittedAt: submission.submittedAt
+        });
+    } catch (error) {
+        console.error('Error fetching submission:', error);
+        res.status(500).json({ error: 'Failed to fetch submission' });
+    }
+});
+
+module.exports = router;

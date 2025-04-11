@@ -8,6 +8,11 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Features from "./pages/Features";
 import About from "./pages/About";
+import Problems from "./pages/Problems";
+import ProblemView from "./pages/ProblemView";
+import Submissions from "./pages/Submissions";
+import Learn from "./pages/Learn";
+import Settings from "./pages/Settings";
 
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -15,8 +20,7 @@ function App() {
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   if (!googleClientId) {
-    console.error("Google Client ID is not configured in .env file. Please add VITE_GOOGLE_CLIENT_ID=your-client-id");
-    // Return a more user-friendly error message instead of null
+    console.error("Google Client ID is not configured in .env file");
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center p-8 bg-white rounded-lg shadow-md">
@@ -29,11 +33,7 @@ function App() {
   }
 
   return (
-    <GoogleOAuthProvider 
-      clientId={googleClientId}
-      onScriptLoadError={() => console.error('Google OAuth script failed to load:')}
-      onScriptLoadSuccess={() => console.log('Google OAuth script loaded successfully')}
-    >
+    <GoogleOAuthProvider clientId={googleClientId}>
       <Router>
         <ThemeProvider>
           <AuthProvider>
@@ -43,11 +43,17 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
              
-              {/* 🔹 Protected Routes */}
+              {/* Protected Routes */}
               <Route element={<PrivateRoute />}>
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/app" element={<AppLayout />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="problems" element={<Problems />} />
+                  <Route path="problems/:id/solve" element={<ProblemView />} />
+                  <Route path="submissions" element={<Submissions />} />
+                  <Route path="learn" element={<Learn />} />
+                  <Route path="settings" element={<Settings />} />
+                </Route>
               </Route>
-              <Route path="/app/*" element={<AppLayout />} />
             </Routes>
           </AuthProvider>
         </ThemeProvider>
