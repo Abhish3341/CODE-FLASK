@@ -13,7 +13,6 @@ import ProblemView from "./pages/ProblemView";
 import Submissions from "./pages/Submissions";
 import Learn from "./pages/Learn";
 import Settings from "./pages/Settings";
-
 import PrivateRoute from "./components/PrivateRoute";
 
 function App() {

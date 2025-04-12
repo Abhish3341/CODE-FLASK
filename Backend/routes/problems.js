@@ -48,7 +48,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // Get user stats
-router.get('/user/stats', authMiddleware, async (req, res) => {
+router.get('/stats', authMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
         

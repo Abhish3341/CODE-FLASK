@@ -3,8 +3,6 @@ import { Trophy, Code, CheckCircle, Clock } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../utils/axiosConfig';
-import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
 
 interface DashboardData {
   stats: {
@@ -27,14 +25,6 @@ interface DashboardData {
   }>;
 }
 
-interface DecodedToken {
-  id: string;
-  email: string;
-  firstname: string;
-  lastname: string;
-  exp: number;
-}
-
 const formatRelativeTime = (timestamp: string) => {
   const date = new Date(timestamp);
   const now = new Date();
@@ -52,29 +42,10 @@ const formatRelativeTime = (timestamp: string) => {
 
 const Dashboard = () => {
   const { isDarkMode } = useTheme();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string>('');
-
-  useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      try {
-        const decoded = jwtDecode<DecodedToken>(token);
-        if (decoded.firstname) {
-          setUserName(decoded.firstname);
-        } else {
-          console.error('Firstname not found in token');
-          setUserName('User');
-        }
-      } catch (err) {
-        console.error('Error decoding token:', err);
-        setUserName('User');
-      }
-    }
-  }, []);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -82,27 +53,25 @@ const Dashboard = () => {
         const token = localStorage.getItem('auth_token');
         if (!token) {
           setError('Not authenticated');
-          navigate('/login');
           return;
         }
 
         const response = await axiosInstance.get('/api/dashboard');
         setData(response.data);
       } catch (err: any) {
-        if (err.response?.status === 401) {
-          setError('Session expired. Please login again.');
-          navigate('/login');
-        } else {
-          setError('Failed to load dashboard data');
-          console.error('Dashboard data fetch error:', err);
-        }
+        setError(err.response?.data?.error || 'Failed to load dashboard data');
+        console.error('Dashboard data fetch error:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, [navigate]);
+  }, []);
+
+  const handleSolveProblem = (problemId: string) => {
+    window.open(`/app/problems/${problemId}/solve`, '_blank', 'noopener,noreferrer');
+  };
 
   if (loading) {
     return (
@@ -134,11 +103,12 @@ const Dashboard = () => {
     <div className="h-full p-8 bg-[var(--color-bg-primary)]">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-[var(--color-text-primary)] mb-2">
-          Welcome back, {userName}!
+          Welcome back, {user?.firstname} {user?.lastname}!
         </h1>
         <p className="text-[var(--color-text-secondary)]">Track your progress and start coding</p>
       </div>
 
+      {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-6 mb-8">
         <div className="card p-6">
           <Trophy className="w-8 h-8 text-yellow-500 mb-4" />
@@ -164,6 +134,7 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Activity and Recommendations */}
       <div className="grid grid-cols-2 gap-6">
         <div className="card p-6">
           <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-4">Recent Activity</h3>
@@ -206,7 +177,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <button 
-                    onClick={() => navigate(`/app/problems/${problem.id}`)}
+                    onClick={() => handleSolveProblem(problem.id)}
                     className="button button-primary"
                   >
                     Solve

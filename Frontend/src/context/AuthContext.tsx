@@ -1,12 +1,22 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import LoadingSkeleton from "../components/LoadingSkeleton";
 
 interface User {
-  uid?: string;
-  email: string | null;
-  name: string | null;
-  photoURL: string | null;
+  id: string;
+  email: string;
+  firstname: string;
+  lastname: string;
+  picture?: string;
+}
+
+interface DecodedToken {
+  id: string;
+  email: string;
+  firstname: string;
+  lastname: string;
+  exp: number;
 }
 
 interface AuthContextType {
@@ -20,35 +30,75 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
+
+  // Check for existing token on mount
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      try {
+        const decoded = jwtDecode<DecodedToken>(token);
+        // Check if token is expired
+        if (decoded.exp * 1000 < Date.now()) {
+          localStorage.removeItem('auth_token');
+          setUser(null);
+        } else {
+          setUser({
+            id: decoded.id,
+            email: decoded.email,
+            firstname: decoded.firstname,
+            lastname: decoded.lastname
+          });
+        }
+      } catch (error) {
+        console.error('Token decode error:', error);
+        localStorage.removeItem('auth_token');
+        setUser(null);
+      }
+    }
+    setLoading(false);
+  }, []);
 
   const login = async (userData: any) => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) throw new Error('No token found');
+
+      const decoded = jwtDecode<DecodedToken>(token);
       setUser({
-        uid: userData.sub || "demo-uid",
-        email: userData.email || "demo@example.com",
-        name: userData.name || "Demo User",
-        photoURL: userData.picture || `https://ui-avatars.com/api/?name=${userData.name || "Demo User"}`,
+        id: decoded.id,
+        email: decoded.email,
+        firstname: decoded.firstname,
+        lastname: decoded.lastname,
+        picture: userData.picture
       });
+      navigate("/app");
+    } catch (error) {
+      console.error('Login error:', error);
+      setUser(null);
+      navigate("/login");
+    } finally {
       setLoading(false);
-      navigate("/app"); // Redirect to dashboard after successful login
-    }, 1500); // Simulating a delay of 1.5s for better UX
+    }
   };
 
   const logout = () => {
     setLoading(true);
-    setTimeout(() => {
-      setUser(null);
-      setLoading(false);
-      navigate("/"); // Redirect to landing page ("/") after logout
-    }, 1500);
+    localStorage.removeItem('auth_token');
+    setUser(null);
+    navigate("/");
+    setLoading(false);
   };
+
+  if (loading) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {loading ? <LoadingSkeleton /> : children}
+      {children}
     </AuthContext.Provider>
   );
 };

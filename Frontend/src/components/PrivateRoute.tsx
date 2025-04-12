@@ -1,14 +1,17 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import React from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const PrivateRoute = () => {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
+  
+  // Check if user is authenticated
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-  console.log("Checking auth in PrivateRoute:", { user, loading });
-
-  if (loading) return <div className="text-white text-center mt-10">Loading...</div>;
-
-  return user ? <Outlet /> : <Navigate to="/login" replace />;
+  // If authenticated, render child routes
+  return <Outlet />;
 };
 
 export default PrivateRoute;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Tag, BarChart2, Clock, Award, CheckCircle2, AlertCircle } from 'lucide-react';
 import axiosInstance from '../utils/axiosConfig';
 
@@ -21,6 +22,7 @@ interface UserStats {
 }
 
 const Problems = () => {
+  const navigate = useNavigate();
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [problems, setProblems] = useState<Problem[]>([]);
@@ -55,6 +57,10 @@ const Problems = () => {
     fetchData();
   }, []);
 
+  const handleSolveProblem = (problemId: string) => {
+    window.open(`/app/problems/${problemId}/solve`, '_blank');
+  };
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
       case 'easy':
@@ -76,8 +82,37 @@ const Problems = () => {
 
   if (loading) {
     return (
-      <div className="h-full p-8 bg-[var(--color-bg-primary)] flex items-center justify-center">
-        <div className="text-[var(--color-text-secondary)]">Loading...</div>
+      <div className="h-full p-8 bg-[var(--color-bg-primary)]">
+        {/* Skeleton Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="card p-6 animate-pulse">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-[var(--color-bg-secondary)] rounded-lg"></div>
+                <div>
+                  <div className="h-4 w-20 bg-[var(--color-bg-secondary)] rounded mb-2"></div>
+                  <div className="h-6 w-16 bg-[var(--color-bg-secondary)] rounded"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Skeleton Table */}
+        <div className="card overflow-hidden">
+          <div className="animate-pulse">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 border-b border-[var(--color-border)]">
+                <div className="w-4 h-4 bg-[var(--color-bg-secondary)] rounded-full"></div>
+                <div className="h-4 w-48 bg-[var(--color-bg-secondary)] rounded"></div>
+                <div className="h-4 w-24 bg-[var(--color-bg-secondary)] rounded"></div>
+                <div className="h-4 w-24 bg-[var(--color-bg-secondary)] rounded"></div>
+                <div className="h-4 w-16 bg-[var(--color-bg-secondary)] rounded"></div>
+                <div className="h-8 w-20 bg-[var(--color-bg-secondary)] rounded"></div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -202,7 +237,7 @@ const Problems = () => {
               <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Difficulty</th>
               <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Category</th>
               <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Acceptance</th>
-              <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Submissions</th>
+              <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -216,9 +251,12 @@ const Problems = () => {
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <a href={`/app/problems/${problem.id}`} className="font-medium text-[var(--color-text-primary)] hover:text-indigo-500 transition-colors">
+                  <button
+                    onClick={() => handleSolveProblem(problem.id)}
+                    className="font-medium text-[var(--color-text-primary)] hover:text-indigo-500 transition-colors text-left"
+                  >
                     {problem.title}
-                  </a>
+                  </button>
                 </td>
                 <td className="px-6 py-4">
                   <span className={`px-3 py-1 rounded-full text-sm ${getDifficultyColor(problem.difficulty)}`}>
@@ -232,7 +270,14 @@ const Problems = () => {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-[var(--color-text-secondary)]">{problem.acceptance}%</td>
-                <td className="px-6 py-4 text-[var(--color-text-secondary)]">{problem.submissions}</td>
+                <td className="px-6 py-4">
+                  <button
+                    onClick={() => handleSolveProblem(problem.id)}
+                    className="button button-primary"
+                  >
+                    Solve
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
