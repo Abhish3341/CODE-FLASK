@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Code2, Clock, AlertTriangle } from 'lucide-react';
 import axiosInstance from '../utils/axiosConfig';
-import Editor from '@monaco-editor/react';
+import CodeEditor from '../components/CodeEditor';
 
 interface Problem {
   id: string;
@@ -11,15 +11,17 @@ interface Problem {
   difficulty: string;
   category: string;
   constraints: string;
-  sampleInput: string;
-  sampleOutput: string;
+  examples: Array<{
+    input: string;
+    output: string;
+    explanation?: string;
+  }>;
+  followUp?: string;
 }
 
 const ProblemView = () => {
   const { id } = useParams();
   const [problem, setProblem] = useState<Problem | null>(null);
-  const [code, setCode] = useState('');
-  const [language, setLanguage] = useState('python');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -27,11 +29,41 @@ const ProblemView = () => {
   useEffect(() => {
     const fetchProblem = async () => {
       try {
-        const response = await axiosInstance.get(`/api/problems/${id}`);
-        setProblem(response.data);
+        // For now, let's hardcode the Two Sum problem
+        setProblem({
+          id: '1',
+          title: 'Two Sum',
+          description: `Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
+
+You may assume that each input would have exactly one solution, and you may not use the same element twice.
+
+You can return the answer in any order.`,
+          difficulty: 'Easy',
+          category: 'Arrays',
+          constraints: `• 2 <= nums.length <= 104
+• -109 <= nums[i] <= 109
+• -109 <= target <= 109
+• Only one valid answer exists.`,
+          examples: [
+            {
+              input: 'nums = [2,7,11,15], target = 9',
+              output: '[0,1]',
+              explanation: 'Because nums[0] + nums[1] == 9, we return [0, 1].'
+            },
+            {
+              input: 'nums = [3,2,4], target = 6',
+              output: '[1,2]'
+            },
+            {
+              input: 'nums = [3,3], target = 6',
+              output: '[0,1]'
+            }
+          ],
+          followUp: 'Can you come up with an algorithm that is less than O(n²) time complexity?'
+        });
+        setLoading(false);
       } catch (err: any) {
         setError(err.response?.data?.error || 'Failed to load problem');
-      } finally {
         setLoading(false);
       }
     };
@@ -39,9 +71,9 @@ const ProblemView = () => {
     fetchProblem();
   }, [id]);
 
-  const handleSubmit = async () => {
-    if (!code.trim()) {
-      setError('Please write some code before submitting');
+  const handleSubmit = async (result: { output: string; error?: string }) => {
+    if (result.error) {
+      setError(result.error);
       return;
     }
 
@@ -49,16 +81,13 @@ const ProblemView = () => {
     setError(null);
 
     try {
-      const response = await axiosInstance.post('/api/compiler/submit', {
-        code,
-        language,
-        problemId: id
+      await axiosInstance.post('/api/submissions', {
+        problemId: id,
+        output: result.output
       });
-
-      // Handle submission response
-      console.log(response.data);
+      // Handle successful submission
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to submit code');
+      setError(err.response?.data?.error || 'Failed to submit solution');
     } finally {
       setSubmitting(false);
     }
@@ -137,65 +166,44 @@ const ProblemView = () => {
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">Example</h2>
+            <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">Examples</h2>
             <div className="space-y-4">
-              <div>
-                <h3 className="font-medium text-[var(--color-text-primary)] mb-1">Input:</h3>
-                <pre className="text-[var(--color-text-secondary)] whitespace-pre-wrap font-mono bg-[var(--color-bg-secondary)] p-4 rounded-lg">
-                  {problem.sampleInput}
-                </pre>
-              </div>
-              <div>
-                <h3 className="font-medium text-[var(--color-text-primary)] mb-1">Output:</h3>
-                <pre className="text-[var(--color-text-secondary)] whitespace-pre-wrap font-mono bg-[var(--color-bg-secondary)] p-4 rounded-lg">
-                  {problem.sampleOutput}
-                </pre>
-              </div>
+              {problem.examples.map((example, index) => (
+                <div key={index} className="bg-[var(--color-bg-secondary)] rounded-lg p-4">
+                  <h3 className="font-medium text-[var(--color-text-primary)] mb-2">Example {index + 1}:</h3>
+                  <div className="space-y-2">
+                    <div>
+                      <span className="font-medium text-[var(--color-text-primary)]">Input: </span>
+                      <code className="text-[var(--color-text-secondary)] font-mono">{example.input}</code>
+                    </div>
+                    <div>
+                      <span className="font-medium text-[var(--color-text-primary)]">Output: </span>
+                      <code className="text-[var(--color-text-secondary)] font-mono">{example.output}</code>
+                    </div>
+                    {example.explanation && (
+                      <div>
+                        <span className="font-medium text-[var(--color-text-primary)]">Explanation: </span>
+                        <span className="text-[var(--color-text-secondary)]">{example.explanation}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+
+          {problem.followUp && (
+            <div>
+              <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">Follow-up</h2>
+              <p className="text-[var(--color-text-secondary)]">{problem.followUp}</p>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Code Editor */}
-      <div className="w-1/2 flex flex-col">
-        <div className="p-4 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="px-3 py-1.5 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="python">Python</option>
-            <option value="javascript">JavaScript</option>
-            <option value="java">Java</option>
-            <option value="cpp">C++</option>
-          </select>
-        </div>
-        
-        <div className="flex-1">
-          <Editor
-            height="100%"
-            defaultLanguage={language}
-            value={code}
-            onChange={(value) => setCode(value || '')}
-            theme="vs-dark"
-            options={{
-              minimap: { enabled: false },
-              fontSize: 14,
-              lineNumbers: 'on',
-              automaticLayout: true,
-            }}
-          />
-        </div>
-
-        <div className="p-4 border-t border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {submitting ? 'Submitting...' : 'Submit Solution'}
-          </button>
-        </div>
+      <div className="w-1/2">
+        <CodeEditor onSubmit={handleSubmit} />
       </div>
     </div>
   );

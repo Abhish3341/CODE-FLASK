@@ -18,83 +18,45 @@
     --color-text-secondary: #9CA3AF;
     --color-border: #374151;
   }
-
-  /* Add smooth scrolling to all elements */
-  html {
-    scroll-behavior: smooth;
-  }
-
-  /* Enable scrolling for any element that overflows */
-  * {
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Make the main content area scrollable */
-  body {
-    @apply bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] transition-colors duration-200;
-    overflow-y: auto;
-    min-height: 100vh;
-  }
-
-  /* Add custom scrollbar styling */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: var(--color-bg-primary);
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-text-secondary);
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-text-primary);
-  }
-
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Hide scrollbar for IE, Edge and Firefox */
-  .no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
 }
 
-/* Component styles */
-.card {
-  @apply bg-[var(--color-bg-secondary)] rounded-xl shadow-lg transition-all duration-200;
+body {
+  @apply bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] transition-colors duration-200;
 }
 
-.input {
-  @apply bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full;
+/* Resizable Panel Styles */
+[data-panel-group] {
+  display: flex;
+  height: 100%;
 }
 
-.input-group {
-  @apply space-y-2;
+[data-panel-group][data-panel-group-direction="horizontal"] {
+  flex-direction: row;
 }
 
-.input-label {
-  @apply block text-sm font-medium text-[var(--color-text-primary)];
+[data-panel-group][data-panel-group-direction="vertical"] {
+  flex-direction: column;
 }
 
-.button {
-  @apply px-4 py-2 rounded-lg transition-colors duration-200;
+[data-panel] {
+  position: relative;
+  display: flex;
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
 }
 
-.button-primary {
-  @apply bg-indigo-600 hover:bg-indigo-700 text-white;
+[data-resize-handle] {
+  background-color: var(--color-border);
+  transition: background-color 150ms ease;
 }
 
-.button-secondary {
-  @apply bg-[var(--color-bg-secondary)] hover:bg-[var(--color-border)] text-[var(--color-text-primary)];
+[data-resize-handle]:hover {
+  background-color: rgb(99 102 241);
+}
+
+[data-resize-handle][data-resize-handle-active] {
+  background-color: rgb(99 102 241);
 }
 
 /* Custom tooltip styles */
@@ -126,62 +88,42 @@
   visibility: visible;
 }
 
-/* Make content areas scrollable */
-.scrollable-content {
-  @apply overflow-y-auto overflow-x-hidden;
-  max-height: calc(100vh - 2rem);
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-text-secondary) var(--color-bg-primary);
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-/* Add padding to scrollable sections */
-.scrollable-section {
-  @apply p-6;
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
 }
 
-/* Password field styling */
-.password-field {
-  @apply relative;
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-secondary);
+  border-radius: 4px;
 }
 
-.password-field input {
-  @apply pr-12;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-primary);
 }
 
-.password-field button {
-  @apply absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors;
+/* Component styles */
+.card {
+  @apply bg-[var(--color-bg-secondary)] rounded-xl shadow-lg transition-all duration-200;
 }
 
-.password-requirements {
-  @apply text-sm text-[var(--color-text-secondary)] mt-1;
+.input {
+  @apply bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500;
 }
 
-/* Form section styling */
-.form-section {
-  @apply space-y-6;
+.button {
+  @apply px-4 py-2 rounded-lg transition-colors duration-200;
 }
 
-.form-group {
-  @apply space-y-4;
+.button-primary {
+  @apply bg-indigo-600 hover:bg-indigo-700 text-white;
 }
 
-/* Alert styles */
-.alert {
-  @apply p-4 rounded-lg mb-6;
-}
-
-.alert-success {
-  @apply bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200;
-}
-
-.alert-error {
-  @apply bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200;
-}
-
-.alert-warning {
-  @apply bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200;
-}
-
-.alert-info {
-  @apply bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200;
+.button-secondary {
+  @apply bg-[var(--color-bg-secondary)] hover:bg-[var(--color-border)] text-[var(--color-text-primary)];
 }
