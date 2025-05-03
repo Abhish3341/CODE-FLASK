@@ -33,13 +33,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  // Check for existing token on mount
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (token) {
       try {
         const decoded = jwtDecode<DecodedToken>(token);
-        // Check if token is expired
         if (decoded.exp * 1000 < Date.now()) {
           localStorage.removeItem('auth_token');
           setUser(null);
@@ -80,7 +78,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       navigate("/login");
     } finally {
-      setLoading(false);
+      // Add a small delay to show loading state
+      setTimeout(() => setLoading(false), 500);
     }
   };
 
@@ -88,8 +87,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     localStorage.removeItem('auth_token');
     setUser(null);
-    navigate("/");
-    setLoading(false);
+    // Add a small delay to show loading state
+    setTimeout(() => {
+      navigate("/");
+      setLoading(false);
+    }, 500);
   };
 
   if (loading) {

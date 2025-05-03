@@ -92,7 +92,7 @@ const Login = () => {
     if (isLoading) return;
 
     const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/github-callback`;
+    const redirectUri = `${window.location.origin}/auth/github/callback`;
     const scope = 'read:user user:email';
     
     const state = crypto.randomUUID();

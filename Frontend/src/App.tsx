@@ -5,6 +5,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import AppLayout from "./layouts/AppLayout";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
+import GitHubCallback from "./components/GitHubCallback";
 import Dashboard from "./pages/Dashboard";
 import Features from "./pages/Features";
 import About from "./pages/About";
@@ -41,6 +42,7 @@ function App() {
               <Route path="/features" element={<Features />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/auth/github/callback" element={<GitHubCallback />} />
              
               {/* Protected Routes */}
               <Route element={<PrivateRoute />}>

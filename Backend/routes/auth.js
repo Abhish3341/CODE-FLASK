@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/Users");
 const auth = require('../middleware/authMiddleware');
+const axios = require('axios');
 const router = express.Router();
 
 // Rate limiting for password changes
@@ -32,24 +33,26 @@ router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
-        // Find user by email
         const user = await User.findOne({ email });
         
-        // If user doesn't exist, return registration message
         if (!user) {
             return res.status(401).json({
                 error: "You are not registered. Please register first."
             });
         }
 
-        // Check if user registered through Google
         if (user.googleId) {
             return res.status(401).json({
                 error: "This email is registered with Google. Please use Google Sign In."
             });
         }
 
-        // Verify password
+        if (user.githubId) {
+            return res.status(401).json({
+                error: "This email is registered with GitHub. Please use GitHub Sign In."
+            });
+        }
+
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({
@@ -57,7 +60,6 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        // Generate JWT token
         const token = jwt.sign(
             { 
                 id: user._id, 
@@ -69,7 +71,6 @@ router.post('/login', async (req, res) => {
             { expiresIn: '1h' }
         );
 
-        // Return user data and token
         res.json({
             user: {
                 id: user._id,
@@ -93,10 +94,9 @@ router.post('/change-password', auth, async (req, res) => {
         const { currentPassword, newPassword } = req.body;
         const userId = req.user.id;
 
-        // Rate limiting check
         const now = Date.now();
         const userAttempts = passwordChangeAttempts.get(userId) || [];
-        const recentAttempts = userAttempts.filter(timestamp => now - timestamp < 3600000); // Last hour
+        const recentAttempts = userAttempts.filter(timestamp => now - timestamp < 3600000);
 
         if (recentAttempts.length >= 3) {
             return res.status(429).json({
@@ -104,28 +104,23 @@ router.post('/change-password', auth, async (req, res) => {
             });
         }
 
-        // Update attempts
         passwordChangeAttempts.set(userId, [...recentAttempts, now]);
 
-        // Get user
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Verify current password
         const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
         if (!isCurrentPasswordValid) {
             return res.status(401).json({ error: "Current password is incorrect" });
         }
 
-        // Check password strength
         const passwordErrors = checkPasswordStrength(newPassword);
         if (passwordErrors.length > 0) {
             return res.status(400).json({ errors: passwordErrors });
         }
 
-        // Check if new password matches any of the last 3 passwords
         if (user.previousPasswords) {
             for (const oldHash of user.previousPasswords.slice(-3)) {
                 const matches = await bcrypt.compare(newPassword, oldHash);
@@ -137,10 +132,8 @@ router.post('/change-password', auth, async (req, res) => {
             }
         }
 
-        // Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        // Update user's password and password history
         user.previousPasswords = user.previousPasswords || [];
         user.previousPasswords.push(user.password);
         if (user.previousPasswords.length > 5) {
@@ -161,13 +154,11 @@ router.post('/register', async (req, res) => {
     try {
         const { firstname, lastname, email, password } = req.body;
 
-        // Check password strength
         const passwordErrors = checkPasswordStrength(password);
         if (passwordErrors.length > 0) {
             return res.status(400).json({ errors: passwordErrors });
         }
 
-        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             if (existingUser.googleId) {
@@ -175,15 +166,18 @@ router.post('/register', async (req, res) => {
                     error: "This email is already registered with Google. Please use Google Sign In."
                 });
             }
+            if (existingUser.githubId) {
+                return res.status(400).json({ 
+                    error: "This email is already registered with GitHub. Please use GitHub Sign In."
+                });
+            }
             return res.status(400).json({ 
                 error: "Email already registered. Please login or use a different email."
             });
         }
 
-        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create new user
         const user = await User.create({
             firstname,
             lastname,
@@ -196,7 +190,6 @@ router.post('/register', async (req, res) => {
             previousPasswords: [hashedPassword]
         });
 
-        // Generate JWT token
         const token = jwt.sign(
             { 
                 id: user._id, 
@@ -208,7 +201,6 @@ router.post('/register', async (req, res) => {
             { expiresIn: '1h' }
         );
 
-        // Return user data (excluding password) and token
         const userResponse = {
             id: user._id,
             firstname: user.firstname,
@@ -227,12 +219,123 @@ router.post('/register', async (req, res) => {
     }
 });
 
+// GitHub OAuth callback
+router.post('/github/callback', async (req, res) => {
+    try {
+        const { code } = req.body;
+        
+        if (!code) {
+            return res.status(400).json({ error: 'Authorization code is required' });
+        }
+
+        // Exchange code for access token
+        const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
+            client_id: process.env.GITHUB_CLIENT_ID,
+            client_secret: process.env.GITHUB_CLIENT_SECRET,
+            code
+        }, {
+            headers: {
+                Accept: 'application/json'
+            }
+        });
+
+        if (!tokenResponse.data.access_token) {
+            console.error('GitHub token response:', tokenResponse.data);
+            return res.status(400).json({ error: 'Failed to obtain access token' });
+        }
+
+        const accessToken = tokenResponse.data.access_token;
+
+        // Get user data from GitHub
+        const [userResponse, emailsResponse] = await Promise.all([
+            axios.get('https://api.github.com/user', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            }),
+            axios.get('https://api.github.com/user/emails', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
+        ]);
+
+        const primaryEmail = emailsResponse.data.find(email => email.primary)?.email;
+
+        if (!primaryEmail) {
+            return res.status(400).json({ error: 'No primary email found in GitHub account' });
+        }
+
+        let user = await User.findOne({ email: primaryEmail });
+
+        if (user) {
+            // Update existing user's GitHub info
+            user.githubId = userResponse.data.id.toString();
+            user.githubUsername = userResponse.data.login;
+            user.githubAccessToken = accessToken;
+            if (!user.picture && userResponse.data.avatar_url) {
+                user.picture = userResponse.data.avatar_url;
+            }
+            await user.save();
+        } else {
+            // Create new user
+            const randomPassword = Math.random().toString(36).slice(-8);
+            const hashedPassword = await bcrypt.hash(randomPassword, 10);
+            
+            user = await User.create({
+                firstname: userResponse.data.name ? userResponse.data.name.split(' ')[0] : userResponse.data.login,
+                lastname: userResponse.data.name ? userResponse.data.name.split(' ').slice(1).join(' ') : '',
+                email: primaryEmail,
+                password: hashedPassword,
+                previousPasswords: [hashedPassword],
+                picture: userResponse.data.avatar_url,
+                githubId: userResponse.data.id.toString(),
+                githubUsername: userResponse.data.login,
+                githubAccessToken: accessToken,
+                isFirstLogin: true,
+                profileUpdates: {
+                    count: 0
+                }
+            });
+        }
+
+        const token = jwt.sign(
+            { 
+                id: user._id,
+                email: user.email,
+                firstname: user.firstname,
+                lastname: user.lastname
+            },
+            process.env.SECRET_KEY,
+            { expiresIn: '1h' }
+        );
+
+        res.json({
+            user: {
+                id: user._id,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+                picture: user.picture || '',
+                isFirstLogin: user.isFirstLogin
+            },
+            token
+        });
+    } catch (error) {
+        console.error('GitHub OAuth error:', error);
+        const errorMessage = error.response?.data?.message || error.message;
+        res.status(500).json({ 
+            error: "Failed to authenticate with GitHub",
+            details: errorMessage
+        });
+    }
+});
+
 // Google OAuth Route
 router.post('/google', async (req, res) => {
     try {
         const { email, given_name, family_name, picture, sub } = req.body;
 
-        // Validate required fields
         if (!email || !given_name || !family_name) {
             return res.status(400).json({ 
                 error: "Missing required fields",
@@ -240,74 +343,52 @@ router.post('/google', async (req, res) => {
             });
         }
 
-        // Check if user already exists with this email
-        const existingUser = await User.findOne({ email });
+        let user = await User.findOne({ email });
 
-        if (existingUser) {
-            // Check if the user was originally registered with Google
-            if (!existingUser.googleId) {
-                return res.status(400).json({
-                    error: "This email is already registered. Please login with email and password instead of Google Sign In."
-                });
+        if (user) {
+            if (!user.googleId) {
+                user.googleId = sub;
+                user.picture = picture || user.picture;
+                await user.save();
             }
-
-            const token = jwt.sign(
-                { 
-                    id: existingUser._id, 
-                    email: existingUser.email,
-                    firstname: existingUser.firstname,
-                    lastname: existingUser.lastname
-                },
-                process.env.SECRET_KEY,
-                { expiresIn: '1h' }
-            );
-
-            return res.json({
-                user: {
-                    id: existingUser._id,
-                    firstname: existingUser.firstname,
-                    lastname: existingUser.lastname,
-                    email: existingUser.email,
-                    picture: existingUser.picture || '',
-                    isFirstLogin: existingUser.isFirstLogin
-                },
-                token
+        } else {
+            const randomPassword = Math.random().toString(36).slice(-8);
+            const hashedPassword = await bcrypt.hash(randomPassword, 10);
+            
+            user = await User.create({
+                firstname: given_name,
+                lastname: family_name,
+                email: email,
+                password: hashedPassword,
+                previousPasswords: [hashedPassword],
+                picture: picture || '',
+                googleId: sub,
+                isFirstLogin: true,
+                profileUpdates: {
+                    count: 0
+                }
             });
         }
 
-        // Create new user for Google OAuth
-        const newUser = await User.create({
-            firstname: given_name,
-            lastname: family_name,
-            email: email,
-            picture: picture || '',
-            googleId: sub,
-            password: await bcrypt.hash(Math.random().toString(36), 10),
-            isFirstLogin: true,
-            profileUpdates: {
-                count: 0
-            }
-        });
-
         const token = jwt.sign(
             { 
-                id: newUser._id, 
-                email: newUser.email,
-                firstname: newUser.firstname,
-                lastname: newUser.lastname
+                id: user._id,
+                email: user.email,
+                firstname: user.firstname,
+                lastname: user.lastname
             },
             process.env.SECRET_KEY,
             { expiresIn: '1h' }
         );
 
-        res.status(201).json({
+        res.json({
             user: {
-                id: newUser._id,
-                firstname: newUser.firstname,
-                lastname: newUser.lastname,
-                email: newUser.email,
-                picture: newUser.picture || '',
-                isFirstLogin: true
+                id: user._id,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+                picture: user.picture || '',
+                isFirstLogin: user.isFirstLogin
             },
             token
         });
@@ -317,109 +398,6 @@ router.post('/google', async (req, res) => {
             error: "Internal server error",
             details: error.message 
         });
-    }
-});
-
-// Update user profile
-router.put('/profile', auth, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
-
-        const { firstname, lastname, email } = req.body;
-
-        // For first update after registration
-        if (user.isFirstLogin) {
-            user.firstname = firstname;
-            user.lastname = lastname;
-            user.email = email;
-            user.isFirstLogin = false;
-            user.profileUpdates.count = 0;
-            await user.save();
-
-            const token = jwt.sign(
-                { id: user._id, email: user.email, firstname: user.firstname, lastname: user.lastname },
-                process.env.SECRET_KEY,
-                { expiresIn: '1h' }
-            );
-
-            return res.json({
-                message: "Profile updated successfully",
-                user: {
-                    firstname: user.firstname,
-                    lastname: user.lastname,
-                    email: user.email,
-                    isFirstLogin: false
-                },
-                token
-            });
-        }
-
-        // Check update limit for subsequent updates
-        if (user.profileUpdates.count >= 3) {
-            return res.status(403).json({
-                error: "You have reached the maximum number of profile updates"
-            });
-        }
-
-        // Update profile
-        user.firstname = firstname;
-        user.lastname = lastname;
-        user.email = email;
-        user.profileUpdates.count += 1;
-        user.profileUpdates.lastUpdate = new Date();
-        await user.save();
-
-        // Generate new token with updated info
-        const token = jwt.sign(
-            { id: user._id, email: user.email, firstname: user.firstname, lastname: user.lastname },
-            process.env.SECRET_KEY,
-            { expiresIn: '1h' }
-        );
-
-        res.json({
-            message: "Profile updated successfully",
-            user: {
-                firstname: user.firstname,
-                lastname: user.lastname,
-                email: user.email,
-                isFirstLogin: false
-            },
-            remainingUpdates: 3 - user.profileUpdates.count,
-            token
-        });
-
-    } catch (error) {
-        console.error('Profile update error:', error);
-        res.status(500).json({ error: "Failed to update profile" });
-    }
-});
-
-// Get user profile
-router.get('/profile', auth, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select('-password');
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
-
-        res.json({
-            user: {
-                firstname: user.firstname,
-                lastname: user.lastname,
-                email: user.email,
-                isFirstLogin: user.isFirstLogin,
-                profileUpdates: {
-                    count: user.profileUpdates.count,
-                    remaining: 3 - user.profileUpdates.count
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Profile fetch error:', error);
-        res.status(500).json({ error: "Failed to fetch profile" });
     }
 });
 

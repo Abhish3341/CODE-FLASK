@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         sparse: true,
     },
+    githubId: {
+        type: String,
+        sparse: true,
+    },
+    githubUsername: String,
+    githubAccessToken: String,
     resetToken: String,
     resetTokenExpiry: Date,
     profileUpdates: {

@@ -6,8 +6,7 @@ const connectDB = async () => {
         mongoose.set('strictQuery', false);
 
         const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/codeflask', {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
+            
             serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
             family: 4 // Use IPv4, skip trying IPv6
         });
