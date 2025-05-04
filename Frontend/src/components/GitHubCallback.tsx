@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosConfig';
 import { useAuth } from '../context/AuthContext';
@@ -9,44 +9,47 @@ const GitHubCallback = () => {
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hasHandled = useRef(false); // 🔒 prevents double execution in dev
 
   useEffect(() => {
     const handleGitHubCallback = async () => {
+      if (hasHandled.current) return; // 👈 Prevent re-run in dev
+      hasHandled.current = true;
+
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
-        const state = urlParams.get('state');
-        
+        const incomingState = urlParams.get('state');
+
         const savedState = sessionStorage.getItem('github_oauth_state');
         sessionStorage.removeItem('github_oauth_state');
 
         if (!code) {
-          setError('No authorization code found');
-          setIsLoading(false);
-          return;
+          throw new Error('No authorization code received');
         }
 
-        if (state !== savedState) {
-          console.warn('State mismatch, proceeding with caution');
+        if (!savedState || !incomingState || savedState !== incomingState) {
+          throw new Error('State validation failed - please try again');
         }
 
+        const redirectUri = `${window.location.origin}/auth/github/callback`;
         const response = await axiosInstance.post('/api/auth/github/callback', { 
           code,
-          redirectUri: window.location.origin + '/auth/github/callback'
+          redirectUri
         });
-        
-        if (response.data.token) {
-          localStorage.setItem('auth_token', response.data.token);
-          await login(response.data.user);
-          navigate('/app');
-        } else {
+
+        if (!response.data?.token || !response.data?.user) {
           throw new Error('Invalid response from server');
         }
+
+        localStorage.setItem('auth_token', response.data.token);
+        await login(response.data.user);
+        navigate('/app', { replace: true });
       } catch (error: any) {
-        const errorMessage = error.response?.data?.error || 'Failed to authenticate with GitHub';
-        setError(errorMessage);
-        setIsLoading(false);
         console.error('GitHub auth error:', error);
+        setError(error.message || 'Authentication failed');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -60,12 +63,12 @@ const GitHubCallback = () => {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
-        <div className="card p-8">
-          <h2 className="text-xl font-semibold text-red-500 mb-4">Authentication Error</h2>
-          <p className="text-[var(--color-text-secondary)]">{error}</p>
+        <div className="card p-8 max-w-md w-full text-center">
+          <h2 className="text-xl font-semibold text-red-500 mb-4">Authentication Failed</h2>
+          <p className="text-[var(--color-text-secondary)] mb-6">{error}</p>
           <button
-            onClick={() => navigate('/login')}
-            className="mt-4 button button-primary"
+            onClick={() => navigate('/login', { replace: true })}
+            className="button button-primary w-full"
           >
             Return to Login
           </button>
@@ -79,7 +82,7 @@ const GitHubCallback = () => {
       <div className="card p-8">
         <div className="flex items-center gap-4">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-          <p className="text-[var(--color-text-primary)]">Authenticating with GitHub...</p>
+          <p className="text-[var(--color-text-primary)]">Completing authentication...</p>
         </div>
       </div>
     </div>

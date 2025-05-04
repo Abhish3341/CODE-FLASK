@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Github, Eye, EyeOff } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
@@ -44,7 +44,7 @@ const Login = () => {
         throw new Error('Invalid response from server');
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.message || 'An error occurred. Please try again.';
+      const errorMessage = error.response?.data?.error || error.message || 'Authentication failed';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -82,26 +82,41 @@ const Login = () => {
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || error.message || 'Failed to authenticate with Google';
       setError(errorMessage);
-      console.error('Google auth error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGithubLogin = () => {
+  const handleGithubLogin = useCallback(() => {
     if (isLoading) return;
 
-    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/auth/github/callback`;
-    const scope = 'read:user user:email';
-    
-    const state = crypto.randomUUID();
-    sessionStorage.setItem('github_oauth_state', state);
-    
-    const githubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
-    
-    window.location.href = githubUrl;
-  };
+    try {
+      sessionStorage.removeItem('github_oauth_state');
+      
+      const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+      if (!clientId) {
+        throw new Error('GitHub client ID not configured');
+      }
+
+      const redirectUri = `${window.location.origin}/auth/github/callback`;
+      const scope = 'read:user user:email';
+      const state = crypto.randomUUID();
+      
+      sessionStorage.setItem('github_oauth_state', state);
+      
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope,
+        state,
+        allow_signup: 'true'
+      });
+
+      window.location.href = `https://github.com/login/oauth/authorize?${params}`;
+    } catch (error: any) {
+      setError(error.message || 'Failed to initialize GitHub login');
+    }
+  }, [isLoading]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);

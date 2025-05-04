@@ -221,114 +221,115 @@ router.post('/register', async (req, res) => {
 
 // GitHub OAuth callback
 router.post('/github/callback', async (req, res) => {
-    try {
-        const { code } = req.body;
-        
-        if (!code) {
-            return res.status(400).json({ error: 'Authorization code is required' });
-        }
-
-        // Exchange code for access token
-        const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
-            client_id: process.env.GITHUB_CLIENT_ID,
-            client_secret: process.env.GITHUB_CLIENT_SECRET,
-            code
-        }, {
-            headers: {
-                Accept: 'application/json'
-            }
-        });
-
-        if (!tokenResponse.data.access_token) {
-            console.error('GitHub token response:', tokenResponse.data);
-            return res.status(400).json({ error: 'Failed to obtain access token' });
-        }
-
-        const accessToken = tokenResponse.data.access_token;
-
-        // Get user data from GitHub
-        const [userResponse, emailsResponse] = await Promise.all([
-            axios.get('https://api.github.com/user', {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            }),
-            axios.get('https://api.github.com/user/emails', {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            })
-        ]);
-
-        const primaryEmail = emailsResponse.data.find(email => email.primary)?.email;
-
-        if (!primaryEmail) {
-            return res.status(400).json({ error: 'No primary email found in GitHub account' });
-        }
-
-        let user = await User.findOne({ email: primaryEmail });
-
-        if (user) {
-            // Update existing user's GitHub info
-            user.githubId = userResponse.data.id.toString();
-            user.githubUsername = userResponse.data.login;
-            user.githubAccessToken = accessToken;
-            if (!user.picture && userResponse.data.avatar_url) {
-                user.picture = userResponse.data.avatar_url;
-            }
-            await user.save();
-        } else {
-            // Create new user
-            const randomPassword = Math.random().toString(36).slice(-8);
-            const hashedPassword = await bcrypt.hash(randomPassword, 10);
-            
-            user = await User.create({
-                firstname: userResponse.data.name ? userResponse.data.name.split(' ')[0] : userResponse.data.login,
-                lastname: userResponse.data.name ? userResponse.data.name.split(' ').slice(1).join(' ') : '',
-                email: primaryEmail,
-                password: hashedPassword,
-                previousPasswords: [hashedPassword],
-                picture: userResponse.data.avatar_url,
-                githubId: userResponse.data.id.toString(),
-                githubUsername: userResponse.data.login,
-                githubAccessToken: accessToken,
-                isFirstLogin: true,
-                profileUpdates: {
-                    count: 0
-                }
-            });
-        }
-
-        const token = jwt.sign(
-            { 
-                id: user._id,
-                email: user.email,
-                firstname: user.firstname,
-                lastname: user.lastname
-            },
-            process.env.SECRET_KEY,
-            { expiresIn: '1h' }
-        );
-
-        res.json({
-            user: {
-                id: user._id,
-                firstname: user.firstname,
-                lastname: user.lastname,
-                email: user.email,
-                picture: user.picture || '',
-                isFirstLogin: user.isFirstLogin
-            },
-            token
-        });
-    } catch (error) {
-        console.error('GitHub OAuth error:', error);
-        const errorMessage = error.response?.data?.message || error.message;
-        res.status(500).json({ 
-            error: "Failed to authenticate with GitHub",
-            details: errorMessage
-        });
+  try {
+    const { code, redirectUri } = req.body;
+    
+    if (!code) {
+      return res.status(400).json({ error: 'Authorization code is required' });
     }
+
+    // Exchange code for access token
+    const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
+      client_id: process.env.GITHUB_CLIENT_ID,
+      client_secret: process.env.GITHUB_CLIENT_SECRET,
+      code,
+      redirect_uri: redirectUri
+    }, {
+      headers: {
+        Accept: 'application/json'
+      }
+    });
+
+    if (!tokenResponse.data.access_token) {
+      console.error('GitHub token response:', tokenResponse.data);
+      return res.status(400).json({ error: 'Failed to obtain access token' });
+    }
+
+    const accessToken = tokenResponse.data.access_token;
+
+    // Get user data from GitHub
+    const [userResponse, emailsResponse] = await Promise.all([
+      axios.get('https://api.github.com/user', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      }),
+      axios.get('https://api.github.com/user/emails', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
+    ]);
+
+    const primaryEmail = emailsResponse.data.find(email => email.primary)?.email;
+
+    if (!primaryEmail) {
+      return res.status(400).json({ error: 'No primary email found in GitHub account' });
+    }
+
+    let user = await User.findOne({ email: primaryEmail });
+
+    if (user) {
+      // Update existing user's GitHub info
+      user.githubId = userResponse.data.id.toString();
+      user.githubUsername = userResponse.data.login;
+      user.githubAccessToken = accessToken;
+      if (!user.picture && userResponse.data.avatar_url) {
+        user.picture = userResponse.data.avatar_url;
+      }
+      await user.save();
+    } else {
+      // Create new user
+      const randomPassword = Math.random().toString(36).slice(-8);
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      
+      user = await User.create({
+        firstname: userResponse.data.name ? userResponse.data.name.split(' ')[0] : userResponse.data.login,
+        lastname: userResponse.data.name ? userResponse.data.name.split(' ').slice(1).join(' ') : '',
+        email: primaryEmail,
+        password: hashedPassword,
+        previousPasswords: [hashedPassword],
+        picture: userResponse.data.avatar_url,
+        githubId: userResponse.data.id.toString(),
+        githubUsername: userResponse.data.login,
+        githubAccessToken: accessToken,
+        isFirstLogin: true,
+        profileUpdates: {
+          count: 0
+        }
+      });
+    }
+
+    const token = jwt.sign(
+      { 
+        id: user._id,
+        email: user.email,
+        firstname: user.firstname,
+        lastname: user.lastname
+      },
+      process.env.SECRET_KEY,
+      { expiresIn: '1h' }
+    );
+
+    res.json({
+      user: {
+        id: user._id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        picture: user.picture || '',
+        isFirstLogin: user.isFirstLogin
+      },
+      token
+    });
+  } catch (error) {
+    console.error('GitHub OAuth error:', error);
+    const errorMessage = error.response?.data?.message || error.message;
+    res.status(500).json({ 
+      error: "Failed to authenticate with GitHub",
+      details: errorMessage
+    });
+  }
 });
 
 // Google OAuth Route

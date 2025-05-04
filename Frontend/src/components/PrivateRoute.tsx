@@ -1,16 +1,25 @@
-import React from 'react';
+
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const PrivateRoute = () => {
-  const { user } = useAuth();
-  
-  // Check if user is authenticated
+  const { user, loading } = useAuth();
+
+  // Wait until auth check is complete
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  // If not authenticated, redirect to login
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // If authenticated, render child routes
+  // Authenticated: render protected route
   return <Outlet />;
 };
 
