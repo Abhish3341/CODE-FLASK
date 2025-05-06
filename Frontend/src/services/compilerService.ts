@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 const COMPILER_API_URL = `${BACKEND_URL}/api/compiler/submit`;
+const SUBMISSIONS_API_URL = `${BACKEND_URL}/api/submissions`;
 
 interface CompileRequest {
   language: string;
@@ -14,46 +15,62 @@ interface CompileResponse {
   output: string;
   error?: string;
   executionTime?: number;
+  memoryUsed?: number;
 }
 
 export const compileCode = async (request: CompileRequest): Promise<CompileResponse> => {
   try {
     const token = localStorage.getItem('auth_token');
-    const response = await axios.post(COMPILER_API_URL, {
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    if (!request.code || !request.language || !request.problemId) {
+      throw new Error('Missing required fields');
+    }
+
+    // First compile the code
+    const compileResponse = await axios.post(COMPILER_API_URL, {
       language: request.language,
       code: request.code,
-      input: request.input || '',
-      problemId: request.problemId
+      input: request.input || ''
     }, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
-      timeout: 10000 // 10 second timeout
+      }
     });
 
+    // If compilation successful, create submission
+    if (compileResponse.data.success) {
+      await axios.post(SUBMISSIONS_API_URL, {
+        code: request.code,
+        language: request.language,
+        problemId: request.problemId,
+        output: compileResponse.data.output,
+        executionTime: compileResponse.data.executionTime,
+        memoryUsed: compileResponse.data.memoryUsed
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    }
+
     return {
-      output: response.data.output,
-      executionTime: response.data.executionTime
+      output: compileResponse.data.output,
+      executionTime: compileResponse.data.executionTime,
+      memoryUsed: compileResponse.data.memoryUsed
     };
   } catch (error: any) {
     console.error('Compilation error:', error);
     if (error.response) {
-      // Server responded with error
-      return {
-        output: '',
-        error: error.response.data.error || 'Server error occurred'
-      };
+      throw new Error(error.response.data.error || 'Server error occurred');
     } else if (error.code === 'ECONNABORTED') {
-      return {
-        output: '',
-        error: 'Request timed out. Please try again.'
-      };
+      throw new Error('Request timed out. Please try again.');
     } else {
-      return {
-        output: '',
-        error: 'Failed to connect to compilation service'
-      };
+      throw new Error(error.message || 'Failed to connect to compilation service');
     }
   }
 };

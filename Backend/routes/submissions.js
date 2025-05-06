@@ -3,6 +3,7 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const Submission = require('../models/Submission');
 
+// Get all submissions for a user
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const submissions = await Submission.find({ 
@@ -28,6 +29,35 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 });
 
+// Submit code
+router.post('/', authMiddleware, async (req, res) => {
+    try {
+        const { code, language, problemId, output, executionTime, memoryUsed } = req.body;
+
+        if (!code || !language || !problemId) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const submission = await Submission.create({
+            userId: req.user.id,
+            problemId,
+            code,
+            language,
+            status: 'completed',
+            output,
+            executionTime,
+            memoryUsed,
+            submittedAt: new Date()
+        });
+
+        res.status(201).json(submission);
+    } catch (error) {
+        console.error('Error creating submission:', error);
+        res.status(500).json({ error: 'Failed to create submission' });
+    }
+});
+
+// Get specific submission
 router.get('/:id', authMiddleware, async (req, res) => {
     try {
         const submission = await Submission.findOne({
@@ -45,7 +75,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
             code: submission.code,
             language: submission.language,
             status: submission.status,
-            results: submission.results,
+            output: submission.output,
             executionTime: submission.executionTime,
             memoryUsed: submission.memoryUsed,
             submittedAt: submission.submittedAt

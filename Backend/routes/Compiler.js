@@ -1,28 +1,47 @@
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
 const authMiddleware = require('../middleware/authMiddleware');
 
 router.post('/submit', authMiddleware, async (req, res) => {
   try {
     const { code, language, input } = req.body;
-    
-    // Validate required fields
+
     if (!code || !language) {
       return res.status(400).json({ error: 'Code and language are required fields' });
     }
 
-    // For now, just return the input as output (mock implementation)
-    const result = {
-      success: true,
-      output: input || 'No input provided',
-      executionTime: 100, // mock execution time in ms
-      memoryUsed: 1024 // mock memory usage in KB
+    // Map your language ID to Piston-supported language names
+    const languageMap = {
+      cpp: 'cpp',
+      python: 'python3',
+      javascript: 'javascript',
+      java: 'java'
     };
 
-    res.json(result);
+    const pistonLang = languageMap[language.toLowerCase()];
+    if (!pistonLang) {
+      return res.status(400).json({ error: 'Unsupported language' });
+    }
+
+    const response = await axios.post('https://emkc.org/api/v2/piston/execute', {
+      language: pistonLang,
+      source: code,
+      stdin: input || ''
+    });
+
+    const output = response.data.output || '';
+    const executionTime = response.data?.runtime || 0;
+
+    res.json({
+      success: true,
+      output,
+      executionTime,
+      memoryUsed: null // Piston doesn't return this
+    });
   } catch (error) {
     console.error('Compilation error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Failed to compile/execute code' });
   }
 });
 

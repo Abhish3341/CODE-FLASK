@@ -21,6 +21,10 @@ const problemSchema = new mongoose.Schema({
   totalSubmissions: {
     type: Number,
     default: 0
+  },
+  version: {  // <-- New version field
+    type: String, 
+    required: true 
   }
 }, {
   timestamps: true

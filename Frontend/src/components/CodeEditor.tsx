@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { Play, Save, Code2, Maximize2, Minimize2 } from 'lucide-react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
@@ -7,12 +7,21 @@ import { compileCode, getDefaultCode, getSupportedLanguages } from '../services/
 interface CodeEditorProps {
   initialCode?: string;
   language?: string;
-  onSubmit?: (result: { output: string; error?: string }) => void;
+  problemId?: string;
+  onSubmit?: (result: {
+    code: string;
+    language: string;
+    output: string;
+    error?: string;
+    executionTime?: number;
+    memoryUsed?: number;
+  }) => void;
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
   initialCode,
   language: initialLanguage = 'cpp',
+  problemId,
   onSubmit
 }) => {
   const [code, setCode] = useState(initialCode || getDefaultCode(initialLanguage));
@@ -35,6 +44,11 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       return;
     }
 
+    if (!problemId) {
+      setError('Problem ID is required');
+      return;
+    }
+
     setIsCompiling(true);
     setError(null);
     setOutput('');
@@ -43,7 +57,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       const result = await compileCode({
         code,
         language,
-        input: input.trim()
+        input: input.trim(),
+        problemId
       });
 
       if (result.error) {
@@ -53,7 +68,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       }
 
       if (onSubmit) {
-        onSubmit(result);
+        onSubmit({
+          code,
+          language,
+          output: result.output,
+          error: result.error,
+          executionTime: result.executionTime,
+          memoryUsed: result.memoryUsed
+        });
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'An error occurred while compiling the code');

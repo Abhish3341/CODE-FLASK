@@ -29,9 +29,9 @@ const ProblemView = () => {
   useEffect(() => {
     const fetchProblem = async () => {
       try {
-        // For now, let's hardcode the Two Sum problem
+        // Temporary hardcoded problem
         setProblem({
-          id: '1',
+          id: id || '1',
           title: 'Two Sum',
           description: `Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
 
@@ -40,9 +40,9 @@ You may assume that each input would have exactly one solution, and you may not 
 You can return the answer in any order.`,
           difficulty: 'Easy',
           category: 'Arrays',
-          constraints: `• 2 <= nums.length <= 104
-• -109 <= nums[i] <= 109
-• -109 <= target <= 109
+          constraints: `• 2 <= nums.length <= 10^4
+• -10^9 <= nums[i] <= 10^9
+• -10^9 <= target <= 10^9
 • Only one valid answer exists.`,
           examples: [
             {
@@ -71,7 +71,14 @@ You can return the answer in any order.`,
     fetchProblem();
   }, [id]);
 
-  const handleSubmit = async (result: { output: string; error?: string }) => {
+  const handleSubmit = async (result: {
+    code: string;
+    language: string;
+    output: string;
+    executionTime?: number;
+    memoryUsed?: number;
+    error?: string;
+  }) => {
     if (result.error) {
       setError(result.error);
       return;
@@ -83,9 +90,12 @@ You can return the answer in any order.`,
     try {
       await axiosInstance.post('/api/submissions', {
         problemId: id,
-        output: result.output
+        code: result.code,
+        language: result.language,
+        output: result.output,
+        executionTime: result.executionTime,
+        memoryUsed: result.memoryUsed
       });
-      // Handle successful submission
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to submit solution');
     } finally {
@@ -203,7 +213,10 @@ You can return the answer in any order.`,
 
       {/* Code Editor */}
       <div className="w-1/2">
-        <CodeEditor onSubmit={handleSubmit} />
+        <CodeEditor 
+          problemId={problem.id} 
+          onSubmit={handleSubmit}
+        />
       </div>
     </div>
   );
