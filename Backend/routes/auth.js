@@ -28,6 +28,88 @@ const checkPasswordStrength = (password) => {
   return errors;
 };
 
+// Get user profile
+router.get('/profile', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password -previousPasswords');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ user });
+  } catch (error) {
+    console.error('Profile fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+});
+
+// Update user profile
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { firstname, lastname, email } = req.body;
+    const userId = req.user.id;
+
+    // Find user and check if it exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if email is already taken by another user
+    if (email !== user.email) {
+      const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({ error: 'Email is already in use' });
+      }
+    }
+
+    // Update user profile
+    user.firstname = firstname;
+    user.lastname = lastname;
+    user.email = email;
+
+    // Increment profile updates count if not first login
+    if (!user.isFirstLogin) {
+      user.profileUpdates.count = (user.profileUpdates.count || 0) + 1;
+      user.profileUpdates.lastUpdate = new Date();
+    } else {
+      user.isFirstLogin = false;
+    }
+
+    await user.save();
+
+    // Generate new token with updated information
+    const token = jwt.sign(
+      { 
+        id: user._id,
+        email: user.email,
+        firstname: user.firstname,
+        lastname: user.lastname
+      },
+      process.env.SECRET_KEY,
+      { expiresIn: '1h' }
+    );
+
+    res.json({
+      user: {
+        id: user._id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        isFirstLogin: user.isFirstLogin,
+        profileUpdates: {
+          count: user.profileUpdates.count,
+          lastUpdate: user.profileUpdates.lastUpdate
+        }
+      },
+      token,
+      remainingUpdates: 3 - (user.profileUpdates.count || 0)
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
 // User Login Route
 router.post('/login', async (req, res) => {
     try {

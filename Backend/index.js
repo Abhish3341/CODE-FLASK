@@ -25,7 +25,7 @@ app.use('/api/submissions', require('./routes/submissions'));
 app.use('/api/compiler', require('./routes/compiler'));
 
 // 404 handler
-app.get('*', (req, res) => {
+app.use('*', (req, res) => {
     console.log('404 for path:', req.path);
     res.status(404).json({ error: `Route ${req.path} not found` });
 });
