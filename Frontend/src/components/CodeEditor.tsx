@@ -30,15 +30,20 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   const handleRun = async () => {
+    if (!code.trim()) {
+      setError('Please enter some code');
+      return;
+    }
+
     setIsCompiling(true);
     setError(null);
     setOutput('');
 
     try {
       const result = await compileCode({
-        language,
         code,
-        input
+        language,
+        input: input.trim()
       });
 
       if (result.error) {
@@ -50,8 +55,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       if (onSubmit) {
         onSubmit(result);
       }
-    } catch (err) {
-      setError('An error occurred while compiling the code');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'An error occurred while compiling the code');
     } finally {
       setIsCompiling(false);
     }

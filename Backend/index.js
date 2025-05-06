@@ -24,7 +24,7 @@ app.use('/api/problems', require('./routes/problems'));
 app.use('/api/submissions', require('./routes/submissions'));
 app.use('/api/compiler', require('./routes/compiler'));
 
-// 404 handler
+// 404 handler - Changed to app.use to handle all HTTP methods
 app.use('*', (req, res) => {
     console.log('404 for path:', req.path);
     res.status(404).json({ error: `Route ${req.path} not found` });

@@ -1,11 +1,13 @@
 import axios from 'axios';
 
-const COMPILER_API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000/api/compile';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const COMPILER_API_URL = `${BACKEND_URL}/api/compiler/submit`;
 
 interface CompileRequest {
   language: string;
   code: string;
   input?: string;
+  problemId?: string;
 }
 
 interface CompileResponse {
@@ -16,13 +18,16 @@ interface CompileResponse {
 
 export const compileCode = async (request: CompileRequest): Promise<CompileResponse> => {
   try {
+    const token = localStorage.getItem('auth_token');
     const response = await axios.post(COMPILER_API_URL, {
       language: request.language,
       code: request.code,
-      input: request.input || ''
+      input: request.input || '',
+      problemId: request.problemId
     }, {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       timeout: 10000 // 10 second timeout
     });

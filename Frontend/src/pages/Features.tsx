@@ -39,7 +39,7 @@ const Features = () => {
     {
       icon: Layout,
       title: 'Customizable Interface',
-      description: 'Personalize your coding environment with themes, keyboard shortcuts, and layout options that suit your workflow.'
+      description: 'Personalize your coding environment with themes, and layout options that suit your workflow.'
     },
     {
       icon: Code2,
