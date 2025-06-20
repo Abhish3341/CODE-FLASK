@@ -5,6 +5,10 @@ const problemSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  description: {
+    type: String,
+    required: true
+  },
   difficulty: {
     type: String,
     enum: ['Easy', 'Medium', 'Hard'],
@@ -22,9 +26,20 @@ const problemSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  version: {  // <-- New version field
+  version: {
     type: String, 
     required: true 
+  },
+  examples: [{
+    input: String,
+    output: String,
+    explanation: String
+  }],
+  constraints: {
+    type: String
+  },
+  followUp: {
+    type: String
   }
 }, {
   timestamps: true

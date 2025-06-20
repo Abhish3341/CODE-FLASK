@@ -1592,7 +1592,7 @@ async function seedProblems() {
     console.log(`Inserted ${insertedProblems.length} problems`);
 
     await mongoose.disconnect();
-    console.log('Database seeded successfully with 50 problems');
+    console.log('Database seeded successfully with 50 problems including descriptions');
   } catch (error) {
     console.error('Error seeding database:', error);
     process.exit(1);

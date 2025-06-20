@@ -2,25 +2,50 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const Submission = require('../models/Submission');
+const Problem = require('../models/Problems');
 
 // Get all submissions for a user
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const submissions = await Submission.find({ 
             userId: req.user.id 
-        })
-        .sort({ submittedAt: -1 })
-        .populate('problemId', 'title');
+        }).sort({ submittedAt: -1 });
 
-        const formattedSubmissions = submissions.map(submission => ({
-            id: submission._id,
-            problem: submission.problemId.title,
-            status: submission.status,
-            language: submission.language,
-            runtime: submission.executionTime ? `${submission.executionTime}ms` : 'N/A',
-            memory: submission.memoryUsed ? `${submission.memoryUsed}KB` : 'N/A',
-            submittedAt: submission.submittedAt.toISOString()
-        }));
+        const formattedSubmissions = await Promise.all(
+            submissions.map(async (submission) => {
+                let problemTitle = 'Unknown Problem';
+                
+                try {
+                    // Try to find the problem by ObjectId first, then by string ID
+                    let problem = await Problem.findById(submission.problemId);
+                    if (!problem && typeof submission.problemId === 'string') {
+                        // If not found by ObjectId, try finding by string match
+                        problem = await Problem.findOne({ 
+                            $or: [
+                                { _id: submission.problemId },
+                                { title: { $regex: submission.problemId, $options: 'i' } }
+                            ]
+                        });
+                    }
+                    
+                    if (problem) {
+                        problemTitle = problem.title;
+                    }
+                } catch (error) {
+                    console.error('Error finding problem:', error);
+                }
+
+                return {
+                    id: submission._id,
+                    problem: problemTitle,
+                    status: submission.status || 'completed',
+                    language: submission.language,
+                    runtime: submission.executionTime ? `${submission.executionTime}ms` : 'N/A',
+                    memory: submission.memoryUsed ? `${submission.memoryUsed}KB` : 'N/A',
+                    submittedAt: submission.submittedAt.toISOString()
+                };
+            })
+        );
 
         res.json(formattedSubmissions);
     } catch (error) {
@@ -44,13 +69,21 @@ router.post('/', authMiddleware, async (req, res) => {
             code,
             language,
             status: 'completed',
-            output,
+            results: [{
+                output,
+                status: 'completed',
+                executionTime,
+                memoryUsed
+            }],
             executionTime,
             memoryUsed,
             submittedAt: new Date()
         });
 
-        res.status(201).json(submission);
+        res.status(201).json({
+            id: submission._id,
+            message: 'Submission created successfully'
+        });
     } catch (error) {
         console.error('Error creating submission:', error);
         res.status(500).json({ error: 'Failed to create submission' });
@@ -63,19 +96,29 @@ router.get('/:id', authMiddleware, async (req, res) => {
         const submission = await Submission.findOne({
             _id: req.params.id,
             userId: req.user.id
-        }).populate('problemId', 'title');
+        });
 
         if (!submission) {
             return res.status(404).json({ error: 'Submission not found' });
         }
 
+        let problemTitle = 'Unknown Problem';
+        try {
+            const problem = await Problem.findById(submission.problemId);
+            if (problem) {
+                problemTitle = problem.title;
+            }
+        } catch (error) {
+            console.error('Error finding problem for submission:', error);
+        }
+
         res.json({
             id: submission._id,
-            problem: submission.problemId.title,
+            problem: problemTitle,
             code: submission.code,
             language: submission.language,
             status: submission.status,
-            output: submission.output,
+            output: submission.results?.[0]?.output || '',
             executionTime: submission.executionTime,
             memoryUsed: submission.memoryUsed,
             submittedAt: submission.submittedAt

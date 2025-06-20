@@ -7,8 +7,7 @@ const submissionSchema = new mongoose.Schema({
         required: true
     },
     problemId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Problem',
+        type: mongoose.Schema.Types.Mixed, // Allow both ObjectId and String
         required: true
     },
     code: {
@@ -23,7 +22,8 @@ const submissionSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['pending', 'running', 'completed', 'error']
+        enum: ['pending', 'running', 'completed', 'error'],
+        default: 'completed'
     },
     results: [{
         testCase: {
