@@ -1,0 +1,17 @@
+# PowerShell script for seeding database with Docker
+Write-Host "🚀 Starting Docker-based database seeding..." -ForegroundColor Green
+
+# Stop any existing containers
+Write-Host "🛑 Stopping existing containers..." -ForegroundColor Yellow
+docker-compose -f docker-compose.seed.yml down
+
+# Build and run the seed service
+Write-Host "🔨 Building and running seed service..." -ForegroundColor Cyan
+docker-compose -f docker-compose.seed.yml up --build
+
+# Clean up
+Write-Host "🧹 Cleaning up..." -ForegroundColor Magenta
+docker-compose -f docker-compose.seed.yml down
+
+Write-Host "✅ Database seeding completed!" -ForegroundColor Green
+Write-Host "📊 You should now see 50 problems in your application." -ForegroundColor Green

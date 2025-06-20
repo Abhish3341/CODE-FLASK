@@ -1,0 +1,30 @@
+# PowerShell version of wait-for-mongo
+param(
+    [string]$Host,
+    [string[]]$Command
+)
+
+$hostParts = $Host.Split(':')
+$hostname = $hostParts[0]
+$port = [int]$hostParts[1]
+
+Write-Host "Waiting for MongoDB at $hostname`:$port..." -ForegroundColor Yellow
+
+do {
+    try {
+        $connection = New-Object System.Net.Sockets.TcpClient($hostname, $port)
+        $connection.Close()
+        $connected = $true
+        Write-Host "MongoDB is up - executing command" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "MongoDB is unavailable - sleeping" -ForegroundColor Yellow
+        Start-Sleep -Seconds 1
+        $connected = $false
+    }
+} while (-not $connected)
+
+# Execute the command
+if ($Command) {
+    & $Command[0] $Command[1..($Command.Length-1)]
+}

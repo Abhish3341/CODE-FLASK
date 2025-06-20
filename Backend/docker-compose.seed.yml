@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: codeflask-mongodb-seed
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: codeflask
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - codeflask-network
+
+  # Seed Service - Runs once to populate database
+  seed-service:
+    build: 
+      context: .
+      dockerfile: Dockerfile.seed
+    container_name: codeflask-seed
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/codeflask?authSource=admin
+    depends_on:
+      - mongodb
+    networks:
+      - codeflask-network
+    command: ["./wait-for-mongo.sh", "mongodb:27017", "--", "node", "scripts/seedProblems.js"]
+
+volumes:
+  mongodb_data:
+
+networks:
+  codeflask-network:
+    driver: bridge
