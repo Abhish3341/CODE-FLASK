@@ -7,6 +7,7 @@ class CompilerService {
   constructor() {
     this.tempDir = path.join(__dirname, '../temp');
     this.dockerAvailable = false;
+    this.dockerChecked = false;
     this.dockerImagesReady = {
       python: false,
       javascript: false,
@@ -26,6 +27,7 @@ class CompilerService {
         extension: '.py',
         compileCommand: null,
         runCommand: ['python', '/app/code.py'],
+        nativeCommand: ['python'],
         timeout: 10000,
         memoryLimit: '128m',
         cpuLimit: '0.5'
@@ -35,6 +37,7 @@ class CompilerService {
         extension: '.js',
         compileCommand: null,
         runCommand: ['node', '/app/code.js'],
+        nativeCommand: ['node'],
         timeout: 10000,
         memoryLimit: '128m',
         cpuLimit: '0.5'
@@ -44,6 +47,7 @@ class CompilerService {
         extension: '.java',
         compileCommand: ['javac', '/app/Main.java'],
         runCommand: ['java', '-cp', '/app', 'Main'],
+        nativeCommand: ['java'],
         timeout: 15000,
         memoryLimit: '256m',
         cpuLimit: '0.5'
@@ -53,6 +57,7 @@ class CompilerService {
         extension: '.cpp',
         compileCommand: ['g++', '-o', '/app/main', '/app/code.cpp'],
         runCommand: ['/app/main'],
+        nativeCommand: ['g++'],
         timeout: 15000,
         memoryLimit: '256m',
         cpuLimit: '0.5'
@@ -65,17 +70,52 @@ class CompilerService {
   async initializeService() {
     try {
       await this.ensureTempDirectory();
-      await this.checkDockerAvailability();
+      await this.performSingleDockerCheck();
       await this.checkNativeInterpreters();
-      if (this.dockerAvailable) {
-        await this.checkDockerImages();
-      }
-      
-      // Final status report
       this.reportFinalStatus();
     } catch (error) {
       console.error('Failed to initialize compiler service:', error);
     }
+  }
+
+  async performSingleDockerCheck() {
+    if (this.dockerChecked) {
+      return this.dockerAvailable;
+    }
+
+    console.log('🔍 Checking Docker availability...');
+    
+    try {
+      // Single, comprehensive Docker check
+      const dockerCheck = await this.runCommand('docker', ['--version'], process.cwd(), '', 3000);
+      
+      if (dockerCheck.exitCode === 0 && dockerCheck.stdout.includes('Docker version')) {
+        console.log('🐳 Docker Engine: Available');
+        
+        // Check if Docker daemon is running
+        const daemonCheck = await this.runCommand('docker', ['info'], process.cwd(), '', 3000);
+        
+        if (daemonCheck.exitCode === 0) {
+          this.dockerAvailable = true;
+          console.log('🐳 Docker Daemon: Running');
+          
+          // Check images only if Docker is fully available
+          await this.checkDockerImages();
+        } else {
+          this.dockerAvailable = false;
+          console.log('🐳 Docker Daemon: Not Running');
+        }
+      } else {
+        this.dockerAvailable = false;
+        console.log('🐳 Docker Engine: Not Available');
+      }
+    } catch (error) {
+      this.dockerAvailable = false;
+      console.log('🐳 Docker: Not Available (Error)');
+    }
+
+    this.dockerChecked = true;
+    return this.dockerAvailable;
   }
 
   reportFinalStatus() {
@@ -104,48 +144,6 @@ class CompilerService {
     }
   }
 
-  async checkDockerAvailability() {
-    return new Promise((resolve) => {
-      console.log('🔍 Checking Docker availability...');
-      
-      // Use simpler 'docker --version' command
-      const docker = spawn('docker', ['--version'], { stdio: 'pipe' });
-      let stdout = '';
-      let stderr = '';
-      
-      docker.stdout.on('data', (data) => {
-        stdout += data.toString();
-      });
-      
-      docker.stderr.on('data', (data) => {
-        stderr += data.toString();
-      });
-      
-      docker.on('close', (code) => {
-        this.dockerAvailable = code === 0 && stdout.includes('Docker version');
-        console.log(`🐳 Docker availability: ${this.dockerAvailable ? 'Available' : 'Not Available'}`);
-        if (!this.dockerAvailable && stderr) {
-          console.log('Docker error:', stderr.trim());
-        }
-        resolve(this.dockerAvailable);
-      });
-
-      docker.on('error', (error) => {
-        this.dockerAvailable = false;
-        console.log('🐳 Docker availability: Not Available (Command Error)');
-        resolve(false);
-      });
-
-      // Timeout for Docker check
-      setTimeout(() => {
-        docker.kill();
-        this.dockerAvailable = false;
-        console.log('🐳 Docker availability: Not Available (Timeout)');
-        resolve(false);
-      }, 3000); // Reduced timeout
-    });
-  }
-
   async checkDockerImages() {
     if (!this.dockerAvailable) return;
 
@@ -153,8 +151,8 @@ class CompilerService {
     
     for (const [language, config] of Object.entries(this.languageConfigs)) {
       try {
-        const result = await this.runCommand('docker', ['image', 'inspect', config.image], process.cwd(), '', 2000);
-        this.dockerImagesReady[language] = result.exitCode === 0;
+        const result = await this.runCommand('docker', ['images', '-q', config.image], process.cwd(), '', 2000);
+        this.dockerImagesReady[language] = result.exitCode === 0 && result.stdout.trim().length > 0;
         console.log(`${this.dockerImagesReady[language] ? '✅' : '❌'} ${config.image} for ${language}: ${this.dockerImagesReady[language] ? 'Available' : 'Not Available'}`);
       } catch (error) {
         this.dockerImagesReady[language] = false;
@@ -164,6 +162,8 @@ class CompilerService {
   }
 
   async checkNativeInterpreters() {
+    console.log('🔍 Checking native interpreters...');
+    
     const interpreters = {
       python: ['python', '--version'],
       java: ['javac', '-version'],
@@ -172,9 +172,9 @@ class CompilerService {
 
     for (const [language, command] of Object.entries(interpreters)) {
       try {
-        await this.runCommand(command[0], [command[1]], process.cwd(), '', 2000);
-        this.nativeInterpreters[language] = true;
-        console.log(`✅ ${language} interpreter available natively`);
+        const result = await this.runCommand(command[0], [command[1]], process.cwd(), '', 2000);
+        this.nativeInterpreters[language] = result.exitCode === 0;
+        console.log(`${this.nativeInterpreters[language] ? '✅' : '❌'} ${language} interpreter ${this.nativeInterpreters[language] ? 'available' : 'not available'} natively`);
       } catch (error) {
         this.nativeInterpreters[language] = false;
         console.log(`❌ ${language} interpreter not available natively`);
@@ -238,6 +238,11 @@ class CompilerService {
     this.validateCode(code, language);
 
     console.log(`🚀 Executing ${language} code`);
+
+    // Ensure Docker status is current
+    if (!this.dockerChecked) {
+      await this.performSingleDockerCheck();
+    }
 
     // Check execution capabilities
     const canExecuteWithDocker = this.dockerAvailable && this.dockerImagesReady[language];
@@ -334,7 +339,7 @@ class CompilerService {
       };
 
     } catch (error) {
-      throw error; // Re-throw to allow fallback handling
+      throw error;
     } finally {
       // Cleanup
       try {
@@ -349,17 +354,16 @@ class CompilerService {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
 
-      // Simplified Docker command for better reliability
       const dockerArgs = [
         'run',
-        '--rm',                    // Remove container after execution
-        '--network', 'none',       // No network access for security
-        '--memory', '128m',        // Memory limit
-        '--cpus', '0.5',          // CPU limit
-        '--read-only',            // Read-only filesystem
-        '--tmpfs', '/tmp:rw,noexec,nosuid,size=10m', // Writable temp space
-        '-v', `${volumePath}:/app:ro`, // Mount code as read-only
-        '-w', '/app',             // Working directory
+        '--rm',
+        '--network', 'none',
+        '--memory', '128m',
+        '--cpus', '0.5',
+        '--read-only',
+        '--tmpfs', '/tmp:rw,noexec,nosuid,size=10m',
+        '-v', `${volumePath}:/app:ro`,
+        '-w', '/app',
         image,
         ...command
       ];
@@ -501,6 +505,11 @@ class CompilerService {
   }
 
   async getHealthStatus() {
+    // Ensure we have current Docker status
+    if (!this.dockerChecked) {
+      await this.performSingleDockerCheck();
+    }
+
     const availableLanguages = Object.keys(this.languageConfigs).filter(lang => 
       (this.dockerAvailable && this.dockerImagesReady[lang]) || this.nativeInterpreters[lang]
     );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Square, RotateCcw, Settings, Clock, MemoryStick, AlertTriangle, CheckCircle, Shield, Zap, ChevronDown, ChevronUp } from 'lucide-react';
+import { Play, Square, RotateCcw, Settings, Clock, MemoryStick, AlertTriangle, CheckCircle, Shield, Zap, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import axiosInstance from '../utils/axiosConfig';
 
 interface CodeEditorProps {
@@ -32,6 +32,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
   const [executionMethod, setExecutionMethod] = useState<'docker' | 'native' | null>(null);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
   const [showInputHint, setShowInputHint] = useState(false);
+  const [isCheckingHealth, setIsCheckingHealth] = useState(false);
 
   // Load template when language changes
   useEffect(() => {
@@ -130,6 +131,7 @@ int main() {
   };
 
   const checkCompilerHealth = async () => {
+    setIsCheckingHealth(true);
     try {
       const response = await axiosInstance.get('/api/compiler/health');
       setCompilerHealth(response.data);
@@ -141,6 +143,8 @@ int main() {
         security: 'low',
         supportedLanguages: ['python', 'javascript', 'java', 'cpp']
       });
+    } finally {
+      setIsCheckingHealth(false);
     }
   };
 
@@ -208,6 +212,10 @@ int main() {
     setExecutionTime(null);
     setMemoryUsed(null);
     setExecutionMethod(null);
+  };
+
+  const refreshCompilerStatus = async () => {
+    await checkCompilerHealth();
   };
 
   const getSecurityIcon = () => {
@@ -292,6 +300,14 @@ int main() {
             <span className="text-sm text-[var(--color-text-secondary)]">
               {getSecurityText()}
             </span>
+            <button
+              onClick={refreshCompilerStatus}
+              disabled={isCheckingHealth}
+              className="ml-2 p-1 hover:bg-[var(--color-border)] rounded transition-colors"
+              title="Refresh Status"
+            >
+              <RefreshCw className={`w-3 h-3 ${isCheckingHealth ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
 
@@ -329,7 +345,7 @@ int main() {
                 <ol className="list-decimal list-inside mt-1 space-y-1">
                   <li>Start Docker Desktop application</li>
                   <li>Wait for Docker engine to start</li>
-                  <li>Refresh this page</li>
+                  <li>Click the refresh button above</li>
                 </ol>
               </div>
             </div>
