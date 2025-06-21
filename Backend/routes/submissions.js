@@ -5,59 +5,105 @@ const Submission = require('../models/Submission');
 const Problem = require('../models/Problems');
 const ActivityService = require('../services/ActivityService');
 
-// Get all submissions for a user
+// Get all submissions for a user with enhanced error handling
 router.get('/', authMiddleware, async (req, res) => {
     try {
+        console.log('📋 Fetching submissions for user:', req.user.id);
+        
+        // Get submissions for the authenticated user only
         const submissions = await Submission.find({ 
             userId: req.user.id 
-        }).sort({ submittedAt: -1 });
+        }).sort({ submittedAt: -1 }).lean();
 
+        console.log('📊 Found submissions:', submissions.length);
+
+        if (submissions.length === 0) {
+            return res.json([]);
+        }
+
+        // Format submissions with problem details
         const formattedSubmissions = await Promise.all(
-            submissions.map(async (submission) => {
+            submissions.map(async (submission, index) => {
                 let problemTitle = 'Unknown Problem';
                 let problemDifficulty = 'Unknown';
                 
                 try {
-                    const problem = await Problem.findById(submission.problemId);
-                    if (problem) {
-                        problemTitle = problem.title;
-                        problemDifficulty = problem.difficulty;
+                    // Handle both ObjectId and string problemId
+                    const problemId = submission.problemId;
+                    if (problemId) {
+                        const problem = await Problem.findById(problemId).lean();
+                        if (problem) {
+                            problemTitle = problem.title;
+                            problemDifficulty = problem.difficulty;
+                        }
                     }
                 } catch (error) {
-                    console.error('Error finding problem:', error);
+                    console.error('Error finding problem for submission:', error);
+                }
+
+                // Format the submission date
+                const submittedDate = new Date(submission.submittedAt);
+                const formattedDate = submittedDate.toLocaleDateString() + ' ' + 
+                                   submittedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                // Determine status based on output analysis
+                let status = 'Completed';
+                if (submission.results && submission.results.length > 0) {
+                    const result = submission.results[0];
+                    if (result.error) {
+                        status = 'Error';
+                    } else if (result.output && 
+                              (result.output.toLowerCase().includes('passed') || 
+                               result.output.includes('✅') || 
+                               result.output.includes('✓'))) {
+                        status = 'Accepted';
+                    } else if (result.output && result.output.toLowerCase().includes('failed')) {
+                        status = 'Wrong Answer';
+                    }
                 }
 
                 return {
                     id: submission._id,
                     problem: problemTitle,
                     difficulty: problemDifficulty,
-                    status: submission.status || 'completed',
-                    language: submission.language,
+                    status: status,
+                    language: submission.language || 'Unknown',
                     runtime: submission.executionTime ? `${submission.executionTime}ms` : 'N/A',
                     memory: submission.memoryUsed ? `${submission.memoryUsed}KB` : 'N/A',
-                    submittedAt: submission.submittedAt.toISOString(),
-                    code: submission.code // Include code for viewing
+                    submittedAt: formattedDate,
+                    code: submission.code, // Include code for viewing
+                    output: submission.results?.[0]?.output || '',
+                    submissionNumber: submissions.length - index // Show newest first
                 };
             })
         );
 
+        console.log('✅ Formatted submissions:', formattedSubmissions.length);
         res.json(formattedSubmissions);
     } catch (error) {
-        console.error('Error fetching submissions:', error);
-        res.status(500).json({ error: 'Failed to fetch submissions' });
+        console.error('❌ Error fetching submissions:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch submissions',
+            details: error.message 
+        });
     }
 });
 
-// Submit code with activity tracking
+// Submit code with proper activity tracking
 router.post('/', authMiddleware, async (req, res) => {
     try {
         const { code, language, problemId, output, executionTime, memoryUsed, timeSpent } = req.body;
 
+        // Validate required fields
         if (!code || !language || !problemId) {
-            return res.status(400).json({ error: 'Missing required fields' });
+            return res.status(400).json({ 
+                error: 'Missing required fields: code, language, and problemId are required' 
+            });
         }
 
-        // Create submission
+        console.log('📤 Creating submission for user:', req.user.id, 'problem:', problemId);
+
+        // Create submission record
         const submission = await Submission.create({
             userId: req.user.id,
             problemId,
@@ -65,15 +111,17 @@ router.post('/', authMiddleware, async (req, res) => {
             language,
             status: 'completed',
             results: [{
-                output,
+                output: output || '',
                 status: 'completed',
-                executionTime,
-                memoryUsed
+                executionTime: executionTime || 0,
+                memoryUsed: memoryUsed || 0
             }],
-            executionTime,
-            memoryUsed,
+            executionTime: executionTime || 0,
+            memoryUsed: memoryUsed || 0,
             submittedAt: new Date()
         });
+
+        console.log('✅ Submission created with ID:', submission._id);
 
         // Record submission activity
         await ActivityService.recordSubmission(
@@ -82,12 +130,22 @@ router.post('/', authMiddleware, async (req, res) => {
             language,
             submission._id,
             executionTime || 0,
-            timeSpent || 5 // Default 5 minutes if not provided
+            timeSpent || 5
         );
 
-        // Check if this is a successful solution (basic check)
-        const isSuccessful = output && !output.toLowerCase().includes('error') && 
-                           !output.toLowerCase().includes('exception');
+        // Enhanced solution detection
+        const isSuccessful = output && 
+                           !output.toLowerCase().includes('error') && 
+                           !output.toLowerCase().includes('exception') &&
+                           !output.toLowerCase().includes('failed') &&
+                           !output.toLowerCase().includes('traceback') &&
+                           (output.toLowerCase().includes('passed') || 
+                            output.toLowerCase().includes('success') ||
+                            output.includes('✅') ||
+                            output.includes('✓') ||
+                            output.toLowerCase().includes('correct'));
+
+        console.log('🔍 Solution detection result:', isSuccessful);
 
         if (isSuccessful) {
             // Record as solved
@@ -99,44 +157,59 @@ router.post('/', authMiddleware, async (req, res) => {
                 executionTime || 0,
                 timeSpent || 5
             );
+            console.log('🎉 Problem marked as solved!');
         }
+
+        // Get updated submission count
+        const totalSubmissions = await Submission.countDocuments({ userId: req.user.id });
 
         res.status(201).json({
             id: submission._id,
-            message: 'Submission created successfully',
-            isSuccessful
+            message: isSuccessful ? 
+                'Solution submitted and marked as solved! 🎉' : 
+                'Submission recorded successfully',
+            isSuccessful,
+            submissionCount: totalSubmissions
         });
+
     } catch (error) {
-        console.error('Error creating submission:', error);
-        res.status(500).json({ error: 'Failed to create submission' });
+        console.error('❌ Error creating submission:', error);
+        res.status(500).json({ 
+            error: 'Failed to create submission',
+            details: error.message 
+        });
     }
 });
 
-// Get specific submission
+// Get specific submission details
 router.get('/:id', authMiddleware, async (req, res) => {
     try {
         const submission = await Submission.findOne({
             _id: req.params.id,
-            userId: req.user.id
-        });
+            userId: req.user.id // Ensure user can only access their own submissions
+        }).lean();
 
         if (!submission) {
             return res.status(404).json({ error: 'Submission not found' });
         }
 
         let problemTitle = 'Unknown Problem';
+        let problemDifficulty = 'Unknown';
+        
         try {
-            const problem = await Problem.findById(submission.problemId);
+            const problem = await Problem.findById(submission.problemId).lean();
             if (problem) {
                 problemTitle = problem.title;
+                problemDifficulty = problem.difficulty;
             }
         } catch (error) {
             console.error('Error finding problem for submission:', error);
         }
 
-        res.json({
+        const formattedSubmission = {
             id: submission._id,
             problem: problemTitle,
+            difficulty: problemDifficulty,
             code: submission.code,
             language: submission.language,
             status: submission.status,
@@ -144,10 +217,57 @@ router.get('/:id', authMiddleware, async (req, res) => {
             executionTime: submission.executionTime,
             memoryUsed: submission.memoryUsed,
             submittedAt: submission.submittedAt
-        });
+        };
+
+        res.json(formattedSubmission);
     } catch (error) {
         console.error('Error fetching submission:', error);
         res.status(500).json({ error: 'Failed to fetch submission' });
+    }
+});
+
+// Get user submission statistics
+router.get('/stats/summary', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        const totalSubmissions = await Submission.countDocuments({ userId });
+        
+        // Get recent submissions (last 7 days)
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        const recentSubmissions = await Submission.find({ 
+            userId,
+            submittedAt: { $gte: sevenDaysAgo }
+        }).lean();
+
+        // Calculate language breakdown
+        const languageBreakdown = {};
+        const allSubmissions = await Submission.find({ userId }).lean();
+        
+        allSubmissions.forEach(sub => {
+            const lang = sub.language || 'unknown';
+            languageBreakdown[lang] = (languageBreakdown[lang] || 0) + 1;
+        });
+
+        // Calculate average execution time
+        const validExecutionTimes = allSubmissions
+            .map(sub => sub.executionTime)
+            .filter(time => time && time > 0);
+        
+        const averageExecutionTime = validExecutionTimes.length > 0 ? 
+            Math.round(validExecutionTimes.reduce((sum, time) => sum + time, 0) / validExecutionTimes.length) : 0;
+
+        res.json({
+            totalSubmissions,
+            recentSubmissions: recentSubmissions.length,
+            languageBreakdown,
+            averageExecutionTime
+        });
+    } catch (error) {
+        console.error('Error fetching submission stats:', error);
+        res.status(500).json({ error: 'Failed to fetch submission statistics' });
     }
 });
 

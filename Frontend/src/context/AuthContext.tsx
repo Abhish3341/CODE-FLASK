@@ -9,6 +9,9 @@ interface User {
   firstname: string;
   lastname: string;
   picture?: string;
+  isOAuthUser?: boolean;
+  authMethod?: 'email' | 'google' | 'github';
+  canEditEmail?: boolean;
 }
 
 interface DecodedToken {
@@ -70,7 +73,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: decoded.email,
         firstname: decoded.firstname,
         lastname: decoded.lastname,
-        picture: userData.picture
+        picture: userData.picture,
+        isOAuthUser: userData.isOAuthUser || false,
+        authMethod: userData.authMethod || 'email',
+        canEditEmail: userData.canEditEmail !== false // Default to true if not specified
       });
       navigate("/app");
     } catch (error) {

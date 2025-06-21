@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Tag, BarChart2, Clock, Award, CheckCircle2, AlertCircle, TrendingUp } from 'lucide-react';
+import { Search, Filter, Tag, BarChart2, Clock, Award, CheckCircle2, AlertCircle, TrendingUp, RefreshCw } from 'lucide-react';
 import axiosInstance from '../utils/axiosConfig';
 
 interface Problem {
@@ -31,12 +31,12 @@ interface UserStats {
   ranking: number;
   totalSubmissions: number;
   timeSpent: number;
-  difficultyBreakdown?: {
+  difficultyBreakdown: {
     easy: DifficultyStats;
     medium: DifficultyStats;
     hard: DifficultyStats;
   };
-  languageBreakdown?: {
+  languageBreakdown: {
     python: LanguageStats;
     javascript: LanguageStats;
     java: LanguageStats;
@@ -72,49 +72,90 @@ const Problems = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [problemsResponse, statsResponse] = await Promise.all([
-          axiosInstance.get('/api/problems'),
-          axiosInstance.get('/api/problems/stats')
-        ]);
-        
-        setProblems(problemsResponse.data);
-        
-        // Safely set user stats with fallbacks
-        const statsData = statsResponse.data;
+  const fetchData = async (showRefreshing = false) => {
+    try {
+      if (showRefreshing) setRefreshing(true);
+      setError(null);
+
+      const [problemsResponse, statsResponse] = await Promise.allSettled([
+        axiosInstance.get('/api/problems'),
+        axiosInstance.get('/api/problems/stats')
+      ]);
+      
+      // Handle problems response
+      if (problemsResponse.status === 'fulfilled') {
+        setProblems(problemsResponse.value.data || []);
+      } else {
+        console.error('Problems fetch failed:', problemsResponse.reason);
+        setProblems([]);
+      }
+
+      // Handle stats response with safe fallbacks
+      if (statsResponse.status === 'fulfilled') {
+        const statsData = statsResponse.value.data;
         setUserStats({
-          problemsSolved: statsData.problemsSolved || 0,
-          totalProblems: statsData.totalProblems || 0,
-          successRate: statsData.successRate || 0,
-          averageTime: statsData.averageTime || 0,
-          ranking: statsData.ranking || 0,
-          totalSubmissions: statsData.totalSubmissions || 0,
-          timeSpent: statsData.timeSpent || 0,
-          difficultyBreakdown: statsData.difficultyBreakdown || {
-            easy: { solved: 0, attempted: 0 },
-            medium: { solved: 0, attempted: 0 },
-            hard: { solved: 0, attempted: 0 }
+          problemsSolved: statsData?.problemsSolved || 0,
+          totalProblems: statsData?.totalProblems || 0,
+          successRate: statsData?.successRate || 0,
+          averageTime: statsData?.averageTime || 0,
+          ranking: statsData?.ranking || 0,
+          totalSubmissions: statsData?.totalSubmissions || 0,
+          timeSpent: statsData?.timeSpent || 0,
+          difficultyBreakdown: {
+            easy: {
+              solved: statsData?.difficultyBreakdown?.easy?.solved || 0,
+              attempted: statsData?.difficultyBreakdown?.easy?.attempted || 0
+            },
+            medium: {
+              solved: statsData?.difficultyBreakdown?.medium?.solved || 0,
+              attempted: statsData?.difficultyBreakdown?.medium?.attempted || 0
+            },
+            hard: {
+              solved: statsData?.difficultyBreakdown?.hard?.solved || 0,
+              attempted: statsData?.difficultyBreakdown?.hard?.attempted || 0
+            }
           },
-          languageBreakdown: statsData.languageBreakdown || {
-            python: { solved: 0, attempted: 0 },
-            javascript: { solved: 0, attempted: 0 },
-            java: { solved: 0, attempted: 0 },
-            cpp: { solved: 0, attempted: 0 }
+          languageBreakdown: {
+            python: {
+              solved: statsData?.languageBreakdown?.python?.solved || 0,
+              attempted: statsData?.languageBreakdown?.python?.attempted || 0
+            },
+            javascript: {
+              solved: statsData?.languageBreakdown?.javascript?.solved || 0,
+              attempted: statsData?.languageBreakdown?.javascript?.attempted || 0
+            },
+            java: {
+              solved: statsData?.languageBreakdown?.java?.solved || 0,
+              attempted: statsData?.languageBreakdown?.java?.attempted || 0
+            },
+            cpp: {
+              solved: statsData?.languageBreakdown?.cpp?.solved || 0,
+              attempted: statsData?.languageBreakdown?.cpp?.attempted || 0
+            }
           }
         });
-      } catch (err) {
-        setError('Failed to load data');
-        console.error('Error fetching data:', err);
-      } finally {
-        setLoading(false);
+      } else {
+        console.error('Stats fetch failed:', statsResponse.reason);
+        // Keep default userStats
       }
-    };
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError('Failed to load some data. Using cached information.');
+    } finally {
+      setLoading(false);
+      if (showRefreshing) setRefreshing(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
+
+  const handleRefresh = () => {
+    fetchData(true);
+  };
 
   const handleSolveProblem = (problemId: string) => {
     window.open(`/app/problems/${problemId}/solve`, '_blank');
@@ -184,14 +225,6 @@ const Problems = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="h-full p-8 bg-[var(--color-bg-primary)] flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
-      </div>
-    );
-  }
-
   return (
     <div className="h-full p-8 bg-[var(--color-bg-primary)]">
       {/* Header Section */}
@@ -201,6 +234,14 @@ const Problems = () => {
           <p className="text-[var(--color-text-secondary)]">Practice coding problems to improve your skills</p>
         </div>
         <div className="flex gap-4">
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-border)] transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] w-5 h-5" />
             <input
@@ -213,6 +254,13 @@ const Problems = () => {
           </div>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 p-4 mb-6">
+          <p className="text-yellow-700 dark:text-yellow-200">{error}</p>
+        </div>
+      )}
 
       {/* Enhanced Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -433,7 +481,7 @@ const Problems = () => {
         
         {filteredProblems.length === 0 && (
           <div className="text-center py-8 text-[var(--color-text-secondary)]">
-            No problems found matching your criteria.
+            {problems.length === 0 ? 'No problems available.' : 'No problems found matching your criteria.'}
           </div>
         )}
       </div>

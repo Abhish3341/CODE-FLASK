@@ -20,6 +20,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [executionTime, setExecutionTime] = useState<number | null>(null);
   const [memoryUsed, setMemoryUsed] = useState<number | null>(null);
   const [error, setError] = useState('');
@@ -33,6 +34,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
   const [showInputHint, setShowInputHint] = useState(false);
   const [isCheckingHealth, setIsCheckingHealth] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
 
   // Load template when language changes
   useEffect(() => {
@@ -166,7 +169,7 @@ int main() {
     setExecutionMethod(null);
 
     try {
-      console.log('Sending input to compiler:', input);
+      console.log('🏃 Running code (test only - no submission tracking)');
       
       const response = await axiosInstance.post('/api/compiler/execute', {
         code,
@@ -195,18 +198,55 @@ int main() {
       return;
     }
 
-    // First run the code to get output
-    await runCode();
+    setIsSubmitting(true);
+    setSubmitSuccess(false);
+    setSubmitMessage('');
+    setError('');
 
-    // Then submit the result
-    onSubmit({
-      code,
-      language,
-      output: output || '',
-      executionTime: executionTime || undefined,
-      memoryUsed: memoryUsed || undefined,
-      error: error || undefined
-    });
+    try {
+      console.log('📤 Submitting solution (this will be tracked)');
+
+      // First run the code to get output if not already run
+      if (!output && !error) {
+        await runCode();
+      }
+
+      // Submit the solution
+      const submitResponse = await axiosInstance.post('/api/submissions', {
+        problemId,
+        code,
+        language,
+        output: output || '',
+        executionTime: executionTime || undefined,
+        memoryUsed: memoryUsed || undefined,
+        timeSpent: 5 // Default 5 minutes - could be tracked more accurately
+      });
+
+      if (submitResponse.data.id) {
+        setSubmitSuccess(true);
+        setSubmitMessage(submitResponse.data.message || 'Solution submitted successfully! 🎉');
+        
+        // Call the parent onSubmit callback
+        onSubmit({
+          code,
+          language,
+          output: output || '',
+          executionTime: executionTime || undefined,
+          memoryUsed: memoryUsed || undefined,
+          error: error || undefined
+        });
+
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => {
+          setSubmitSuccess(false);
+          setSubmitMessage('');
+        }, 3000);
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to submit solution');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetCode = () => {
@@ -216,6 +256,8 @@ int main() {
     setExecutionTime(null);
     setMemoryUsed(null);
     setExecutionMethod(null);
+    setSubmitSuccess(false);
+    setSubmitMessage('');
   };
 
   const getSecurityIcon = () => {
@@ -314,7 +356,7 @@ int main() {
         <div className="flex items-center gap-2">
           <button
             onClick={runCode}
-            disabled={isRunning}
+            disabled={isRunning || isSubmitting}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isRunning ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -323,13 +365,23 @@ int main() {
           
           <button
             onClick={submitCode}
-            disabled={isRunning}
+            disabled={isRunning || isSubmitting}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Submit
+            {isSubmitting ? 'Submitting...' : 'Submit'}
           </button>
         </div>
       </div>
+
+      {/* Success Message */}
+      {submitSuccess && (
+        <div className="bg-green-100 dark:bg-green-900 border-l-4 border-green-500 p-4">
+          <div className="flex items-center">
+            <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+            <p className="text-green-700 dark:text-green-200 font-medium">{submitMessage}</p>
+          </div>
+        </div>
+      )}
 
       {/* Security Warning */}
       {compilerHealth?.docker === 'unavailable' && (

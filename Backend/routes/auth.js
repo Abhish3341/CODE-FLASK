@@ -28,44 +28,134 @@ const checkPasswordStrength = (password) => {
   return errors;
 };
 
-// Get user profile
+// Get user profile with OAuth information
 router.get('/profile', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password -previousPasswords');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json({ user });
+
+    // Determine authentication method and OAuth status
+    let authMethod = 'email';
+    let isOAuthUser = false;
+
+    if (user.googleId) {
+      authMethod = 'google';
+      isOAuthUser = true;
+    } else if (user.githubId) {
+      authMethod = 'github';
+      isOAuthUser = true;
+    }
+
+    // Include OAuth status and auth method in response
+    const userProfile = {
+      ...user.toObject(),
+      isOAuthUser,
+      authMethod,
+      canEditEmail: !isOAuthUser // Can only edit email if not OAuth user
+    };
+
+    console.log('👤 Profile response:', {
+      id: user._id,
+      email: user.email,
+      authMethod,
+      isOAuthUser,
+      hasGoogleId: !!user.googleId,
+      hasGithubId: !!user.githubId
+    });
+
+    res.json({ user: userProfile });
   } catch (error) {
     console.error('Profile fetch error:', error);
     res.status(500).json({ error: 'Failed to fetch profile' });
   }
 });
 
-// Update user profile
+// Update user profile with OAuth email restriction
 router.put('/profile', auth, async (req, res) => {
   try {
     const { firstname, lastname, email } = req.body;
     const userId = req.user.id;
 
+    console.log('📝 Profile update request:', { userId, firstname, lastname, email });
+
+    // Validate required fields
+    if (!firstname || !lastname || !email) {
+      console.log('❌ Missing required fields');
+      return res.status(400).json({ 
+        error: 'All fields (firstname, lastname, email) are required' 
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.log('❌ Invalid email format');
+      return res.status(400).json({ 
+        error: 'Please enter a valid email address' 
+      });
+    }
+
     // Find user and check if it exists
     const user = await User.findById(userId);
     if (!user) {
+      console.log('❌ User not found');
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Check if email is already taken by another user
-    if (email !== user.email) {
+    // Determine authentication method
+    let authMethod = 'email';
+    let isOAuthUser = false;
+
+    if (user.googleId) {
+      authMethod = 'google';
+      isOAuthUser = true;
+    } else if (user.githubId) {
+      authMethod = 'github';
+      isOAuthUser = true;
+    }
+
+    console.log('👤 Current user:', { 
+      id: user._id, 
+      email: user.email, 
+      isOAuthUser, 
+      authMethod,
+      hasGoogleId: !!user.googleId,
+      hasGithubId: !!user.githubId
+    });
+
+    // Check if user is trying to change email and is OAuth user
+    if (email !== user.email && isOAuthUser) {
+      console.log('🚫 OAuth user trying to change email');
+      const providerName = authMethod === 'google' ? 'Google' : 'GitHub';
+      return res.status(403).json({ 
+        error: `Email cannot be changed for ${providerName} OAuth accounts. Your email is managed by ${providerName}.`,
+        isOAuthRestriction: true,
+        authMethod
+      });
+    }
+
+    // Check if email is already taken by another user (only if email is being changed)
+    if (email !== user.email && !isOAuthUser) {
+      console.log('🔍 Checking if email is already taken...');
       const existingUser = await User.findOne({ email, _id: { $ne: userId } });
       if (existingUser) {
-        return res.status(400).json({ error: 'Email is already in use' });
+        console.log('❌ Email already in use by another user');
+        return res.status(400).json({ 
+          error: 'This email address is already in use by another account. Please choose a different email address.' 
+        });
       }
     }
 
     // Update user profile
     user.firstname = firstname;
     user.lastname = lastname;
-    user.email = email;
+    
+    // Only update email if user is not OAuth user
+    if (!isOAuthUser) {
+      user.email = email;
+    }
 
     // Increment profile updates count if not first login
     if (!user.isFirstLogin) {
@@ -76,6 +166,7 @@ router.put('/profile', auth, async (req, res) => {
     }
 
     await user.save();
+    console.log('✅ Profile updated successfully');
 
     // Generate new token with updated information
     const token = jwt.sign(
@@ -96,6 +187,9 @@ router.put('/profile', auth, async (req, res) => {
         lastname: user.lastname,
         email: user.email,
         isFirstLogin: user.isFirstLogin,
+        isOAuthUser,
+        authMethod,
+        canEditEmail: !isOAuthUser,
         profileUpdates: {
           count: user.profileUpdates.count,
           lastUpdate: user.profileUpdates.lastUpdate
@@ -105,7 +199,7 @@ router.put('/profile', auth, async (req, res) => {
       remainingUpdates: 3 - (user.profileUpdates.count || 0)
     });
   } catch (error) {
-    console.error('Profile update error:', error);
+    console.error('❌ Profile update error:', error);
     res.status(500).json({ error: 'Failed to update profile' });
   }
 });
@@ -153,6 +247,18 @@ router.post('/login', async (req, res) => {
             { expiresIn: '1h' }
         );
 
+        // Determine auth method
+        let authMethod = 'email';
+        let isOAuthUser = false;
+
+        if (user.googleId) {
+          authMethod = 'google';
+          isOAuthUser = true;
+        } else if (user.githubId) {
+          authMethod = 'github';
+          isOAuthUser = true;
+        }
+
         res.json({
             user: {
                 id: user._id,
@@ -160,7 +266,10 @@ router.post('/login', async (req, res) => {
                 lastname: user.lastname,
                 email: user.email,
                 picture: user.picture || '',
-                isFirstLogin: user.isFirstLogin
+                isFirstLogin: user.isFirstLogin,
+                isOAuthUser,
+                authMethod,
+                canEditEmail: !isOAuthUser
             },
             token
         });
@@ -191,6 +300,20 @@ router.post('/change-password', auth, async (req, res) => {
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ error: "User not found" });
+        }
+
+        // Determine if user is OAuth user
+        const isOAuthUser = !!(user.googleId || user.githubId);
+        const authMethod = user.googleId ? 'google' : user.githubId ? 'github' : 'email';
+
+        // Check if OAuth user is trying to change password
+        if (isOAuthUser) {
+            const providerName = authMethod === 'google' ? 'Google' : 'GitHub';
+            return res.status(403).json({
+                error: `Password cannot be changed for ${providerName} OAuth accounts. Your password is managed by ${providerName}.`,
+                isOAuthRestriction: true,
+                authMethod
+            });
         }
 
         const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
@@ -266,6 +389,8 @@ router.post('/register', async (req, res) => {
             email,
             password: hashedPassword,
             isFirstLogin: true,
+            authMethod: 'email',
+            isOAuthUser: false,
             profileUpdates: {
                 count: 0
             },
@@ -288,7 +413,10 @@ router.post('/register', async (req, res) => {
             firstname: user.firstname,
             lastname: user.lastname,
             email: user.email,
-            isFirstLogin: true
+            isFirstLogin: true,
+            isOAuthUser: false,
+            authMethod: 'email',
+            canEditEmail: true
         };
 
         res.status(201).json({
@@ -356,10 +484,13 @@ router.post('/github/callback', async (req, res) => {
       user.githubId = userResponse.data.id.toString();
       user.githubUsername = userResponse.data.login;
       user.githubAccessToken = accessToken;
+      user.authMethod = 'github';
+      user.isOAuthUser = true;
       if (!user.picture && userResponse.data.avatar_url) {
         user.picture = userResponse.data.avatar_url;
       }
       await user.save();
+      console.log('✅ Updated existing user with GitHub OAuth');
     } else {
       // Create new user
       const randomPassword = Math.random().toString(36).slice(-8);
@@ -375,11 +506,14 @@ router.post('/github/callback', async (req, res) => {
         githubId: userResponse.data.id.toString(),
         githubUsername: userResponse.data.login,
         githubAccessToken: accessToken,
+        authMethod: 'github',
+        isOAuthUser: true,
         isFirstLogin: true,
         profileUpdates: {
           count: 0
         }
       });
+      console.log('✅ Created new user with GitHub OAuth');
     }
 
     const token = jwt.sign(
@@ -393,6 +527,13 @@ router.post('/github/callback', async (req, res) => {
       { expiresIn: '1h' }
     );
 
+    console.log('🔑 GitHub OAuth response:', {
+      userId: user._id,
+      email: user.email,
+      authMethod: 'github',
+      isOAuthUser: true
+    });
+
     res.json({
       user: {
         id: user._id,
@@ -400,7 +541,10 @@ router.post('/github/callback', async (req, res) => {
         lastname: user.lastname,
         email: user.email,
         picture: user.picture || '',
-        isFirstLogin: user.isFirstLogin
+        isFirstLogin: user.isFirstLogin,
+        isOAuthUser: true,
+        authMethod: 'github',
+        canEditEmail: false
       },
       token
     });
@@ -431,8 +575,11 @@ router.post('/google', async (req, res) => {
         if (user) {
             if (!user.googleId) {
                 user.googleId = sub;
+                user.authMethod = 'google';
+                user.isOAuthUser = true;
                 user.picture = picture || user.picture;
                 await user.save();
+                console.log('✅ Updated existing user with Google OAuth');
             }
         } else {
             const randomPassword = Math.random().toString(36).slice(-8);
@@ -446,11 +593,14 @@ router.post('/google', async (req, res) => {
                 previousPasswords: [hashedPassword],
                 picture: picture || '',
                 googleId: sub,
+                authMethod: 'google',
+                isOAuthUser: true,
                 isFirstLogin: true,
                 profileUpdates: {
                     count: 0
                 }
             });
+            console.log('✅ Created new user with Google OAuth');
         }
 
         const token = jwt.sign(
@@ -464,6 +614,13 @@ router.post('/google', async (req, res) => {
             { expiresIn: '1h' }
         );
 
+        console.log('🔑 Google OAuth response:', {
+          userId: user._id,
+          email: user.email,
+          authMethod: 'google',
+          isOAuthUser: true
+        });
+
         res.json({
             user: {
                 id: user._id,
@@ -471,7 +628,10 @@ router.post('/google', async (req, res) => {
                 lastname: user.lastname,
                 email: user.email,
                 picture: user.picture || '',
-                isFirstLogin: user.isFirstLogin
+                isFirstLogin: user.isFirstLogin,
+                isOAuthUser: true,
+                authMethod: 'google',
+                canEditEmail: false
             },
             token
         });

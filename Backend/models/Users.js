@@ -59,9 +59,41 @@ const userSchema = new mongoose.Schema({
         lastAttempt: {
             type: Date
         }
+    },
+    // Add authentication method tracking
+    authMethod: {
+        type: String,
+        enum: ['email', 'google', 'github'],
+        default: 'email'
+    },
+    // Track if user is OAuth user
+    isOAuthUser: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
+});
+
+// Pre-save middleware to set auth method and OAuth status
+userSchema.pre('save', function(next) {
+    // Determine authentication method based on OAuth IDs
+    if (this.googleId && !this.githubId) {
+        this.authMethod = 'google';
+        this.isOAuthUser = true;
+    } else if (this.githubId && !this.googleId) {
+        this.authMethod = 'github';
+        this.isOAuthUser = true;
+    } else if (this.googleId && this.githubId) {
+        // If both exist, prioritize the most recent one
+        // This shouldn't happen in normal flow, but just in case
+        this.authMethod = this.githubId ? 'github' : 'google';
+        this.isOAuthUser = true;
+    } else {
+        this.authMethod = 'email';
+        this.isOAuthUser = false;
+    }
+    next();
 });
 
 const User = mongoose.model('User', userSchema);
