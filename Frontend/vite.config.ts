@@ -11,5 +11,9 @@ export default defineConfig({
     host: 'localhost',
     port: 5173,
     open: true, // This will open the browser automatically
+    fs: {
+      // Explicitly deny access to sensitive files and folders
+      deny: ['.env', '.git', 'node_modules', 'package-lock.json', 'yarn.lock'],
+    },
   },
 });
