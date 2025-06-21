@@ -148,6 +148,10 @@ int main() {
     }
   };
 
+  const refreshCompilerStatus = async () => {
+    await checkCompilerHealth();
+  };
+
   const runCode = async () => {
     if (!code.trim()) {
       setError('Please write some code before running');
@@ -212,10 +216,6 @@ int main() {
     setExecutionTime(null);
     setMemoryUsed(null);
     setExecutionMethod(null);
-  };
-
-  const refreshCompilerStatus = async () => {
-    await checkCompilerHealth();
   };
 
   const getSecurityIcon = () => {

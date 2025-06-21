@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Tag, BarChart2, Clock, Award, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Search, Filter, Tag, BarChart2, Clock, Award, CheckCircle2, AlertCircle, TrendingUp } from 'lucide-react';
 import axiosInstance from '../utils/axiosConfig';
 
 interface Problem {
@@ -13,25 +13,62 @@ interface Problem {
   solved: boolean;
 }
 
+interface DifficultyStats {
+  solved: number;
+  attempted: number;
+}
+
+interface LanguageStats {
+  solved: number;
+  attempted: number;
+}
+
 interface UserStats {
   problemsSolved: number;
   totalProblems: number;
   successRate: number;
   averageTime: number;
   ranking: number;
+  totalSubmissions: number;
+  timeSpent: number;
+  difficultyBreakdown?: {
+    easy: DifficultyStats;
+    medium: DifficultyStats;
+    hard: DifficultyStats;
+  };
+  languageBreakdown?: {
+    python: LanguageStats;
+    javascript: LanguageStats;
+    java: LanguageStats;
+    cpp: LanguageStats;
+  };
 }
 
 const Problems = () => {
   const navigate = useNavigate();
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [problems, setProblems] = useState<Problem[]>([]);
   const [userStats, setUserStats] = useState<UserStats>({
     problemsSolved: 0,
     totalProblems: 0,
     successRate: 0,
     averageTime: 0,
-    ranking: 0
+    ranking: 0,
+    totalSubmissions: 0,
+    timeSpent: 0,
+    difficultyBreakdown: {
+      easy: { solved: 0, attempted: 0 },
+      medium: { solved: 0, attempted: 0 },
+      hard: { solved: 0, attempted: 0 }
+    },
+    languageBreakdown: {
+      python: { solved: 0, attempted: 0 },
+      javascript: { solved: 0, attempted: 0 },
+      java: { solved: 0, attempted: 0 },
+      cpp: { solved: 0, attempted: 0 }
+    }
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +82,29 @@ const Problems = () => {
         ]);
         
         setProblems(problemsResponse.data);
-        setUserStats(statsResponse.data);
+        
+        // Safely set user stats with fallbacks
+        const statsData = statsResponse.data;
+        setUserStats({
+          problemsSolved: statsData.problemsSolved || 0,
+          totalProblems: statsData.totalProblems || 0,
+          successRate: statsData.successRate || 0,
+          averageTime: statsData.averageTime || 0,
+          ranking: statsData.ranking || 0,
+          totalSubmissions: statsData.totalSubmissions || 0,
+          timeSpent: statsData.timeSpent || 0,
+          difficultyBreakdown: statsData.difficultyBreakdown || {
+            easy: { solved: 0, attempted: 0 },
+            medium: { solved: 0, attempted: 0 },
+            hard: { solved: 0, attempted: 0 }
+          },
+          languageBreakdown: statsData.languageBreakdown || {
+            python: { solved: 0, attempted: 0 },
+            javascript: { solved: 0, attempted: 0 },
+            java: { solved: 0, attempted: 0 },
+            cpp: { solved: 0, attempted: 0 }
+          }
+        });
       } catch (err) {
         setError('Failed to load data');
         console.error('Error fetching data:', err);
@@ -76,9 +135,17 @@ const Problems = () => {
 
   const filteredProblems = problems.filter(problem => {
     const matchesDifficulty = selectedDifficulty === 'all' || problem.difficulty.toLowerCase() === selectedDifficulty;
-    const matchesCategory = selectedCategory === 'all' || problem.category.toLowerCase() === selectedCategory;
-    return matchesDifficulty && matchesCategory;
+    const matchesCategory = selectedCategory === 'all' || problem.category.toLowerCase().includes(selectedCategory.toLowerCase());
+    const matchesSearch = searchTerm === '' || 
+      problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      problem.category.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesDifficulty && matchesCategory && matchesSearch;
   });
+
+  // Safe access to difficulty breakdown
+  const easyStats = userStats.difficultyBreakdown?.easy || { solved: 0, attempted: 0 };
+  const mediumStats = userStats.difficultyBreakdown?.medium || { solved: 0, attempted: 0 };
+  const hardStats = userStats.difficultyBreakdown?.hard || { solved: 0, attempted: 0 };
 
   if (loading) {
     return (
@@ -139,13 +206,15 @@ const Problems = () => {
             <input
               type="text"
               placeholder="Search problems..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64"
             />
           </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Enhanced Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="card p-6">
           <div className="flex items-center gap-4">
@@ -157,22 +226,30 @@ const Problems = () => {
               <p className="text-2xl font-bold text-[var(--color-text-primary)]">
                 {userStats.problemsSolved}/{userStats.totalProblems}
               </p>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                {userStats.totalProblems > 0 ? Math.round((userStats.problemsSolved / userStats.totalProblems) * 100) : 0}% complete
+              </p>
             </div>
           </div>
         </div>
+
         <div className="card p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-green-500/10 rounded-lg">
-              <BarChart2 className="w-6 h-6 text-green-500" />
+              <TrendingUp className="w-6 h-6 text-green-500" />
             </div>
             <div>
               <p className="text-[var(--color-text-secondary)] text-sm">Success Rate</p>
               <p className="text-2xl font-bold text-[var(--color-text-primary)]">
                 {userStats.successRate}%
               </p>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                {userStats.totalSubmissions} submissions
+              </p>
             </div>
           </div>
         </div>
+
         <div className="card p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-yellow-500/10 rounded-lg">
@@ -183,9 +260,13 @@ const Problems = () => {
               <p className="text-2xl font-bold text-[var(--color-text-primary)]">
                 {userStats.averageTime}m
               </p>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                {userStats.timeSpent}h total
+              </p>
             </div>
           </div>
         </div>
+
         <div className="card p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-purple-500/10 rounded-lg">
@@ -196,7 +277,70 @@ const Problems = () => {
               <p className="text-2xl font-bold text-[var(--color-text-primary)]">
                 {userStats.ranking === 0 ? '-' : `#${userStats.ranking}`}
               </p>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                Global rank
+              </p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Difficulty Progress */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-green-500">Easy</span>
+            <span className="text-sm text-[var(--color-text-secondary)]">
+              {easyStats.solved}/{easyStats.attempted}
+            </span>
+          </div>
+          <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
+            <div 
+              className="bg-green-500 h-2 rounded-full" 
+              style={{ 
+                width: easyStats.attempted > 0 
+                  ? `${(easyStats.solved / easyStats.attempted) * 100}%` 
+                  : '0%' 
+              }}
+            ></div>
+          </div>
+        </div>
+
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-yellow-500">Medium</span>
+            <span className="text-sm text-[var(--color-text-secondary)]">
+              {mediumStats.solved}/{mediumStats.attempted}
+            </span>
+          </div>
+          <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
+            <div 
+              className="bg-yellow-500 h-2 rounded-full" 
+              style={{ 
+                width: mediumStats.attempted > 0 
+                  ? `${(mediumStats.solved / mediumStats.attempted) * 100}%` 
+                  : '0%' 
+              }}
+            ></div>
+          </div>
+        </div>
+
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-red-500">Hard</span>
+            <span className="text-sm text-[var(--color-text-secondary)]">
+              {hardStats.solved}/{hardStats.attempted}
+            </span>
+          </div>
+          <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
+            <div 
+              className="bg-red-500 h-2 rounded-full" 
+              style={{ 
+                width: hardStats.attempted > 0 
+                  ? `${(hardStats.solved / hardStats.attempted) * 100}%` 
+                  : '0%' 
+              }}
+            ></div>
           </div>
         </div>
       </div>
@@ -221,9 +365,13 @@ const Problems = () => {
           <option value="all">All Categories</option>
           <option value="arrays">Arrays</option>
           <option value="strings">Strings</option>
+          <option value="linked">Linked Lists</option>
           <option value="binary search">Binary Search</option>
           <option value="stack">Stack</option>
-          <option value="design">Design</option>
+          <option value="dynamic">Dynamic Programming</option>
+          <option value="math">Math</option>
+          <option value="tree">Trees</option>
+          <option value="graph">Graphs</option>
         </select>
       </div>
 
@@ -275,13 +423,19 @@ const Problems = () => {
                     onClick={() => handleSolveProblem(problem.id)}
                     className="button button-primary"
                   >
-                    Solve
+                    {problem.solved ? 'Review' : 'Solve'}
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        
+        {filteredProblems.length === 0 && (
+          <div className="text-center py-8 text-[var(--color-text-secondary)]">
+            No problems found matching your criteria.
+          </div>
+        )}
       </div>
     </div>
   );
