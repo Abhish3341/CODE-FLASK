@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Square, RotateCcw, Settings, Clock, MemoryStick, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Play, Square, RotateCcw, Settings, Clock, MemoryStick, AlertTriangle, CheckCircle, Shield, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 import axiosInstance from '../utils/axiosConfig';
 
 interface CodeEditorProps {
@@ -23,71 +23,124 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
   const [executionTime, setExecutionTime] = useState<number | null>(null);
   const [memoryUsed, setMemoryUsed] = useState<number | null>(null);
   const [error, setError] = useState('');
-  const [dockerStatus, setDockerStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
+  const [compilerHealth, setCompilerHealth] = useState<{
+    status: string;
+    docker: string;
+    security: string;
+    supportedLanguages: string[];
+  } | null>(null);
   const [executionMethod, setExecutionMethod] = useState<'docker' | 'native' | null>(null);
+  const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+  const [showInputHint, setShowInputHint] = useState(false);
 
-  // Language templates
-  const templates = {
-    python: `def solution():
-    # Write your solution here
+  // Load template when language changes
+  useEffect(() => {
+    loadTemplate();
+    checkCompilerHealth();
+  }, [language, problemId]);
+
+  // Set default input for linked list problems
+  useEffect(() => {
+    if (problemId && (problemId.includes('merge') || code.includes('ListNode'))) {
+      setInput('[1,2,4]\n[1,3,4]');
+    }
+  }, [problemId, code]);
+
+  const loadTemplate = async () => {
+    setIsLoadingTemplate(true);
+    try {
+      const response = await axiosInstance.get(`/api/problems/${problemId}/template/${language}`);
+      setCode(response.data.template);
+    } catch (error) {
+      console.error('Failed to load template:', error);
+      // Fallback to basic template
+      setCode(getBasicTemplate(language));
+    } finally {
+      setIsLoadingTemplate(false);
+    }
+  };
+
+  const getBasicTemplate = (lang: string) => {
+    const templates = {
+      python: `def solution():
+    """
+    Write your solution here
+    """
+    # Your code here
     pass
 
 # Test your solution
 if __name__ == "__main__":
     result = solution()
-    print(result)`,
-    javascript: `function solution() {
-    // Write your solution here
+    print(f"Result: {result}")`,
+
+      javascript: `function solution() {
+    /**
+     * Write your solution here
+     */
+    // Your code here
     return null;
 }
 
 // Test your solution
-console.log(solution());`,
-    java: `public class Main {
+console.log("Result:", solution());`,
+
+      java: `import java.util.*;
+
+public class Main {
     public static void main(String[] args) {
         Solution solution = new Solution();
-        // Test your solution
-        System.out.println(solution.solve());
+        System.out.println("Result: " + solution.solve());
     }
 }
 
 class Solution {
+    /**
+     * Write your solution here
+     */
     public Object solve() {
-        // Write your solution here
+        // Your code here
         return null;
     }
 }`,
-    cpp: `#include <iostream>
+
+      cpp: `#include <iostream>
 #include <vector>
-#include <string>
 using namespace std;
 
 class Solution {
 public:
-    // Write your solution here
-    void solve() {
-        
+    /**
+     * Write your solution here
+     */
+    auto solve() {
+        // Your code here
+        return 0;
     }
 };
 
 int main() {
     Solution solution;
-    solution.solve();
+    cout << "Result: " << solution.solve() << endl;
     return 0;
 }`
+    };
+
+    return templates[lang as keyof typeof templates] || templates.python;
   };
 
-  useEffect(() => {
-    setCode(templates[language as keyof typeof templates]);
-    checkDockerStatus();
-  }, [language]);
-
-  const checkDockerStatus = async () => {
+  const checkCompilerHealth = async () => {
     try {
       const response = await axiosInstance.get('/api/compiler/health');
-      setDockerStatus(response.data.docker === 'available' ? 'available' : 'unavailable');
+      setCompilerHealth(response.data);
     } catch (error) {
-      setDockerStatus('unavailable');
+      console.error('Failed to check compiler health:', error);
+      setCompilerHealth({
+        status: 'unhealthy',
+        docker: 'unavailable',
+        security: 'low',
+        supportedLanguages: ['python', 'javascript', 'java', 'cpp']
+      });
     }
   };
 
@@ -105,10 +158,12 @@ int main() {
     setExecutionMethod(null);
 
     try {
+      console.log('Sending input to compiler:', input);
+      
       const response = await axiosInstance.post('/api/compiler/execute', {
         code,
         language,
-        input
+        input: input.trim()
       });
 
       if (response.data.success) {
@@ -147,7 +202,7 @@ int main() {
   };
 
   const resetCode = () => {
-    setCode(templates[language as keyof typeof templates]);
+    loadTemplate();
     setOutput('');
     setError('');
     setExecutionTime(null);
@@ -155,27 +210,56 @@ int main() {
     setExecutionMethod(null);
   };
 
-  const getDockerStatusIcon = () => {
-    switch (dockerStatus) {
-      case 'checking':
-        return <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />;
-      case 'available':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'unavailable':
-        return <AlertTriangle className="w-4 h-4 text-orange-500" />;
+  const getSecurityIcon = () => {
+    if (!compilerHealth) return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+    
+    switch (compilerHealth.security) {
+      case 'high':
+        return <Shield className="w-4 h-4 text-green-500" />;
+      case 'medium':
+        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+      default:
+        return <AlertTriangle className="w-4 h-4 text-red-500" />;
     }
   };
 
-  const getDockerStatusText = () => {
-    switch (dockerStatus) {
-      case 'checking':
-        return 'Checking Docker...';
-      case 'available':
-        return 'Docker Available (Secure)';
-      case 'unavailable':
-        return 'Docker Unavailable (Fallback Mode)';
+  const getSecurityText = () => {
+    if (!compilerHealth) return 'Checking security...';
+    
+    switch (compilerHealth.security) {
+      case 'high':
+        return 'High Security (Docker Isolated)';
+      case 'medium':
+        return 'Medium Security (Native Execution)';
+      default:
+        return 'Low Security';
     }
   };
+
+  const getExecutionMethodBadge = () => {
+    if (!executionMethod) return null;
+    
+    return (
+      <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
+        executionMethod === 'docker' 
+          ? 'bg-green-500/20 text-green-500' 
+          : 'bg-orange-500/20 text-orange-500'
+      }`}>
+        {executionMethod === 'docker' ? <Shield className="w-3 h-3" /> : <Zap className="w-3 h-3" />}
+        {executionMethod === 'docker' ? 'Secure' : 'Native'}
+      </div>
+    );
+  };
+
+  const isLinkedListProblem = problemId?.includes('merge') || code.includes('ListNode');
+
+  if (isLoadingTemplate) {
+    return (
+      <div className="h-full flex items-center justify-center bg-[var(--color-bg-primary)]">
+        <div className="text-[var(--color-text-secondary)]">Loading template...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col bg-[var(--color-bg-primary)]">
@@ -187,10 +271,10 @@ int main() {
             onChange={(e) => setLanguage(e.target.value)}
             className="px-3 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="python">Python</option>
-            <option value="javascript">JavaScript</option>
-            <option value="java">Java</option>
-            <option value="cpp">C++</option>
+            <option value="python">Python 3.9</option>
+            <option value="javascript">JavaScript (Node.js)</option>
+            <option value="java">Java 17</option>
+            <option value="cpp">C++ (GCC)</option>
           </select>
           
           <button
@@ -202,11 +286,11 @@ int main() {
             Reset
           </button>
 
-          {/* Docker Status Indicator */}
+          {/* Security Status Indicator */}
           <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-bg-secondary)] rounded-lg">
-            {getDockerStatusIcon()}
+            {getSecurityIcon()}
             <span className="text-sm text-[var(--color-text-secondary)]">
-              {getDockerStatusText()}
+              {getSecurityText()}
             </span>
           </div>
         </div>
@@ -231,17 +315,17 @@ int main() {
         </div>
       </div>
 
-      {/* Docker Warning */}
-      {dockerStatus === 'unavailable' && (
+      {/* Security Warning */}
+      {compilerHealth?.docker === 'unavailable' && (
         <div className="bg-orange-100 dark:bg-orange-900 border-l-4 border-orange-500 p-4">
           <div className="flex items-start">
             <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5 mr-3" />
             <div>
               <h3 className="text-sm font-medium text-orange-800 dark:text-orange-200">
-                Docker Engine Not Running
+                Docker Engine Not Running - Using Fallback Mode
               </h3>
               <div className="mt-2 text-sm text-orange-700 dark:text-orange-300">
-                <p>Code will run in fallback mode (less secure). To enable secure execution:</p>
+                <p>Code will run in native mode with reduced security. For maximum security:</p>
                 <ol className="list-decimal list-inside mt-1 space-y-1">
                   <li>Start Docker Desktop application</li>
                   <li>Wait for Docker engine to start</li>
@@ -253,11 +337,45 @@ int main() {
         </div>
       )}
 
+      {/* Collapsible Input Helper for Linked List Problems */}
+      {isLinkedListProblem && (
+        <div className="bg-blue-100 dark:bg-blue-900 border-l-4 border-blue-500">
+          <button
+            onClick={() => setShowInputHint(!showInputHint)}
+            className="w-full p-4 flex items-center justify-between text-left hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+          >
+            <div className="flex items-center">
+              <CheckCircle className="w-5 h-5 text-blue-500 mr-3" />
+              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                💡 Input Format for Linked Lists
+              </h3>
+            </div>
+            {showInputHint ? 
+              <ChevronUp className="w-4 h-4 text-blue-500" /> : 
+              <ChevronDown className="w-4 h-4 text-blue-500" />
+            }
+          </button>
+          
+          {showInputHint && (
+            <div className="px-4 pb-4">
+              <div className="text-sm text-blue-700 dark:text-blue-300">
+                <p>For linked list problems, provide input in the format:</p>
+                <div className="bg-blue-200 dark:bg-blue-800 p-2 rounded text-xs font-mono mt-2">
+                  [1,2,4]<br/>
+                  [1,3,4]
+                </div>
+                <p className="mt-2">Each line represents one linked list. The code will automatically parse this format.</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Code Editor */}
       <div className="flex-1 flex">
         <div className="flex-1 flex flex-col">
           <div className="p-4 border-b border-[var(--color-border)]">
-            <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Code</h3>
+            <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Code Editor</h3>
           </div>
           <textarea
             value={code}
@@ -274,12 +392,18 @@ int main() {
           <div className="flex-1 flex flex-col">
             <div className="p-4 border-b border-[var(--color-border)]">
               <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Input</h3>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                Enter test input for your program
+              </p>
             </div>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="flex-1 p-4 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] font-mono text-sm resize-none focus:outline-none"
-              placeholder="Enter input for your program..."
+              placeholder={isLinkedListProblem ? 
+                "For linked lists:\n[1,2,4]\n[1,3,4]" : 
+                "Enter input for your program..."
+              }
             />
           </div>
 
@@ -301,17 +425,7 @@ int main() {
                       {memoryUsed}KB
                     </div>
                   )}
-                  {executionMethod && (
-                    <div className="flex items-center gap-1">
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        executionMethod === 'docker' 
-                          ? 'bg-green-500/20 text-green-500' 
-                          : 'bg-orange-500/20 text-orange-500'
-                      }`}>
-                        {executionMethod === 'docker' ? 'Secure' : 'Fallback'}
-                      </span>
-                    </div>
-                  )}
+                  {getExecutionMethodBadge()}
                 </div>
               </div>
             </div>

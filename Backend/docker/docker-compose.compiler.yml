@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: codeflask-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: codeflask
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - codeflask-network
+
+  # Backend API with Compiler Service
+  backend:
+    build: 
+      context: ..
+      dockerfile: Dockerfile
+    container_name: codeflask-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 8000
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/codeflask?authSource=admin
+      SECRET_KEY: your-secret-key-here
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # For Docker-in-Docker
+      - ../temp:/usr/src/app/temp
+    networks:
+      - codeflask-network
+    privileged: true  # Required for Docker-in-Docker
+
+  # Compiler Service (separate microservice)
+  compiler-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.compiler
+    container_name: codeflask-compiler
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 8001
+    ports:
+      - "8001:8001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../temp:/usr/src/app/temp
+    networks:
+      - codeflask-network
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
+volumes:
+  mongodb_data:
+
+networks:
+  codeflask-network:
+    driver: bridge

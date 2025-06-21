@@ -4,6 +4,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 const Problem = require('../models/Problems');
 const UserStats = require('../models/UserStats');
 const Activity = require('../models/Activity');
+const TemplateService = require('../services/TemplateService');
 
 // Get all problems with user's solve status
 router.get('/', authMiddleware, async (req, res) => {
@@ -44,6 +45,43 @@ router.get('/:id', authMiddleware, async (req, res) => {
     } catch (error) {
         console.error('Error fetching problem:', error);
         res.status(500).json({ error: 'Failed to fetch problem' });
+    }
+});
+
+// NEW: Get template for specific problem and language
+router.get('/:id/template/:language', authMiddleware, async (req, res) => {
+    try {
+        const { id, language } = req.params;
+        
+        // Validate language
+        const supportedLanguages = ['python', 'javascript', 'java', 'cpp'];
+        if (!supportedLanguages.includes(language)) {
+            return res.status(400).json({ error: 'Unsupported language' });
+        }
+        
+        // Get problem data
+        const problem = await Problem.findById(id);
+        if (!problem) {
+            return res.status(404).json({ error: 'Problem not found' });
+        }
+        
+        // Generate template
+        const template = TemplateService.getTemplateForProblem(language, id, {
+            title: problem.title,
+            description: problem.description,
+            category: problem.category
+        });
+        
+        res.json({
+            language,
+            problemId: id,
+            template,
+            problemType: TemplateService.detectProblemType(problem.title, problem.description, problem.category)
+        });
+        
+    } catch (error) {
+        console.error('Error generating template:', error);
+        res.status(500).json({ error: 'Failed to generate template' });
     }
 });
 
