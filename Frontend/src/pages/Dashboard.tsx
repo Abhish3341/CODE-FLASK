@@ -436,7 +436,7 @@ const Dashboard = () => {
         {/* Progress Overview */}
         <div className="card p-6">
           <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
+            
             Progress Overview
           </h3>
           
