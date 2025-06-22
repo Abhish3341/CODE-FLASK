@@ -91,7 +91,7 @@ const Features = () => {
             Ready to Start Coding?
           </h2>
           <p className="text-[var(--color-text-secondary)] mb-8 max-w-2xl mx-auto">
-            Join thousands of developers who trust CodeFlask for their coding needs.
+            Join developers who trust CodeFlask for their coding needs.
             Start coding now and experience the difference.
           </p>
           <Link
