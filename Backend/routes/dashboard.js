@@ -6,7 +6,7 @@ const Activity = require('../models/Activity');
 const Problem = require('../models/Problems');
 const ActivityService = require('../services/ActivityService');
 
-// Get user dashboard data with real activity tracking
+// Get user dashboard data with enhanced progress overview
 router.get('/', auth, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -20,9 +20,6 @@ router.get('/', auth, async (req, res) => {
 
     // Get total problems count for context
     const totalProblems = await Problem.countDocuments();
-
-    // Get user's recent activity (last 10 activities)
-    const recentActivity = await ActivityService.getRecentActivity(userId, 10);
 
     // Get solved problem IDs for recommendations
     const solvedProblemIds = await ActivityService.getSolvedProblems(userId);
@@ -61,15 +58,8 @@ router.get('/', auth, async (req, res) => {
       languageStats: userStats.languageStats
     };
 
-    // Format recent activity for display
-    const formattedActivity = recentActivity.map(activity => ({
-      id: activity._id,
-      problem: activity.problemTitle,
-      type: activity.type,
-      language: activity.language,
-      timeSpent: activity.timeSpent,
-      timestamp: activity.createdAt
-    }));
+    // Get progress overview data
+    const progressOverview = await getProgressOverview(userId);
 
     // Format recommended problems
     const formattedRecommendations = recommendedProblems.map(problem => ({
@@ -82,7 +72,7 @@ router.get('/', auth, async (req, res) => {
 
     res.json({
       stats,
-      recentActivity: formattedActivity,
+      progressOverview,
       recommendedProblems: formattedRecommendations,
       userLevel: recommendedDifficulty
     });
@@ -92,6 +82,212 @@ router.get('/', auth, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch dashboard data' });
   }
 });
+
+// Helper function to get progress overview data
+async function getProgressOverview(userId) {
+  try {
+    // Get all user activities
+    const activities = await Activity.find({ userId }).sort({ createdAt: -1 });
+    
+    // Calculate current streak
+    const currentStreak = calculateCurrentStreak(activities);
+    
+    // Calculate this week's time
+    const thisWeekTime = calculateThisWeekTime(activities);
+    
+    // Get difficulty completion rates
+    const difficultyRates = await calculateDifficultyRates(userId);
+    
+    // Get language distribution
+    const languageDistribution = calculateLanguageDistribution(activities);
+    
+    // Get weekly activity data (last 7 days)
+    const weeklyActivity = calculateWeeklyActivity(activities);
+    
+    // Get monthly progress
+    const monthlyProgress = calculateMonthlyProgress(activities);
+
+    return {
+      currentStreak,
+      thisWeekTime,
+      difficultyRates,
+      languageDistribution,
+      weeklyActivity,
+      monthlyProgress,
+      totalActiveDays: calculateTotalActiveDays(activities),
+      averageSessionTime: calculateAverageSessionTime(activities)
+    };
+  } catch (error) {
+    console.error('Error calculating progress overview:', error);
+    return {
+      currentStreak: 0,
+      thisWeekTime: 0,
+      difficultyRates: { easy: 0, medium: 0, hard: 0 },
+      languageDistribution: {},
+      weeklyActivity: [],
+      monthlyProgress: { solved: 0, attempted: 0 },
+      totalActiveDays: 0,
+      averageSessionTime: 0
+    };
+  }
+}
+
+function calculateCurrentStreak(activities) {
+  if (!activities.length) return 0;
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  let streak = 0;
+  let currentDate = new Date(today);
+  
+  // Check each day going backwards
+  for (let i = 0; i < 30; i++) { // Check last 30 days max
+    const dayStart = new Date(currentDate);
+    const dayEnd = new Date(currentDate);
+    dayEnd.setHours(23, 59, 59, 999);
+    
+    const hasActivity = activities.some(activity => {
+      const activityDate = new Date(activity.createdAt);
+      return activityDate >= dayStart && activityDate <= dayEnd;
+    });
+    
+    if (hasActivity) {
+      streak++;
+    } else if (i > 0) { // Allow for today to have no activity yet
+      break;
+    }
+    
+    currentDate.setDate(currentDate.getDate() - 1);
+  }
+  
+  return streak;
+}
+
+function calculateThisWeekTime(activities) {
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  
+  const thisWeekActivities = activities.filter(activity => 
+    new Date(activity.createdAt) >= oneWeekAgo
+  );
+  
+  return thisWeekActivities.reduce((total, activity) => 
+    total + (activity.timeSpent || 0), 0
+  );
+}
+
+async function calculateDifficultyRates(userId) {
+  try {
+    const Problem = require('../models/Problems');
+    
+    // Get all problems by difficulty
+    const easyProblems = await Problem.countDocuments({ difficulty: 'Easy' });
+    const mediumProblems = await Problem.countDocuments({ difficulty: 'Medium' });
+    const hardProblems = await Problem.countDocuments({ difficulty: 'Hard' });
+    
+    // Get user's solved problems by difficulty
+    const solvedActivities = await Activity.find({ 
+      userId, 
+      type: 'solved' 
+    }).distinct('problemId');
+    
+    const solvedProblems = await Problem.find({
+      _id: { $in: solvedActivities }
+    });
+    
+    const easySolved = solvedProblems.filter(p => p.difficulty === 'Easy').length;
+    const mediumSolved = solvedProblems.filter(p => p.difficulty === 'Medium').length;
+    const hardSolved = solvedProblems.filter(p => p.difficulty === 'Hard').length;
+    
+    return {
+      easy: easyProblems > 0 ? Math.round((easySolved / easyProblems) * 100) : 0,
+      medium: mediumProblems > 0 ? Math.round((mediumSolved / mediumProblems) * 100) : 0,
+      hard: hardProblems > 0 ? Math.round((hardSolved / hardProblems) * 100) : 0
+    };
+  } catch (error) {
+    console.error('Error calculating difficulty rates:', error);
+    return { easy: 0, medium: 0, hard: 0 };
+  }
+}
+
+function calculateLanguageDistribution(activities) {
+  const distribution = {};
+  
+  activities.forEach(activity => {
+    if (activity.language) {
+      distribution[activity.language] = (distribution[activity.language] || 0) + 1;
+    }
+  });
+  
+  return distribution;
+}
+
+function calculateWeeklyActivity(activities) {
+  const weeklyData = [];
+  const today = new Date();
+  
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    date.setHours(0, 0, 0, 0);
+    
+    const nextDay = new Date(date);
+    nextDay.setDate(nextDay.getDate() + 1);
+    
+    const dayActivities = activities.filter(activity => {
+      const activityDate = new Date(activity.createdAt);
+      return activityDate >= date && activityDate < nextDay;
+    });
+    
+    weeklyData.push({
+      date: date.toISOString().split('T')[0],
+      day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+      count: dayActivities.length,
+      timeSpent: dayActivities.reduce((total, activity) => total + (activity.timeSpent || 0), 0)
+    });
+  }
+  
+  return weeklyData;
+}
+
+function calculateMonthlyProgress(activities) {
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  
+  const monthlyActivities = activities.filter(activity => 
+    new Date(activity.createdAt) >= oneMonthAgo
+  );
+  
+  const solved = monthlyActivities.filter(a => a.type === 'solved').length;
+  const attempted = new Set(monthlyActivities.map(a => a.problemId.toString())).size;
+  
+  return { solved, attempted };
+}
+
+function calculateTotalActiveDays(activities) {
+  const activeDays = new Set();
+  
+  activities.forEach(activity => {
+    const date = new Date(activity.createdAt);
+    const dateString = date.toISOString().split('T')[0];
+    activeDays.add(dateString);
+  });
+  
+  return activeDays.size;
+}
+
+function calculateAverageSessionTime(activities) {
+  if (!activities.length) return 0;
+  
+  const totalTime = activities.reduce((total, activity) => 
+    total + (activity.timeSpent || 0), 0
+  );
+  
+  const activeDays = calculateTotalActiveDays(activities);
+  
+  return activeDays > 0 ? Math.round(totalTime / activeDays) : 0;
+}
 
 // Get detailed user statistics
 router.get('/stats/detailed', auth, async (req, res) => {

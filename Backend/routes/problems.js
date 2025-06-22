@@ -7,24 +7,61 @@ const Activity = require('../models/Activity');
 const TemplateService = require('../services/TemplateService');
 const ActivityService = require('../services/ActivityService');
 
-// Get all problems with user's solve status
+// Get all problems with user's solve status and activity status
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const problems = await Problem.find().select('title difficulty category acceptance totalSubmissions');
         
-        // Get user's solved problems
-        const solvedProblemIds = await ActivityService.getSolvedProblems(req.user.id);
-        const solvedProblemIdsStr = solvedProblemIds.map(id => id.toString());
+        // Get user's activities for all problems
+        const userActivities = await Activity.find({ userId: req.user.id });
         
-        const problemsWithStatus = problems.map(problem => ({
-            id: problem._id,
-            title: problem.title,
-            difficulty: problem.difficulty,
-            category: problem.category,
-            acceptance: problem.acceptance,
-            submissions: problem.totalSubmissions,
-            solved: solvedProblemIdsStr.includes(problem._id.toString())
-        }));
+        // Create maps for quick lookup
+        const attemptedProblems = new Set();
+        const submittedProblems = new Set();
+        const solvedProblems = new Set();
+        
+        userActivities.forEach(activity => {
+            const problemIdStr = activity.problemId.toString();
+            
+            if (activity.type === 'attempted') {
+                attemptedProblems.add(problemIdStr);
+            } else if (activity.type === 'submitted') {
+                submittedProblems.add(problemIdStr);
+                attemptedProblems.add(problemIdStr); // Submitted implies attempted
+            } else if (activity.type === 'solved') {
+                solvedProblems.add(problemIdStr);
+                submittedProblems.add(problemIdStr); // Solved implies submitted
+                attemptedProblems.add(problemIdStr); // Solved implies attempted
+            }
+        });
+        
+        const problemsWithStatus = problems.map(problem => {
+            const problemIdStr = problem._id.toString();
+            
+            // Determine the highest status achieved
+            let status = 'not-attempted';
+            if (attemptedProblems.has(problemIdStr)) {
+                status = 'attempted';
+            }
+            if (submittedProblems.has(problemIdStr)) {
+                status = 'submitted';
+            }
+            if (solvedProblems.has(problemIdStr)) {
+                status = 'solved';
+            }
+            
+            return {
+                id: problem._id,
+                title: problem.title,
+                difficulty: problem.difficulty,
+                category: problem.category,
+                acceptance: problem.acceptance,
+                submissions: problem.totalSubmissions,
+                status: status,
+                // Legacy field for backward compatibility
+                solved: solvedProblems.has(problemIdStr)
+            };
+        });
 
         res.json(problemsWithStatus);
     } catch (error) {

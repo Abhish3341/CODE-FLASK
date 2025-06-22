@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Trophy, Code, CheckCircle, Clock, TrendingUp, Target, Zap, Award } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Trophy, Code, CheckCircle, Clock, TrendingUp, Target, Zap, Award, ExternalLink, Calendar, Flame, BarChart3, PieChart } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../utils/axiosConfig';
@@ -23,14 +24,28 @@ interface DashboardData {
       cpp: { solved: number; attempted: number };
     };
   };
-  recentActivity: Array<{
-    id: string;
-    problem: string;
-    type: string;
-    language: string;
-    timeSpent: number;
-    timestamp: string;
-  }>;
+  progressOverview: {
+    currentStreak: number;
+    thisWeekTime: number;
+    difficultyRates: {
+      easy: number;
+      medium: number;
+      hard: number;
+    };
+    languageDistribution: Record<string, number>;
+    weeklyActivity: Array<{
+      date: string;
+      day: string;
+      count: number;
+      timeSpent: number;
+    }>;
+    monthlyProgress: {
+      solved: number;
+      attempted: number;
+    };
+    totalActiveDays: number;
+    averageSessionTime: number;
+  };
   recommendedProblems: Array<{
     id: string;
     title: string;
@@ -54,32 +69,6 @@ const formatRelativeTime = (timestamp: string) => {
   if (hours > 0) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
   if (minutes > 0) return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
   return 'just now';
-};
-
-const getActivityIcon = (type: string) => {
-  switch (type) {
-    case 'solved':
-      return <CheckCircle className="w-5 h-5 text-green-500" />;
-    case 'submitted':
-      return <Code className="w-5 h-5 text-blue-500" />;
-    case 'attempted':
-      return <Target className="w-5 h-5 text-yellow-500" />;
-    default:
-      return <Code className="w-5 h-5 text-gray-500" />;
-  }
-};
-
-const getActivityColor = (type: string) => {
-  switch (type) {
-    case 'solved':
-      return 'bg-green-500/20';
-    case 'submitted':
-      return 'bg-blue-500/20';
-    case 'attempted':
-      return 'bg-yellow-500/20';
-    default:
-      return 'bg-gray-500/20';
-  }
 };
 
 const Dashboard = () => {
@@ -112,7 +101,133 @@ const Dashboard = () => {
   }, []);
 
   const handleSolveProblem = (problemId: string) => {
-    window.open(`/app/problems/${problemId}/solve`, '_blank', 'noopener,noreferrer');
+    // Open problem in new tab
+    const url = `/app/problems/${problemId}/solve`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const renderDifficultyChart = () => {
+    if (!data?.progressOverview.difficultyRates) return null;
+    
+    const { easy, medium, hard } = data.progressOverview.difficultyRates;
+    const maxRate = Math.max(easy, medium, hard, 1);
+    
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <span className="text-sm text-[var(--color-text-secondary)]">Easy</span>
+          </div>
+          <span className="text-sm font-medium text-[var(--color-text-primary)]">{easy}%</span>
+        </div>
+        <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
+          <div 
+            className="bg-green-500 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${(easy / maxRate) * 100}%` }}
+          ></div>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+            <span className="text-sm text-[var(--color-text-secondary)]">Medium</span>
+          </div>
+          <span className="text-sm font-medium text-[var(--color-text-primary)]">{medium}%</span>
+        </div>
+        <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
+          <div 
+            className="bg-yellow-500 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${(medium / maxRate) * 100}%` }}
+          ></div>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+            <span className="text-sm text-[var(--color-text-secondary)]">Hard</span>
+          </div>
+          <span className="text-sm font-medium text-[var(--color-text-primary)]">{hard}%</span>
+        </div>
+        <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
+          <div 
+            className="bg-red-500 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${(hard / maxRate) * 100}%` }}
+          ></div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderLanguageDistribution = () => {
+    if (!data?.progressOverview.languageDistribution) return null;
+    
+    const languages = Object.entries(data.progressOverview.languageDistribution);
+    const total = languages.reduce((sum, [, count]) => sum + count, 0);
+    
+    if (total === 0) {
+      return (
+        <div className="text-center text-[var(--color-text-secondary)] py-4">
+          <Code className="w-8 h-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">No coding activity yet</p>
+        </div>
+      );
+    }
+    
+    const colors = {
+      python: '#3776ab',
+      javascript: '#f7df1e',
+      java: '#ed8b00',
+      cpp: '#00599c'
+    };
+    
+    return (
+      <div className="space-y-3">
+        {languages.map(([language, count]) => {
+          const percentage = Math.round((count / total) * 100);
+          return (
+            <div key={language} className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: colors[language as keyof typeof colors] || '#6b7280' }}
+                ></div>
+                <span className="text-sm text-[var(--color-text-secondary)] capitalize">
+                  {language}
+                </span>
+              </div>
+              <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                {percentage}%
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderWeeklyActivity = () => {
+    if (!data?.progressOverview.weeklyActivity) return null;
+    
+    const maxCount = Math.max(...data.progressOverview.weeklyActivity.map(d => d.count), 1);
+    
+    return (
+      <div className="flex items-end justify-between gap-2 h-20">
+        {data.progressOverview.weeklyActivity.map((day, index) => (
+          <div key={index} className="flex flex-col items-center gap-1 flex-1">
+            <div 
+              className="w-full bg-indigo-500 rounded-t transition-all duration-500 min-h-[4px]"
+              style={{ 
+                height: `${Math.max((day.count / maxCount) * 60, 4)}px`,
+                opacity: day.count > 0 ? 1 : 0.3
+              }}
+              title={`${day.count} activities on ${day.day}`}
+            ></div>
+            <span className="text-xs text-[var(--color-text-secondary)]">{day.day}</span>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   if (loading) {
@@ -141,7 +256,7 @@ const Dashboard = () => {
 
   if (!data) return null;
 
-  const { stats } = data;
+  const { stats, progressOverview } = data;
 
   return (
     <div className="h-full p-8 bg-[var(--color-bg-primary)]">
@@ -167,7 +282,8 @@ const Dashboard = () => {
           </p>
         </div>
 
-        <div className="card p-6">
+        {/* Make the Solved card clickable */}
+        <Link to="/app/problems" className="card p-6 hover:shadow-lg transition-all cursor-pointer">
           <Code className="w-8 h-8 text-[#4B96F8] mb-4" />
           <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-1">Solved</h3>
           <p className="text-4xl font-bold text-[#4B96F8]">
@@ -176,7 +292,7 @@ const Dashboard = () => {
           <p className="text-sm text-[var(--color-text-secondary)] mt-1">
             Problems completed
           </p>
-        </div>
+        </Link>
 
         <div className="card p-6">
           <TrendingUp className="w-8 h-8 text-[#4ADE80] mb-4" />
@@ -239,35 +355,66 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Activity and Recommendations */}
+      {/* Progress Overview and Recommendations */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Progress Overview */}
         <div className="card p-6">
-          <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-4">Recent Activity</h3>
-          <div className="space-y-4">
-            {data.recentActivity.length > 0 ? (
-              data.recentActivity.slice(0, 5).map((activity) => (
-                <div key={activity.id} className={`flex items-center p-3 ${getActivityColor(activity.type)} rounded-lg`}>
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-4">
-                    {getActivityIcon(activity.type)}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-[var(--color-text-primary)]">{activity.problem}</h4>
-                    <p className="text-sm text-[var(--color-text-secondary)]">
-                      {activity.type} • {activity.language} • {formatRelativeTime(activity.timestamp)}
-                      {activity.timeSpent > 0 && ` • ${activity.timeSpent}m`}
-                    </p>
-                  </div>
+          <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5" />
+            Progress Overview
+          </h3>
+          
+          {/* Key Metrics */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-[var(--color-bg-primary)] p-4 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-orange-500/20 rounded-lg">
+                  <Flame className="w-5 h-5 text-orange-500" />
                 </div>
-              ))
-            ) : (
-              <div className="text-center text-[var(--color-text-secondary)] py-8">
-                <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No activity yet. Start solving problems!</p>
+                <div>
+                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                    {progressOverview.currentStreak}
+                  </p>
+                  <p className="text-sm text-[var(--color-text-secondary)]">Day Streak</p>
+                </div>
               </div>
-            )}
+            </div>
+            
+            <div className="bg-[var(--color-bg-primary)] p-4 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <Clock className="w-5 h-5 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                    {Math.round(progressOverview.thisWeekTime / 60)}h
+                  </p>
+                  <p className="text-sm text-[var(--color-text-secondary)]">This Week</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Weekly Activity Chart */}
+          <div className="mb-6">
+            <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">Weekly Activity</h4>
+            {renderWeeklyActivity()}
+          </div>
+
+          {/* Difficulty Completion Rates */}
+          <div className="mb-6">
+            <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">Difficulty Completion</h4>
+            {renderDifficultyChart()}
+          </div>
+
+          {/* Language Distribution */}
+          <div>
+            <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">Language Usage</h4>
+            {renderLanguageDistribution()}
           </div>
         </div>
 
+        {/* Recommended Problems */}
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">Recommended for You</h3>
@@ -292,9 +439,11 @@ const Dashboard = () => {
                   </div>
                   <button 
                     onClick={() => handleSolveProblem(problem.id)}
-                    className="button button-primary"
+                    className="flex items-center gap-2 button button-primary"
+                    title="Open in new tab"
                   >
                     Solve
+                    <ExternalLink className="w-4 h-4" />
                   </button>
                 </div>
               ))
@@ -304,6 +453,24 @@ const Dashboard = () => {
                 <p>Great job! You've solved all recommended problems.</p>
               </div>
             )}
+          </div>
+
+          {/* Additional Progress Stats */}
+          <div className="mt-6 pt-6 border-t border-[var(--color-border)]">
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div>
+                <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  {progressOverview.totalActiveDays}
+                </p>
+                <p className="text-sm text-[var(--color-text-secondary)]">Active Days</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  {progressOverview.averageSessionTime}m
+                </p>
+                <p className="text-sm text-[var(--color-text-secondary)]">Avg Session</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
