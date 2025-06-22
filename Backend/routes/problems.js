@@ -7,10 +7,10 @@ const Activity = require('../models/Activity');
 const TemplateService = require('../services/TemplateService');
 const ActivityService = require('../services/ActivityService');
 
-// Get all problems with user's solve status and activity status
+// Get all problems with user's solve status and activity status (without acceptance/submissions)
 router.get('/', authMiddleware, async (req, res) => {
     try {
-        const problems = await Problem.find().select('title difficulty category acceptance totalSubmissions');
+        const problems = await Problem.find().select('title difficulty category');
         
         // Get user's activities for all problems
         const userActivities = await Activity.find({ userId: req.user.id });
@@ -55,8 +55,6 @@ router.get('/', authMiddleware, async (req, res) => {
                 title: problem.title,
                 difficulty: problem.difficulty,
                 category: problem.category,
-                acceptance: problem.acceptance,
-                submissions: problem.totalSubmissions,
                 status: status,
                 // Legacy field for backward compatibility
                 solved: solvedProblems.has(problemIdStr)

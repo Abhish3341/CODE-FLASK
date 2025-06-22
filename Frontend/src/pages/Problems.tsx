@@ -8,8 +8,6 @@ interface Problem {
   title: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   category: string;
-  acceptance: number;
-  submissions: number;
   status: 'not-attempted' | 'attempted' | 'submitted' | 'solved';
   solved: boolean; // Legacy field for backward compatibility
 }
@@ -477,14 +475,6 @@ const Problems = () => {
                     <span className="flex items-center gap-1">
                       <Code className="w-4 h-4" />
                       {problem.category}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <CheckCircle className="w-4 h-4" />
-                      {problem.acceptance}% acceptance
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {problem.submissions} submissions
                     </span>
                   </div>
                 </div>

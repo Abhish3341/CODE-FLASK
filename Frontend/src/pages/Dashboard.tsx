@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, Code, CheckCircle, Clock, TrendingUp, Target, Zap, Award, ExternalLink, Calendar, Flame, BarChart3, PieChart } from 'lucide-react';
+import { Trophy, Code, CheckCircle, Clock, TrendingUp, Target, Zap, Award, ExternalLink, Calendar, Flame, BarChart3, PieChart, FileText, Play, AlertCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../utils/axiosConfig';
@@ -51,25 +51,10 @@ interface DashboardData {
     title: string;
     difficulty: string;
     category: string;
-    acceptance: number;
+    status: 'not-attempted' | 'attempted' | 'submitted' | 'solved';
   }>;
   userLevel: string;
 }
-
-const formatRelativeTime = (timestamp: string) => {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) return `${days} ${days === 1 ? 'day' : 'days'} ago`;
-  if (hours > 0) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
-  if (minutes > 0) return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
-  return 'just now';
-};
 
 const Dashboard = () => {
   const { isDarkMode } = useTheme();
@@ -104,6 +89,97 @@ const Dashboard = () => {
     // Open problem in new tab
     const url = `/app/problems/${problemId}/solve`;
     window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy':
+        return 'text-green-500 bg-green-500/10';
+      case 'medium':
+        return 'text-yellow-500 bg-yellow-500/10';
+      case 'hard':
+        return 'text-red-500 bg-red-500/10';
+      default:
+        return 'text-gray-500 bg-gray-500/10';
+    }
+  };
+
+  const getDifficultyIcon = (difficulty: string) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy':
+        return <Target className="w-4 h-4" />;
+      case 'medium':
+        return <Zap className="w-4 h-4" />;
+      case 'hard':
+        return <Award className="w-4 h-4" />;
+      default:
+        return <Code className="w-4 h-4" />;
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'solved':
+        return <CheckCircle className="w-6 h-6 text-green-500" />;
+      case 'submitted':
+        return <FileText className="w-6 h-6 text-blue-500" />;
+      case 'attempted':
+        return <Play className="w-6 h-6 text-yellow-500" />;
+      default:
+        return <div className="w-6 h-6 border-2 border-[var(--color-border)] rounded-full"></div>;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'solved':
+        return 'Solved';
+      case 'submitted':
+        return 'Submitted';
+      case 'attempted':
+        return 'Attempted';
+      default:
+        return 'Not Attempted';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'solved':
+        return 'border-l-4 border-green-500 bg-green-500/5';
+      case 'submitted':
+        return 'border-l-4 border-blue-500 bg-blue-500/5';
+      case 'attempted':
+        return 'border-l-4 border-yellow-500 bg-yellow-500/5';
+      default:
+        return 'border-l-4 border-transparent';
+    }
+  };
+
+  const getSolveButtonStyle = (status: string) => {
+    switch (status) {
+      case 'solved':
+        return 'bg-green-500/20 text-green-500 hover:bg-green-500/30 border border-green-500/30';
+      case 'submitted':
+        return 'bg-blue-500/20 text-blue-500 hover:bg-blue-500/30 border border-blue-500/30';
+      case 'attempted':
+        return 'bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30 border border-yellow-500/30';
+      default:
+        return 'bg-indigo-600 hover:bg-indigo-700 text-white';
+    }
+  };
+
+  const getSolveButtonText = (status: string) => {
+    switch (status) {
+      case 'solved':
+        return 'Solved';
+      case 'submitted':
+        return 'Review';
+      case 'attempted':
+        return 'Continue';
+      default:
+        return 'Solve';
+    }
   };
 
   const renderDifficultyChart = () => {
@@ -414,37 +490,63 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Recommended Problems */}
+        {/* Recommended Problems - Updated Design */}
         <div className="card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">Recommended for You</h3>
-            <span className="px-3 py-1 bg-indigo-500/20 text-indigo-500 rounded-full text-sm">
-              {data.userLevel} Level
-            </span>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">Activity and Recommendations</h3>
+            
           </div>
+          
           <div className="space-y-4">
             {data.recommendedProblems.length > 0 ? (
               data.recommendedProblems.map((problem) => (
-                <div key={problem.id} className="flex items-center justify-between p-3 bg-[var(--color-bg-primary)] rounded-lg">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-[#4ADE80] bg-opacity-20 rounded-lg flex items-center justify-center mr-4">
-                      <Code className="w-5 h-5 text-[#4ADE80]" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-[var(--color-text-primary)]">{problem.title}</h4>
-                      <p className="text-sm text-[var(--color-text-secondary)]">
-                        {problem.difficulty} • {problem.category} • {problem.acceptance}% acceptance
-                      </p>
+                <div key={problem.id} className={`p-4 rounded-lg transition-all hover:shadow-md ${getStatusColor(problem.status)}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1">
+                      {/* Status Icon */}
+                      <div className="flex-shrink-0">
+                        {getStatusIcon(problem.status)}
+                      </div>
+
+                      {/* Problem Info */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h4 className="font-medium text-[var(--color-text-primary)]">
+                            {problem.title}
+                          </h4>
+                          <span className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 ${getDifficultyColor(problem.difficulty)}`}>
+                            {getDifficultyIcon(problem.difficulty)}
+                            {problem.difficulty}
+                          </span>
+                          {/* Status Badge */}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            problem.status === 'solved' ? 'bg-green-500/20 text-green-500' :
+                            problem.status === 'submitted' ? 'bg-blue-500/20 text-blue-500' :
+                            problem.status === 'attempted' ? 'bg-yellow-500/20 text-yellow-500' :
+                            'bg-gray-500/20 text-gray-500'
+                          }`}>
+                            {getStatusText(problem.status)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+                          <Code className="w-4 h-4" />
+                          {problem.category}
+                        </div>
+                      </div>
+
+                      {/* Solve Button */}
+                      <div className="flex-shrink-0">
+                        <button
+                          onClick={() => handleSolveProblem(problem.id)}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium ${getSolveButtonStyle(problem.status)}`}
+                          title="Open in new tab"
+                        >
+                          {getSolveButtonText(problem.status)}
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleSolveProblem(problem.id)}
-                    className="flex items-center gap-2 button button-primary"
-                    title="Open in new tab"
-                  >
-                    Solve
-                    <ExternalLink className="w-4 h-4" />
-                  </button>
                 </div>
               ))
             ) : (

@@ -24,6 +24,29 @@ router.get('/', auth, async (req, res) => {
     // Get solved problem IDs for recommendations
     const solvedProblemIds = await ActivityService.getSolvedProblems(userId);
 
+    // Get user's activities for status tracking
+    const userActivities = await Activity.find({ userId });
+    
+    // Create maps for quick lookup
+    const attemptedProblems = new Set();
+    const submittedProblems = new Set();
+    const solvedProblems = new Set();
+    
+    userActivities.forEach(activity => {
+      const problemIdStr = activity.problemId.toString();
+      
+      if (activity.type === 'attempted') {
+        attemptedProblems.add(problemIdStr);
+      } else if (activity.type === 'submitted') {
+        submittedProblems.add(problemIdStr);
+        attemptedProblems.add(problemIdStr); // Submitted implies attempted
+      } else if (activity.type === 'solved') {
+        solvedProblems.add(problemIdStr);
+        submittedProblems.add(problemIdStr); // Solved implies submitted
+        attemptedProblems.add(problemIdStr); // Solved implies attempted
+      }
+    });
+
     // Get recommended problems based on user's level and unsolved problems
     let recommendedDifficulty = 'Easy';
     if (userStats.problemsSolved >= 10) {
@@ -39,6 +62,7 @@ router.get('/', auth, async (req, res) => {
     })
     .sort({ acceptance: -1 }) // Sort by acceptance rate (easier first)
     .limit(3)
+    .select('title difficulty category') // Only select essential fields
     .lean();
 
     // Calculate additional stats
@@ -61,14 +85,30 @@ router.get('/', auth, async (req, res) => {
     // Get progress overview data
     const progressOverview = await getProgressOverview(userId);
 
-    // Format recommended problems
-    const formattedRecommendations = recommendedProblems.map(problem => ({
-      id: problem._id,
-      title: problem.title,
-      difficulty: problem.difficulty,
-      category: problem.category,
-      acceptance: problem.acceptance
-    }));
+    // Format recommended problems with status information (clean format)
+    const formattedRecommendations = recommendedProblems.map(problem => {
+      const problemIdStr = problem._id.toString();
+      
+      // Determine the highest status achieved
+      let status = 'not-attempted';
+      if (attemptedProblems.has(problemIdStr)) {
+        status = 'attempted';
+      }
+      if (submittedProblems.has(problemIdStr)) {
+        status = 'submitted';
+      }
+      if (solvedProblems.has(problemIdStr)) {
+        status = 'solved';
+      }
+      
+      return {
+        id: problem._id,
+        title: problem.title,
+        difficulty: problem.difficulty,
+        category: problem.category,
+        status: status
+      };
+    });
 
     res.json({
       stats,
