@@ -354,41 +354,6 @@ const Problems = () => {
         </div>
       </div>
 
-      {/* Difficulty Breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Easy</h3>
-            <Target className="w-5 h-5 text-green-500" />
-          </div>
-          <p className="text-3xl font-bold text-green-500 mb-2">{stats.easy.solved}</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">
-            {stats.easy.total} total problems
-          </p>
-        </div>
-
-        <div className="card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Medium</h3>
-            <Zap className="w-5 h-5 text-yellow-500" />
-          </div>
-          <p className="text-3xl font-bold text-yellow-500 mb-2">{stats.medium.solved}</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">
-            {stats.medium.total} total problems
-          </p>
-        </div>
-
-        <div className="card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Hard</h3>
-            <Award className="w-5 h-5 text-red-500" />
-          </div>
-          <p className="text-3xl font-bold text-red-500 mb-2">{stats.hard.solved}</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">
-            {stats.hard.total} total problems
-          </p>
-        </div>
-      </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
