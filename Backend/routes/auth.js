@@ -28,6 +28,43 @@ const checkPasswordStrength = (password) => {
   return errors;
 };
 
+// Enhanced email conflict checking function
+const checkEmailConflicts = async (email, excludeUserId = null) => {
+  const query = excludeUserId ? { email, _id: { $ne: excludeUserId } } : { email };
+  const existingUser = await User.findOne(query);
+  
+  if (!existingUser) {
+    return { hasConflict: false };
+  }
+
+  // Determine the authentication method of the existing user
+  let existingAuthMethod = 'email';
+  if (existingUser.googleId) {
+    existingAuthMethod = 'google';
+  } else if (existingUser.githubId) {
+    existingAuthMethod = 'github';
+  }
+
+  return {
+    hasConflict: true,
+    existingAuthMethod,
+    conflictMessage: getConflictMessage(existingAuthMethod)
+  };
+};
+
+const getConflictMessage = (authMethod) => {
+  switch (authMethod) {
+    case 'google':
+      return 'This email is already registered with Google OAuth. Please use Google Sign In or choose a different email address.';
+    case 'github':
+      return 'This email is already registered with GitHub OAuth. Please use GitHub Sign In or choose a different email address.';
+    case 'email':
+      return 'This email is already registered with email/password authentication. Please sign in with your password or choose a different email address.';
+    default:
+      return 'This email is already registered. Please use the appropriate sign-in method or choose a different email address.';
+  }
+};
+
 // Get user profile with OAuth information
 router.get('/profile', auth, async (req, res) => {
   try {
@@ -72,7 +109,7 @@ router.get('/profile', auth, async (req, res) => {
   }
 });
 
-// Update user profile with OAuth email restriction
+// Update user profile with enhanced email conflict checking
 router.put('/profile', auth, async (req, res) => {
   try {
     const { firstname, lastname, email } = req.body;
@@ -136,14 +173,17 @@ router.put('/profile', auth, async (req, res) => {
       });
     }
 
-    // Check if email is already taken by another user (only if email is being changed)
-    if (email !== user.email && !isOAuthUser) {
-      console.log('🔍 Checking if email is already taken...');
-      const existingUser = await User.findOne({ email, _id: { $ne: userId } });
-      if (existingUser) {
-        console.log('❌ Email already in use by another user');
+    // Enhanced email conflict checking (only if email is being changed)
+    if (email !== user.email) {
+      console.log('🔍 Checking email conflicts for email change...');
+      const conflictCheck = await checkEmailConflicts(email, userId);
+      
+      if (conflictCheck.hasConflict) {
+        console.log('❌ Email conflict detected:', conflictCheck.existingAuthMethod);
         return res.status(400).json({ 
-          error: 'This email address is already in use by another account. Please choose a different email address.' 
+          error: conflictCheck.conflictMessage,
+          conflictType: 'email_already_exists',
+          existingAuthMethod: conflictCheck.existingAuthMethod
         });
       }
     }
@@ -204,37 +244,68 @@ router.put('/profile', auth, async (req, res) => {
   }
 });
 
-// User Login Route
+// Enhanced User Login Route with email conflict checking
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
+        console.log('🔐 Login attempt for email:', email);
+        
         const user = await User.findOne({ email });
         
         if (!user) {
+            console.log('❌ User not found for email:', email);
             return res.status(401).json({
-                error: "You are not registered. Please register first."
+                error: "No account found with this email address. Please register first or check your email."
             });
         }
 
-        if (user.googleId) {
+        // Enhanced OAuth conflict checking
+        if (user.googleId && !user.githubId) {
+            console.log('🚫 Email registered with Google OAuth only');
             return res.status(401).json({
-                error: "This email is registered with Google. Please use Google Sign In."
+                error: "This email is registered with Google OAuth. Please use Google Sign In.",
+                authMethod: 'google',
+                conflictType: 'oauth_conflict'
             });
         }
 
-        if (user.githubId) {
+        if (user.githubId && !user.googleId) {
+            console.log('🚫 Email registered with GitHub OAuth only');
             return res.status(401).json({
-                error: "This email is registered with GitHub. Please use GitHub Sign In."
+                error: "This email is registered with GitHub OAuth. Please use GitHub Sign In.",
+                authMethod: 'github',
+                conflictType: 'oauth_conflict'
+            });
+        }
+
+        if (user.googleId && user.githubId) {
+            console.log('🚫 Email registered with both OAuth providers');
+            return res.status(401).json({
+                error: "This email is registered with OAuth providers. Please use Google or GitHub Sign In.",
+                authMethod: 'oauth',
+                conflictType: 'multiple_oauth_conflict'
+            });
+        }
+
+        // Verify this is an email/password account
+        if (!user.password) {
+            console.log('🚫 Account exists but no password set (OAuth account)');
+            return res.status(401).json({
+                error: "This account was created with OAuth. Please use the appropriate OAuth sign-in method.",
+                conflictType: 'oauth_account_no_password'
             });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
+            console.log('❌ Invalid password for email:', email);
             return res.status(401).json({
                 error: "Invalid password. Please try again."
             });
         }
+
+        console.log('✅ Successful email/password login for:', email);
 
         const token = jwt.sign(
             { 
@@ -247,18 +318,6 @@ router.post('/login', async (req, res) => {
             { expiresIn: '1h' }
         );
 
-        // Determine auth method
-        let authMethod = 'email';
-        let isOAuthUser = false;
-
-        if (user.googleId) {
-          authMethod = 'google';
-          isOAuthUser = true;
-        } else if (user.githubId) {
-          authMethod = 'github';
-          isOAuthUser = true;
-        }
-
         res.json({
             user: {
                 id: user._id,
@@ -267,9 +326,9 @@ router.post('/login', async (req, res) => {
                 email: user.email,
                 picture: user.picture || '',
                 isFirstLogin: user.isFirstLogin,
-                isOAuthUser,
-                authMethod,
-                canEditEmail: !isOAuthUser
+                isOAuthUser: false,
+                authMethod: 'email',
+                canEditEmail: true
             },
             token
         });
@@ -354,30 +413,27 @@ router.post('/change-password', auth, async (req, res) => {
     }
 });
 
-// User Registration Route
+// Enhanced User Registration Route with email conflict checking
 router.post('/register', async (req, res) => {
     try {
         const { firstname, lastname, email, password } = req.body;
+
+        console.log('📝 Registration attempt for email:', email);
 
         const passwordErrors = checkPasswordStrength(password);
         if (passwordErrors.length > 0) {
             return res.status(400).json({ errors: passwordErrors });
         }
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            if (existingUser.googleId) {
-                return res.status(400).json({ 
-                    error: "This email is already registered with Google. Please use Google Sign In."
-                });
-            }
-            if (existingUser.githubId) {
-                return res.status(400).json({ 
-                    error: "This email is already registered with GitHub. Please use GitHub Sign In."
-                });
-            }
+        // Enhanced email conflict checking
+        const conflictCheck = await checkEmailConflicts(email);
+        
+        if (conflictCheck.hasConflict) {
+            console.log('❌ Email conflict during registration:', conflictCheck.existingAuthMethod);
             return res.status(400).json({ 
-                error: "Email already registered. Please login or use a different email."
+                error: conflictCheck.conflictMessage,
+                conflictType: 'email_already_exists',
+                existingAuthMethod: conflictCheck.existingAuthMethod
             });
         }
 
@@ -396,6 +452,8 @@ router.post('/register', async (req, res) => {
             },
             previousPasswords: [hashedPassword]
         });
+
+        console.log('✅ Successful registration for email:', email);
 
         const token = jwt.sign(
             { 
@@ -429,7 +487,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// GitHub OAuth callback
+// Enhanced GitHub OAuth callback with email conflict checking
 router.post('/github/callback', async (req, res) => {
   try {
     const { code, redirectUri } = req.body;
@@ -437,6 +495,8 @@ router.post('/github/callback', async (req, res) => {
     if (!code) {
       return res.status(400).json({ error: 'Authorization code is required' });
     }
+
+    console.log('🔐 GitHub OAuth callback initiated');
 
     // Exchange code for access token
     const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
@@ -477,44 +537,83 @@ router.post('/github/callback', async (req, res) => {
       return res.status(400).json({ error: 'No primary email found in GitHub account' });
     }
 
-    let user = await User.findOne({ email: primaryEmail });
+    console.log('📧 GitHub OAuth email:', primaryEmail);
 
-    if (user) {
-      // Update existing user's GitHub info
-      user.githubId = userResponse.data.id.toString();
-      user.githubUsername = userResponse.data.login;
-      user.githubAccessToken = accessToken;
-      user.authMethod = 'github';
-      user.isOAuthUser = true;
-      if (!user.picture && userResponse.data.avatar_url) {
-        user.picture = userResponse.data.avatar_url;
-      }
-      await user.save();
-      console.log('✅ Updated existing user with GitHub OAuth');
-    } else {
-      // Create new user
-      const randomPassword = Math.random().toString(36).slice(-8);
-      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+    // Enhanced email conflict checking
+    const conflictCheck = await checkEmailConflicts(primaryEmail);
+    
+    if (conflictCheck.hasConflict) {
+      console.log('❌ GitHub OAuth email conflict:', conflictCheck.existingAuthMethod);
       
-      user = await User.create({
-        firstname: userResponse.data.name ? userResponse.data.name.split(' ')[0] : userResponse.data.login,
-        lastname: userResponse.data.name ? userResponse.data.name.split(' ').slice(1).join(' ') : '',
-        email: primaryEmail,
-        password: hashedPassword,
-        previousPasswords: [hashedPassword],
-        picture: userResponse.data.avatar_url,
-        githubId: userResponse.data.id.toString(),
-        githubUsername: userResponse.data.login,
-        githubAccessToken: accessToken,
-        authMethod: 'github',
-        isOAuthUser: true,
-        isFirstLogin: true,
-        profileUpdates: {
-          count: 0
+      // Special handling for existing GitHub users
+      if (conflictCheck.existingAuthMethod === 'github') {
+        // Allow existing GitHub user to sign in
+        const existingUser = await User.findOne({ email: primaryEmail });
+        if (existingUser && existingUser.githubId) {
+          console.log('✅ Existing GitHub user signing in');
+          // Update access token and proceed with login
+          existingUser.githubAccessToken = accessToken;
+          await existingUser.save();
+          
+          const token = jwt.sign(
+            { 
+              id: existingUser._id,
+              email: existingUser.email,
+              firstname: existingUser.firstname,
+              lastname: existingUser.lastname
+            },
+            process.env.SECRET_KEY,
+            { expiresIn: '1h' }
+          );
+
+          return res.json({
+            user: {
+              id: existingUser._id,
+              firstname: existingUser.firstname,
+              lastname: existingUser.lastname,
+              email: existingUser.email,
+              picture: existingUser.picture || '',
+              isFirstLogin: existingUser.isFirstLogin,
+              isOAuthUser: true,
+              authMethod: 'github',
+              canEditEmail: false
+            },
+            token
+          });
         }
+      }
+      
+      // For other conflicts, return error
+      return res.status(400).json({ 
+        error: `Cannot sign in with GitHub. ${conflictCheck.conflictMessage}`,
+        conflictType: 'email_already_exists',
+        existingAuthMethod: conflictCheck.existingAuthMethod
       });
-      console.log('✅ Created new user with GitHub OAuth');
     }
+
+    // Create new user if no conflicts
+    const randomPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+    
+    const user = await User.create({
+      firstname: userResponse.data.name ? userResponse.data.name.split(' ')[0] : userResponse.data.login,
+      lastname: userResponse.data.name ? userResponse.data.name.split(' ').slice(1).join(' ') : '',
+      email: primaryEmail,
+      password: hashedPassword,
+      previousPasswords: [hashedPassword],
+      picture: userResponse.data.avatar_url,
+      githubId: userResponse.data.id.toString(),
+      githubUsername: userResponse.data.login,
+      githubAccessToken: accessToken,
+      authMethod: 'github',
+      isOAuthUser: true,
+      isFirstLogin: true,
+      profileUpdates: {
+        count: 0
+      }
+    });
+    
+    console.log('✅ Created new GitHub OAuth user');
 
     const token = jwt.sign(
       { 
@@ -558,7 +657,7 @@ router.post('/github/callback', async (req, res) => {
   }
 });
 
-// Google OAuth Route
+// Enhanced Google OAuth Route with email conflict checking
 router.post('/google', async (req, res) => {
     try {
         const { email, given_name, family_name, picture, sub } = req.body;
@@ -570,38 +669,78 @@ router.post('/google', async (req, res) => {
             });
         }
 
-        let user = await User.findOne({ email });
+        console.log('🔐 Google OAuth attempt for email:', email);
 
-        if (user) {
-            if (!user.googleId) {
-                user.googleId = sub;
-                user.authMethod = 'google';
-                user.isOAuthUser = true;
-                user.picture = picture || user.picture;
-                await user.save();
-                console.log('✅ Updated existing user with Google OAuth');
-            }
-        } else {
-            const randomPassword = Math.random().toString(36).slice(-8);
-            const hashedPassword = await bcrypt.hash(randomPassword, 10);
+        // Enhanced email conflict checking
+        const conflictCheck = await checkEmailConflicts(email);
+        
+        if (conflictCheck.hasConflict) {
+            console.log('❌ Google OAuth email conflict:', conflictCheck.existingAuthMethod);
             
-            user = await User.create({
-                firstname: given_name,
-                lastname: family_name,
-                email: email,
-                password: hashedPassword,
-                previousPasswords: [hashedPassword],
-                picture: picture || '',
-                googleId: sub,
-                authMethod: 'google',
-                isOAuthUser: true,
-                isFirstLogin: true,
-                profileUpdates: {
-                    count: 0
+            // Special handling for existing Google users
+            if (conflictCheck.existingAuthMethod === 'google') {
+                // Allow existing Google user to sign in
+                const existingUser = await User.findOne({ email });
+                if (existingUser && existingUser.googleId) {
+                    console.log('✅ Existing Google user signing in');
+                    
+                    const token = jwt.sign(
+                        { 
+                            id: existingUser._id,
+                            email: existingUser.email,
+                            firstname: existingUser.firstname,
+                            lastname: existingUser.lastname
+                        },
+                        process.env.SECRET_KEY,
+                        { expiresIn: '1h' }
+                    );
+
+                    return res.json({
+                        user: {
+                            id: existingUser._id,
+                            firstname: existingUser.firstname,
+                            lastname: existingUser.lastname,
+                            email: existingUser.email,
+                            picture: existingUser.picture || '',
+                            isFirstLogin: existingUser.isFirstLogin,
+                            isOAuthUser: true,
+                            authMethod: 'google',
+                            canEditEmail: false
+                        },
+                        token
+                    });
                 }
+            }
+            
+            // For other conflicts, return error
+            return res.status(400).json({ 
+                error: `Cannot sign in with Google. ${conflictCheck.conflictMessage}`,
+                conflictType: 'email_already_exists',
+                existingAuthMethod: conflictCheck.existingAuthMethod
             });
-            console.log('✅ Created new user with Google OAuth');
         }
+
+        // Create new user if no conflicts
+        const randomPassword = Math.random().toString(36).slice(-8);
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
+        
+        const user = await User.create({
+            firstname: given_name,
+            lastname: family_name,
+            email: email,
+            password: hashedPassword,
+            previousPasswords: [hashedPassword],
+            picture: picture || '',
+            googleId: sub,
+            authMethod: 'google',
+            isOAuthUser: true,
+            isFirstLogin: true,
+            profileUpdates: {
+                count: 0
+            }
+        });
+        
+        console.log('✅ Created new Google OAuth user');
 
         const token = jwt.sign(
             { 
