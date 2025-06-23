@@ -36,11 +36,7 @@ const Features = () => {
       title: 'Version Control',
       description: 'Built-in version control helps you track changes and maintain different versions of your code. Never lose your work again.'
     },
-    {
-      icon: Layout,
-      title: 'Customizable Interface',
-      description: 'Personalize your coding environment with themes, and layout options that suit your workflow.'
-    },
+    
     {
       icon: Code2,
       title: 'Debugging Tools',

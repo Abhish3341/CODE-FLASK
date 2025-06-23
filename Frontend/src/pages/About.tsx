@@ -1,23 +1,45 @@
 import React from "react";
-import { Code2 } from "lucide-react";
+import { Code2, Heart, Target, Users, Lightbulb, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const CodeFlaskLogo = "/codeflask.svg";
 
 const About = () => {
-  const stats = [
-    { number: "100K+", label: "Active Users" },
-    { number: "50+", label: "Countries" },
-    { number: "1M+", label: "Code Executions" },
-    { number: "99.9%", label: "Uptime" },
+  const values = [
+    {
+      icon: <Heart className="w-8 h-8 text-red-500" />,
+      title: "Passion for Code",
+      description: "We're driven by our love for programming and helping others discover the joy of coding"
+    },
+    {
+      icon: <Users className="w-8 h-8 text-blue-500" />,
+      title: "Community First",
+      description: "Building a supportive community where developers of all levels can learn and grow together"
+    },
+    {
+      icon: <Target className="w-8 h-8 text-green-500" />,
+      title: "Accessibility",
+      description: "Making powerful development tools accessible to everyone, regardless of their background"
+    },
+    {
+      icon: <Lightbulb className="w-8 h-8 text-yellow-500" />,
+      title: "Innovation",
+      description: "Constantly pushing boundaries to create better tools and experiences for developers"
+    },
+    {
+      icon: <Award className="w-8 h-8 text-purple-500" />,
+      title: "Excellence",
+      description: "Committed to delivering high-quality, reliable tools that developers can depend on"
+    },
+   
   ];
 
   const team = [
     {
       name: "Abhinav Sharma",
       role: "Founder & CEO",
-      image: "/founder.jpg", // Correct path to the image in the public folder
-      github: "https://github.com/Abhish3341", // GitHub profile link
+      image: "/founder.jpg",
+      github: "https://github.com/Abhish3341",
     },
   ];
 
@@ -35,41 +57,80 @@ const About = () => {
       {/* Hero Section */}
       <div className="container mx-auto px-6 py-20 text-center">
         <h1 className="text-4xl md:text-5xl font-bold mb-6">
-          Our Mission is to Make Coding Accessible to Everyone
+          Our Mission is to Make Coding Intuitive, Engaging, and Accessible to All.
         </h1>
         <p className="text-xl text-[var(--color-text-secondary)] max-w-3xl mx-auto">
-          At CodeFlask, we believe that everyone should have access to powerful development tools.
-          We're building the future of collaborative coding and learning.
+          At CodeFlask, we’re building a modern online judge platform that empowers every developer — from beginners to pros — with intuitive design, structured learning, and a collaborative coding experience.
         </p>
       </div>
 
-      {/* Stats Section */}
+      {/* Values Section */}
       <div className="bg-[var(--color-bg-secondary)] py-20">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {stats.map((stat, index) => (
-              <div key={index}>
-                <div className="text-4xl font-bold text-indigo-500">{stat.number}</div>
-                <div className="text-[var(--color-text-secondary)]">{stat.label}</div>
+          <h2 className="text-3xl font-bold text-center mb-4">Our Core Values</h2>
+          <p className="text-center text-[var(--color-text-secondary)] text-x1 mb-12 max-w-2xl mx-auto">
+            These principles guide everything we do and shape the way we build products for the developer community.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 justify-items-center">
+            {values.map((value, index) => (
+              <div
+                key={index}
+                className="bg-[var(--color-bg-primary)] p-6 rounded-lg border border-[var(--color-border)] hover:shadow-lg transition-all duration-300 hover:scale-105 w-full max-w-xs flex flex-col items-center"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  {value.icon}
+                  <h3 className="text-lg font-semibold">{value.title}</h3>
+                </div>
+                <p className="text-[var(--color-text-secondary)] text-center">{value.description}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
 
+      {/* Story Section */}
+<div className="py-20">
+  <div className="container mx-auto px-6">
+    <div className="max-w-4xl mx-auto text-center">
+      <h2 className="text-3xl font-bold mb-8">Our Story</h2>
+      <div className="prose prose-lg mx-auto text-[var(--color-text-secondary)]">
+        <p className="mb-6">
+          CodeFlask was born from a clear purpose: to rethink how developers experience online coding platforms.
+        </p>
+        <p className="mb-6">
+          While many online judge platforms offer great features, they often fall short in one key area — <strong>user engagement </strong>
+          whether it’s uninspired UI/UX or an overwhelming learning curve, many aspiring developers struggle to stay motivated.
+        </p>
+        <p className="mb-6">
+          We set out to change that. From day one, our goal was to build <strong>a fully featured online judge platform</strong> that doesn’t just work — but <strong>feels great to use.</strong> 
+          Clean design, intuitive workflows, and a distraction-free environment make solving problems feel less like a task and more like progress.
+        </p>
+        <p className="mb-6">
+          But we didn’t stop there. We also noticed that many learners get stuck not because they lack knowledge, but because they lack <em>momentum</em>. 
+          That’s why CodeFlask introduces assignment-style questions designed to <strong>rebuild coding fluency</strong> — ensuring users learn something meaningful with each step, and stay motivated to continue.
+        </p>
+        <p>
+          Today, CodeFlask continues to grow with feedback from our developer community, united by a simple mission: to make coding platforms more <strong>accessible</strong>, more <strong>productive</strong>, and more <strong>human</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
       {/* Founder Section */}
-      <div className="py-20 flex flex-col items-center">
+      <div className="py-20 flex flex-col items-center bg-[var(--color-bg-secondary)]">
         <h2 className="text-3xl font-bold text-center mb-12">Meet Our Founder</h2>
-        <div className="card p-6 text-center hover:shadow-lg transition-shadow bg-[var(--color-bg-secondary)]">
+        <div className="card p-6 text-center hover:shadow-lg transition-shadow bg-[var(--color-bg-primary)] rounded-lg border border-[var(--color-border)]">
           {/* Clickable Image */}
           <a
-            href={team[0].github} // GitHub profile link
+            href={team[0].github}
             target="_blank"
             rel="noopener noreferrer"
             className="block"
           >
             <img
-              src={team[0].image} // Using the correct path to the image
+              src={team[0].image}
               alt="Founder Image"
               className="w-32 h-32 rounded-full mx-auto mb-4 object-cover hover:opacity-80 transition-opacity"
             />
