@@ -29,9 +29,7 @@ const AppLayout = () => {
     <div className={`flex h-screen ${isDarkMode ? 'bg-[#0B1120]' : 'bg-gray-100'}`}>
       {/* Sidebar */}
       <div className={`w-20 ${isDarkMode ? 'bg-[#1A2234]' : 'bg-white'} flex flex-col items-center py-8`}>
-        <Link to="/" className="mb-8">
-          <Code2 className="w-8 h-8 text-indigo-500" />
-        </Link>
+        {/* Removed CodeFlask logo and its redirecting feature */}
         <nav className="flex flex-col gap-6">
           {navigationItems.map((item) => (
             <Link
