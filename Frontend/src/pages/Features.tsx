@@ -1,13 +1,13 @@
 import React from 'react';
-import { Code2, Terminal, Zap, Shield, Cloud, Clock, Layout } from 'lucide-react';
+import { Code2, Terminal, Zap, Shield, Cloud, Clock, Layout, Sun, Moon } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-
-const CodeFlaskLogo = "/codeflask.svg";
+import { useTheme } from '../context/ThemeContext';
 
 const Features = () => {
+  const { isDarkMode, toggleTheme } = useTheme();
+
   const handleRedirect = () => {
-    console.log("Redirecting to the homepage...");
+    window.scrollTo(0, 0);
   };
 
   const features = [
@@ -46,11 +46,33 @@ const Features = () => {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)]">
-      {/* Logo Section with Redirect */}
-      <Link to="/" className="absolute top-4 left-4 flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <img src={CodeFlaskLogo} alt="CodeFlask Logo" className="h-8" />
-        <span className="text-xl font-bold text-[var(--color-text-primary)]">CodeFlask</span>
-      </Link>
+      {/* Header */}
+      <header className="border-b border-[var(--color-border)]">
+        <nav className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Link to="/" onClick={handleRedirect} className="flex items-center gap-2">
+                <Code2 className="w-8 h-8 text-indigo-500" />
+                <span className="text-xl font-bold text-[var(--color-text-primary)]">CodeFlask</span>
+              </Link>
+            </div>
+            <div className="flex items-center gap-6">
+              <Link to="/features" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">Features</Link>
+              <Link to="/about" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">About</Link>
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors"
+                aria-label="Toggle theme"
+              >
+                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+              <Link to="/login" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                Get Started
+              </Link>
+            </div>
+          </div>
+        </nav>
+      </header>
 
       {/* Hero Section */}
       <div className="container mx-auto px-6 py-20">
@@ -104,7 +126,7 @@ const Features = () => {
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Link to="/" onClick={handleRedirect} className="flex items-center gap-2">
+              <Link to="/" onClick={handleRedirect} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <Code2 className="w-6 h-6 text-indigo-500" />
                 <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
               </Link>
