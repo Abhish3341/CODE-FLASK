@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "esbuild": "^0.25.5",
-    "vite": "^6.3.5"
-  }
-}

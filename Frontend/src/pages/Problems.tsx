@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, Code, CheckCircle, Clock, Trophy, Target, Zap, Award, ExternalLink, Play, FileText, AlertCircle } from 'lucide-react';
+import { Search, Filter, Code, CheckCircle, Clock, Trophy, Target, Zap, Award, ExternalLink, Play, FileText, AlertCircle, Code2 } from 'lucide-react';
 import axiosInstance from '../utils/axiosConfig';
 
 interface Problem {
@@ -9,7 +9,7 @@ interface Problem {
   difficulty: 'Easy' | 'Medium' | 'Hard';
   category: string;
   status: 'not-attempted' | 'attempted' | 'submitted' | 'solved';
-  solved: boolean; // Legacy field for backward compatibility
+  solved: boolean;
 }
 
 const Problems = () => {
@@ -47,7 +47,6 @@ const Problems = () => {
   const filterProblems = () => {
     let filtered = problems;
 
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(problem => 
         problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -55,21 +54,18 @@ const Problems = () => {
       );
     }
 
-    // Filter by difficulty
     if (difficultyFilter !== 'all') {
       filtered = filtered.filter(problem => 
         problem.difficulty.toLowerCase() === difficultyFilter.toLowerCase()
       );
     }
 
-    // Filter by category
     if (categoryFilter !== 'all') {
       filtered = filtered.filter(problem => 
         problem.category.toLowerCase() === categoryFilter.toLowerCase()
       );
     }
 
-    // Filter by status
     if (statusFilter === 'solved') {
       filtered = filtered.filter(problem => problem.status === 'solved');
     } else if (statusFilter === 'attempted') {
@@ -84,7 +80,6 @@ const Problems = () => {
   };
 
   const handleSolveProblem = (problemId: string) => {
-    // Open problem in new tab
     const url = `/app/problems/${problemId}/solve`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -212,273 +207,293 @@ const Problems = () => {
 
   if (loading) {
     return (
-      <div className="h-full p-8 bg-[var(--color-bg-primary)]">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-300 rounded w-1/4 mb-4"></div>
-          <div className="h-4 bg-gray-300 rounded w-1/3 mb-8"></div>
-          
-          {/* Stats Cards Skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-24 bg-gray-300 rounded"></div>
-            ))}
-          </div>
-          
-          {/* Problems List Skeleton */}
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-20 bg-gray-300 rounded"></div>
-            ))}
+      <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col">
+        <div className="flex-1 p-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-300 rounded w-1/4 mb-4"></div>
+            <div className="h-4 bg-gray-300 rounded w-1/3 mb-8"></div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-24 bg-gray-300 rounded"></div>
+              ))}
+            </div>
+            
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-20 bg-gray-300 rounded"></div>
+              ))}
+            </div>
           </div>
         </div>
+        
+        {/* Footer */}
+        <footer className="py-8 border-t border-[var(--color-border)]">
+          <div className="container mx-auto px-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Code2 className="w-6 h-6 text-indigo-500" />
+                <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
+              </div>
+              <div className="text-[var(--color-text-secondary)]">
+                © 2025 CodeFlask. All rights reserved.
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     );
   }
 
   return (
-    <div className="h-full p-8 bg-[var(--color-bg-primary)]">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--color-text-primary)] mb-2">Problems</h1>
-        <p className="text-[var(--color-text-secondary)]">
-          Practice coding problems and improve your skills
-        </p>
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-100 dark:bg-red-900 border-l-4 border-red-500 p-4 mb-6">
-          <p className="text-red-700 dark:text-red-200">{error}</p>
+    <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col">
+      <div className="flex-1 p-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[var(--color-text-primary)] mb-2">Problems</h1>
+          <p className="text-[var(--color-text-secondary)]">
+            Practice coding problems and improve your skills
+          </p>
         </div>
-      )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="card p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-500/10 rounded-lg">
-              <Code className="w-6 h-6 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-[var(--color-text-secondary)] text-sm">Total Problems</p>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                {stats.total}
-              </p>
-            </div>
+        {error && (
+          <div className="bg-red-100 dark:bg-red-900 border-l-4 border-red-500 p-4 mb-6">
+            <p className="text-red-700 dark:text-red-200">{error}</p>
           </div>
-        </div>
+        )}
 
-        <div className="card p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-green-500/10 rounded-lg">
-              <CheckCircle className="w-6 h-6 text-green-500" />
-            </div>
-            <div>
-              <p className="text-[var(--color-text-secondary)] text-sm">Solved</p>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                {stats.solved}/{stats.total}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-yellow-500/10 rounded-lg">
-              <Trophy className="w-6 h-6 text-yellow-500" />
-            </div>
-            <div>
-              <p className="text-[var(--color-text-secondary)] text-sm">Success Rate</p>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                {stats.total > 0 ? Math.round((stats.solved / stats.total) * 100) : 0}%
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-purple-500/10 rounded-lg">
-              <Target className="w-6 h-6 text-purple-500" />
-            </div>
-            <div>
-              <p className="text-[var(--color-text-secondary)] text-sm">Remaining</p>
-              <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                {stats.total - stats.solved}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Status Breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="card p-4">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-            <div>
-              <p className="font-medium text-green-500">{stats.solved}</p>
-              <p className="text-xs text-[var(--color-text-secondary)]">Solved</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-4">
-          <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5 text-blue-500" />
-            <div>
-              <p className="font-medium text-blue-500">{stats.submitted}</p>
-              <p className="text-xs text-[var(--color-text-secondary)]">Submitted</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-4">
-          <div className="flex items-center gap-3">
-            <Play className="w-5 h-5 text-yellow-500" />
-            <div>
-              <p className="font-medium text-yellow-500">{stats.attempted}</p>
-              <p className="text-xs text-[var(--color-text-secondary)]">Attempted</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-4">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-gray-500" />
-            <div>
-              <p className="font-medium text-gray-500">{stats.notAttempted}</p>
-              <p className="text-xs text-[var(--color-text-secondary)]">Not Attempted</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-4 mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search problems..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64"
-          />
-        </div>
-
-        <select
-          value={difficultyFilter}
-          onChange={(e) => setDifficultyFilter(e.target.value)}
-          className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <option value="all">All Difficulties</option>
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
-
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <option value="all">All Categories</option>
-          {getUniqueCategories().map(category => (
-            <option key={category} value={category}>{category}</option>
-          ))}
-        </select>
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <option value="all">All Status</option>
-          <option value="solved">Solved</option>
-          <option value="submitted">Submitted</option>
-          <option value="attempted">Attempted</option>
-          <option value="not-attempted">Not Attempted</option>
-        </select>
-      </div>
-
-      {/* Problems List */}
-      <div className="space-y-4">
-        {filteredProblems.map((problem) => (
-          <div key={problem.id} className={`card p-6 hover:shadow-lg transition-all ${getStatusColor(problem.status)}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 flex-1">
-                {/* Status Icon */}
-                <div className="flex-shrink-0">
-                  {getStatusIcon(problem.status)}
-                </div>
-
-                {/* Problem Info */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-[var(--color-text-primary)] hover:text-indigo-500 transition-colors">
-                      <Link to={`/app/problems/${problem.id}/solve`}>
-                        {problem.title}
-                      </Link>
-                    </h3>
-                    <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${getDifficultyColor(problem.difficulty)}`}>
-                      {getDifficultyIcon(problem.difficulty)}
-                      {problem.difficulty}
-                    </span>
-                    {/* Status Badge */}
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      problem.status === 'solved' ? 'bg-green-500/20 text-green-500' :
-                      problem.status === 'submitted' ? 'bg-blue-500/20 text-blue-500' :
-                      problem.status === 'attempted' ? 'bg-yellow-500/20 text-yellow-500' :
-                      'bg-gray-500/20 text-gray-500'
-                    }`}>
-                      {getStatusText(problem.status)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
-                    <span className="flex items-center gap-1">
-                      <Code className="w-4 h-4" />
-                      {problem.category}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Solve Button */}
-                <div className="flex-shrink-0">
-                  <button
-                    onClick={() => handleSolveProblem(problem.id)}
-                    className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-all font-medium ${getSolveButtonStyle(problem.status)}`}
-                    title="Open in new tab"
-                  >
-                    {getSolveButtonText(problem.status)}
-                    <ExternalLink className="w-4 h-4" />
-                  </button>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="card p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-500/10 rounded-lg">
+                <Code className="w-6 h-6 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-[var(--color-text-secondary)] text-sm">Total Problems</p>
+                <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  {stats.total}
+                </p>
               </div>
             </div>
           </div>
-        ))}
+
+          <div className="card p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-green-500/10 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-green-500" />
+              </div>
+              <div>
+                <p className="text-[var(--color-text-secondary)] text-sm">Solved</p>
+                <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  {stats.solved}/{stats.total}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-yellow-500/10 rounded-lg">
+                <Trophy className="w-6 h-6 text-yellow-500" />
+              </div>
+              <div>
+                <p className="text-[var(--color-text-secondary)] text-sm">Success Rate</p>
+                <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  {stats.total > 0 ? Math.round((stats.solved / stats.total) * 100) : 0}%
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-500/10 rounded-lg">
+                <Target className="w-6 h-6 text-purple-500" />
+              </div>
+              <div>
+                <p className="text-[var(--color-text-secondary)] text-sm">Remaining</p>
+                <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  {stats.total - stats.solved}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="card p-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+              <div>
+                <p className="font-medium text-green-500">{stats.solved}</p>
+                <p className="text-xs text-[var(--color-text-secondary)]">Solved</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-4">
+            <div className="flex items-center gap-3">
+              <FileText className="w-5 h-5 text-blue-500" />
+              <div>
+                <p className="font-medium text-blue-500">{stats.submitted}</p>
+                <p className="text-xs text-[var(--color-text-secondary)]">Submitted</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-4">
+            <div className="flex items-center gap-3">
+              <Play className="w-5 h-5 text-yellow-500" />
+              <div>
+                <p className="font-medium text-yellow-500">{stats.attempted}</p>
+                <p className="text-xs text-[var(--color-text-secondary)]">Attempted</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-4">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-gray-500" />
+              <div>
+                <p className="font-medium text-gray-500">{stats.notAttempted}</p>
+                <p className="text-xs text-[var(--color-text-secondary)]">Not Attempted</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search problems..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64"
+            />
+          </div>
+
+          <select
+            value={difficultyFilter}
+            onChange={(e) => setDifficultyFilter(e.target.value)}
+            className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="all">All Difficulties</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="all">All Categories</option>
+            {getUniqueCategories().map(category => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="all">All Status</option>
+            <option value="solved">Solved</option>
+            <option value="submitted">Submitted</option>
+            <option value="attempted">Attempted</option>
+            <option value="not-attempted">Not Attempted</option>
+          </select>
+        </div>
+
+        <div className="space-y-4">
+          {filteredProblems.map((problem) => (
+            <div key={problem.id} className={`card p-6 hover:shadow-lg transition-all ${getStatusColor(problem.status)}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="flex-shrink-0">
+                    {getStatusIcon(problem.status)}
+                  </div>
+
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] hover:text-indigo-500 transition-colors">
+                        <Link to={`/app/problems/${problem.id}/solve`}>
+                          {problem.title}
+                        </Link>
+                      </h3>
+                      <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${getDifficultyColor(problem.difficulty)}`}>
+                        {getDifficultyIcon(problem.difficulty)}
+                        {problem.difficulty}
+                      </span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        problem.status === 'solved' ? 'bg-green-500/20 text-green-500' :
+                        problem.status === 'submitted' ? 'bg-blue-500/20 text-blue-500' :
+                        problem.status === 'attempted' ? 'bg-yellow-500/20 text-yellow-500' :
+                        'bg-gray-500/20 text-gray-500'
+                      }`}>
+                        {getStatusText(problem.status)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                      <span className="flex items-center gap-1">
+                        <Code className="w-4 h-4" />
+                        {problem.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex-shrink-0">
+                    <button
+                      onClick={() => handleSolveProblem(problem.id)}
+                      className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-all font-medium ${getSolveButtonStyle(problem.status)}`}
+                      title="Open in new tab"
+                    >
+                      {getSolveButtonText(problem.status)}
+                      <ExternalLink className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredProblems.length === 0 && !loading && (
+          <div className="text-center py-12 text-[var(--color-text-secondary)]">
+            {problems.length === 0 ? (
+              <div>
+                <Code className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-medium mb-2">No problems available</h3>
+                <p>Problems will appear here once they are added to the system.</p>
+              </div>
+            ) : (
+              <div>
+                <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-medium mb-2">No problems found</h3>
+                <p>Try adjusting your search criteria.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Empty State */}
-      {filteredProblems.length === 0 && !loading && (
-        <div className="text-center py-12 text-[var(--color-text-secondary)]">
-          {problems.length === 0 ? (
-            <div>
-              <Code className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">No problems available</h3>
-              <p>Problems will appear here once they are added to the system.</p>
+      {/* Footer */}
+      <footer className="py-8 border-t border-[var(--color-border)]">
+        <div className="container mx-auto px-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Code2 className="w-6 h-6 text-indigo-500" />
+              <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
             </div>
-          ) : (
-            <div>
-              <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">No problems found</h3>
-              <p>Try adjusting your search criteria.</p>
+            <div className="text-[var(--color-text-secondary)]">
+              © 2025 CodeFlask. All rights reserved.
             </div>
-          )}
+          </div>
         </div>
-      )}
+      </footer>
     </div>
   );
 };
