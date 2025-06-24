@@ -4,612 +4,125 @@ const path = require('path');
 class TemplateService {
   constructor() {
     this.templates = {
-      python: {
-        basic: `def solution():
-    """
-    {description}
-    """
-    # Your code here
-    pass
+      c: {
+        basic: `#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-# Test your solution
-if __name__ == "__main__":
-    result = solution()
-    print(f"Result: {result}")`,
-        
-        array: `def solution():
-    """
-    {description}
-    """
-    # Example input
-    {example_input}
-    
-    # Your code here
-    {solution_hint}
-    
-    return []  # Return your result
+/*
+ * {description}
+ */
 
-# Test your solution
-if __name__ == "__main__":
-    result = solution()
-    print(f"Result: {result}")`,
-        
-        linkedlist: `class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
-
-def solution():
-    """
-    {description}
-    """
-    # Helper functions
-    def list_to_linked(values):
-        if not values:
-            return None
-        head = ListNode(values[0])
-        current = head
-        for val in values[1:]:
-            current.next = ListNode(val)
-            current = current.next
-        return head
-    
-    def linked_to_list(node):
-        result = []
-        while node:
-            result.append(node.val)
-            node = node.next
-        return result
-    
-    def parse_list_input(s):
-        """Parse input like '[1,2,4]' or '1,2,4' into list of integers"""
-        s = s.strip().replace('[', '').replace(']', '').replace(' ', '')
-        if not s:
-            return []
-        try:
-            return [int(x) for x in s.split(',') if x]
-        except:
-            return []
-    
-    # Read input from stdin if available
-    import sys
-    input_data = sys.stdin.read().strip()
-    
-    if input_data:
-        try:
-            lines = input_data.split('\\n')
-            if len(lines) >= 2:
-                list1_input = lines[0].strip()
-                list2_input = lines[1].strip()
-                
-                list1_values = parse_list_input(list1_input)
-                list2_values = parse_list_input(list2_input)
-                
-                print(f"Input: list1 = {list1_values}, list2 = {list2_values}")
-                
-                # Convert to linked lists
-                list1 = list_to_linked(list1_values)
-                list2 = list_to_linked(list2_values)
-                
-                # Merge two sorted lists solution
-                dummy = ListNode()
-                current = dummy
-                
-                while list1 and list2:
-                    if list1.val <= list2.val:
-                        current.next = list1
-                        list1 = list1.next
-                    else:
-                        current.next = list2
-                        list2 = list2.next
-                    current = current.next
-                
-                current.next = list1 if list1 else list2
-                
-                result = linked_to_list(dummy.next)
-                print(f"Output: {result}")
-                return result
-        except Exception as e:
-            print(f"Error parsing input: {e}")
-    
-    # Fallback to example data
-    print("Using example data:")
-    list1_values = [1, 2, 4]
-    list2_values = [1, 3, 4]
-    print(f"Input: list1 = {list1_values}, list2 = {list2_values}")
-    
-    # Convert to linked lists
-    list1 = list_to_linked(list1_values)
-    list2 = list_to_linked(list2_values)
-    
-    # Merge two sorted lists solution
-    dummy = ListNode()
-    current = dummy
-    
-    while list1 and list2:
-        if list1.val <= list2.val:
-            current.next = list1
-            list1 = list1.next
-        else:
-            current.next = list2
-            list2 = list2.next
-        current = current.next
-    
-    current.next = list1 if list1 else list2
-    
-    result = linked_to_list(dummy.next)
-    print(f"Output: {result}")
-    return result
-
-# Test your solution
-if __name__ == "__main__":
-    result = solution()
-    print(f"Final Result: {result}")`,
-        
-        string: `def solution():
-    """
-    {description}
-    """
-    # Read input from stdin if available
-    import sys
-    input_text = sys.stdin.read().strip()
-    
-    if input_text:
-        s = input_text
-        print(f"Input: {s}")
-        
-        # Your code here
-        {solution_hint}
-        
-        result = ""  # Your result
-        print(f"Output: {result}")
-        return result
-    
-    # Fallback to example
-    s = "{example_string}"
-    print(f"Using example: {s}")
-    
-    # Your code here
-    {solution_hint}
-    
-    result = ""
-    print(f"Output: {result}")
-    return result
-
-# Test your solution
-if __name__ == "__main__":
-    result = solution()
-    print(f"Result: {result}")`,
-        
-        tree: `class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
-
-def solution():
-    """
-    {description}
-    """
-    # Helper function to build tree from array
-    def build_tree(values):
-        if not values:
-            return None
-        root = TreeNode(values[0])
-        queue = [root]
-        i = 1
-        while queue and i < len(values):
-            node = queue.pop(0)
-            if i < len(values) and values[i] is not None:
-                node.left = TreeNode(values[i])
-                queue.append(node.left)
-            i += 1
-            if i < len(values) and values[i] is not None:
-                node.right = TreeNode(values[i])
-                queue.append(node.right)
-            i += 1
-        return root
-    
-    # Example: {example_input}
-    # Your code here
-    {solution_hint}
-    
-    return None
-
-# Test your solution
-if __name__ == "__main__":
-    result = solution()
-    print(f"Result: {result}")`
-      },
-      
-      javascript: {
-        basic: `function solution() {
-    /**
-     * {description}
-     */
+int main() {
     // Your code here
-    return null;
-}
-
-// Test your solution
-console.log("Result:", solution());`,
+    printf("Hello, World!\\n");
+    return 0;
+}`,
         
-        array: `function solution() {
-    /**
-     * {description}
-     */
-    // Example input
-    {example_input}
+        array: `#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/*
+ * {description}
+ */
+
+int main() {
+    // Example: Two Sum problem
+    int nums[] = {2, 7, 11, 15};
+    int target = 9;
+    int size = sizeof(nums) / sizeof(nums[0]);
     
     // Your code here
-    {solution_hint}
-    
-    return [];
-}
-
-// Test your solution
-console.log("Result:", solution());`,
-        
-        linkedlist: `class ListNode {
-    constructor(val = 0, next = null) {
-        this.val = val;
-        this.next = next;
-    }
-}
-
-function solution() {
-    /**
-     * {description}
-     */
-    // Helper functions
-    function listToLinked(values) {
-        if (!values.length) return null;
-        const head = new ListNode(values[0]);
-        let current = head;
-        for (let i = 1; i < values.length; i++) {
-            current.next = new ListNode(values[i]);
-            current = current.next;
-        }
-        return head;
-    }
-    
-    function linkedToList(node) {
-        const result = [];
-        while (node) {
-            result.push(node.val);
-            node = node.next;
-        }
-        return result;
-    }
-    
-    function parseListInput(s) {
-        s = s.trim().replace(/[\\[\\]]/g, '').replace(/\\s/g, '');
-        if (!s) return [];
-        try {
-            return s.split(',').map(x => parseInt(x)).filter(x => !isNaN(x));
-        } catch (e) {
-            return [];
-        }
-    }
-    
-    // Read input from stdin if available
-    const fs = require('fs');
-    try {
-        const input = fs.readFileSync(0, 'utf-8').trim();
-        if (input) {
-            const lines = input.split('\\n');
-            if (lines.length >= 2) {
-                const list1Input = lines[0].trim();
-                const list2Input = lines[1].trim();
-                
-                const list1Values = parseListInput(list1Input);
-                const list2Values = parseListInput(list2Input);
-                
-                console.log(\`Input: list1 = [\${list1Values.join(',')}], list2 = [\${list2Values.join(',')}]\`);
-                
-                // Convert to linked lists
-                const list1 = listToLinked(list1Values);
-                const list2 = listToLinked(list2Values);
-                
-                // Merge two sorted lists solution
-                const dummy = new ListNode();
-                let current = dummy;
-                let l1 = list1, l2 = list2;
-                
-                while (l1 && l2) {
-                    if (l1.val <= l2.val) {
-                        current.next = l1;
-                        l1 = l1.next;
-                    } else {
-                        current.next = l2;
-                        l2 = l2.next;
-                    }
-                    current = current.next;
-                }
-                
-                current.next = l1 || l2;
-                
-                const result = linkedToList(dummy.next);
-                console.log(\`Output: [\${result.join(',')}]\`);
-                return result;
+    for (int i = 0; i < size; i++) {
+        for (int j = i + 1; j < size; j++) {
+            if (nums[i] + nums[j] == target) {
+                printf("Indices: [%d, %d]\\n", i, j);
+                return 0;
             }
         }
-    } catch (e) {
-        // Fallback to example data
     }
     
-    // Fallback to example data
-    console.log("Using example data:");
-    const list1Values = [1, 2, 4];
-    const list2Values = [1, 3, 4];
-    console.log(\`Input: list1 = [\${list1Values.join(',')}], list2 = [\${list2Values.join(',')}]\`);
+    printf("No solution found\\n");
+    return 0;
+}`,
+        
+        string: `#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/*
+ * {description}
+ */
+
+int main() {
+    // Example string processing
+    char s[] = "III";
     
-    // Convert to linked lists
-    const list1 = listToLinked(list1Values);
-    const list2 = listToLinked(list2Values);
+    // Your code here
+    printf("Processing string: %s\\n", s);
     
-    // Merge two sorted lists solution
-    const dummy = new ListNode();
-    let current = dummy;
-    let l1 = list1, l2 = list2;
+    return 0;
+}`,
+
+        roman: `#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/*
+ * Roman to Integer
+ * Convert a roman numeral to an integer
+ */
+
+int romanToInt(char* s) {
+    int values[256] = {0}; // ASCII table size
+    values['I'] = 1;
+    values['V'] = 5;
+    values['X'] = 10;
+    values['L'] = 50;
+    values['C'] = 100;
+    values['D'] = 500;
+    values['M'] = 1000;
     
-    while (l1 && l2) {
-        if (l1.val <= l2.val) {
-            current.next = l1;
-            l1 = l1.next;
+    int total = 0;
+    int prevValue = 0;
+    int len = strlen(s);
+    
+    // Process from right to left
+    for (int i = len - 1; i >= 0; i--) {
+        int currentValue = values[(int)s[i]];
+        
+        if (currentValue < prevValue) {
+            total -= currentValue;
         } else {
-            current.next = l2;
-            l2 = l2.next;
+            total += currentValue;
         }
-        current = current.next;
+        prevValue = currentValue;
     }
     
-    current.next = l1 || l2;
-    
-    const result = linkedToList(dummy.next);
-    console.log(\`Output: [\${result.join(',')}]\`);
-    return result;
+    return total;
 }
 
-// Test your solution
-console.log("Final Result:", solution());`,
-        
-        string: `function solution() {
-    /**
-     * {description}
-     */
-    // Read input from stdin if available
-    const fs = require('fs');
-    try {
-        const input = fs.readFileSync(0, 'utf-8').trim();
-        if (input) {
-            console.log(\`Input: \${input}\`);
-            
-            // Your code here
-            {solution_hint}
-            
-            const result = ""; // Your result
-            console.log(\`Output: \${result}\`);
-            return result;
-        }
-    } catch (e) {
-        // Fallback to example
+int main() {
+    // Test cases
+    char* testCases[] = {"III", "LVIII", "MCMXCIV"};
+    int numTests = sizeof(testCases) / sizeof(testCases[0]);
+    
+    for (int i = 0; i < numTests; i++) {
+        int result = romanToInt(testCases[i]);
+        printf("Roman: %s -> Integer: %d\\n", testCases[i], result);
     }
     
-    // Example: {example_input}
-    const s = "{example_string}";
-    console.log(\`Using example: \${s}\`);
-    
-    // Your code here
-    {solution_hint}
-    
-    const result = "";
-    console.log(\`Output: \${result}\`);
-    return result;
-}
-
-// Test your solution
-console.log("Result:", solution());`
-      },
-      
-      java: {
-        basic: `import java.util.*;
-import java.io.*;
-
-public class Main {
-    public static void main(String[] args) {
-        Solution solution = new Solution();
-        System.out.println("Result: " + solution.solve());
-    }
-}
-
-class Solution {
-    /**
-     * {description}
-     */
-    public Object solve() {
-        // Your code here
-        return null;
-    }
-}`,
-        
-        array: `import java.util.*;
-import java.io.*;
-
-public class Main {
-    public static void main(String[] args) {
-        Solution solution = new Solution();
-        int[] result = solution.solve();
-        System.out.println("Result: " + Arrays.toString(result));
-    }
-}
-
-class Solution {
-    /**
-     * {description}
-     */
-    public int[] solve() {
-        // Try to read from stdin first
-        try {
-            Scanner scanner = new Scanner(System.in);
-            if (scanner.hasNextLine()) {
-                String input = scanner.nextLine().trim();
-                System.out.println("Input: " + input);
-                
-                // Parse input - example for array problems
-                // Your parsing logic here
-                
-                // Your code here
-                {solution_hint}
-                
-                scanner.close();
-                return new int[]{};
-            }
-        } catch (Exception e) {
-            // Fallback to example data
-        }
-        
-        // Example input
-        {example_input}
-        
-        // Your code here
-        {solution_hint}
-        
-        return new int[]{};
-    }
-}`,
-        
-        linkedlist: `import java.util.*;
-import java.io.*;
-
-class ListNode {
-    int val;
-    ListNode next;
-    ListNode() {}
-    ListNode(int val) { this.val = val; }
-    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        Solution solution = new Solution();
-        
-        // Try to read input
-        try {
-            Scanner scanner = new Scanner(System.in);
-            StringBuilder inputBuilder = new StringBuilder();
-            
-            // Read all available input
-            while (scanner.hasNextLine()) {
-                inputBuilder.append(scanner.nextLine()).append("\\n");
-            }
-            
-            String input = inputBuilder.toString().trim();
-            if (!input.isEmpty()) {
-                String[] lines = input.split("\\n");
-                if (lines.length >= 2) {
-                    String list1Input = lines[0].trim();
-                    String list2Input = lines[1].trim();
-                    
-                    System.out.println("Input: list1 = " + list1Input + ", list2 = " + list2Input);
-                    
-                    // Parse and solve
-                    int[] list1Values = parseList(list1Input);
-                    int[] list2Values = parseList(list2Input);
-                    
-                    ListNode list1 = arrayToLinkedList(list1Values);
-                    ListNode list2 = arrayToLinkedList(list2Values);
-                    
-                    ListNode result = solution.mergeTwoLists(list1, list2);
-                    System.out.println("Output: " + linkedListToString(result));
-                    
-                    scanner.close();
-                    return;
-                }
-            }
-            scanner.close();
-        } catch (Exception e) {
-            // Fallback to example
-        }
-        
-        // Fallback to example data
-        System.out.println("Using example data:");
-        System.out.println("Input: list1 = [1,2,4], list2 = [1,3,4]");
-        
-        int[] list1Values = {1, 2, 4};
-        int[] list2Values = {1, 3, 4};
-        
-        ListNode list1 = arrayToLinkedList(list1Values);
-        ListNode list2 = arrayToLinkedList(list2Values);
-        
-        ListNode result = solution.mergeTwoLists(list1, list2);
-        System.out.println("Output: " + linkedListToString(result));
-        System.out.println("Final Result: " + linkedListToString(result));
+    // Test with input
+    printf("\\n--- Testing with input ---\\n");
+    char input[100];
+    printf("Enter a Roman numeral: ");
+    if (scanf("%s", input)) {
+        int result = romanToInt(input);
+        printf("Roman: %s -> Integer: %d\\n", input, result);
     }
     
-    static int[] parseList(String s) {
-        s = s.replaceAll("[\\[\\]]", "").trim();
-        if (s.isEmpty()) return new int[0];
-        try {
-            String[] parts = s.split(",");
-            int[] result = new int[parts.length];
-            for (int i = 0; i < parts.length; i++) {
-                result[i] = Integer.parseInt(parts[i].trim());
-            }
-            return result;
-        } catch (Exception e) {
-            return new int[0];
-        }
-    }
-    
-    static ListNode arrayToLinkedList(int[] arr) {
-        if (arr.length == 0) return null;
-        ListNode head = new ListNode(arr[0]);
-        ListNode current = head;
-        for (int i = 1; i < arr.length; i++) {
-            current.next = new ListNode(arr[i]);
-            current = current.next;
-        }
-        return head;
-    }
-    
-    static String linkedListToString(ListNode head) {
-        List<Integer> result = new ArrayList<>();
-        while (head != null) {
-            result.add(head.val);
-            head = head.next;
-        }
-        return result.toString();
-    }
-}
-
-class Solution {
-    /**
-     * {description}
-     */
-    public ListNode solve() {
-        // Your code here
-        return null;
-    }
-    
-    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
-        ListNode dummy = new ListNode();
-        ListNode current = dummy;
-        
-        while (list1 != null && list2 != null) {
-            if (list1.val <= list2.val) {
-                current.next = list1;
-                list1 = list1.next;
-            } else {
-                current.next = list2;
-                list2 = list2.next;
-            }
-            current = current.next;
-        }
-        
-        current.next = (list1 != null) ? list1 : list2;
-        return dummy.next;
-    }
+    return 0;
 }`
       },
       
@@ -617,226 +130,349 @@ class Solution {
         basic: `#include <iostream>
 #include <vector>
 #include <string>
-#include <sstream>
 using namespace std;
 
-class Solution {
-public:
-    /**
-     * {description}
-     */
-    auto solve() {
-        // Your code here
-        return 0;
-    }
-};
+/*
+ * {description}
+ */
 
 int main() {
-    Solution solution;
-    cout << "Result: " << solution.solve() << endl;
+    // Your code here
+    cout << "Hello, World!" << endl;
     return 0;
 }`,
         
         array: `#include <iostream>
 #include <vector>
-#include <algorithm>
-#include <sstream>
 #include <string>
 using namespace std;
 
-class Solution {
-public:
-    /**
-     * {description}
-     */
-    vector<int> solve() {
-        // Try to read from stdin
-        string line;
-        if (getline(cin, line) && !line.empty()) {
-            cout << "Input: " << line << endl;
-            
-            // Parse input
-            vector<int> nums = parseArray(line);
-            
-            // Your code here
-            {solution_hint}
-            
-            return {};
-        }
-        
-        // Example input
-        {example_input}
-        
-        // Your code here
-        {solution_hint}
-        
-        return {};
-    }
-    
-private:
-    vector<int> parseArray(string s) {
-        vector<int> result;
-        // Remove brackets
-        s.erase(remove(s.begin(), s.end(), '['), s.end());
-        s.erase(remove(s.begin(), s.end(), ']'), s.end());
-        
-        if (s.empty()) return result;
-        
-        stringstream ss(s);
-        string item;
-        while (getline(ss, item, ',')) {
-            if (!item.empty()) {
-                try {
-                    result.push_back(stoi(item));
-                } catch (...) {
-                    // Skip invalid numbers
-                }
-            }
-        }
-        return result;
-    }
-};
+/*
+ * {description}
+ */
 
 int main() {
-    Solution solution;
-    vector<int> result = solution.solve();
-    cout << "Result: [";
-    for (int i = 0; i < result.size(); i++) {
-        cout << result[i];
-        if (i < result.size() - 1) cout << ", ";
+    // Example: Two Sum problem
+    vector<int> nums = {2, 7, 11, 15};
+    int target = 9;
+    
+    // Your code here
+    for (int i = 0; i < nums.size(); i++) {
+        for (int j = i + 1; j < nums.size(); j++) {
+            if (nums[i] + nums[j] == target) {
+                cout << "Indices: [" << i << ", " << j << "]" << endl;
+                return 0;
+            }
+        }
     }
-    cout << "]" << endl;
+    
+    cout << "No solution found" << endl;
     return 0;
 }`,
         
-        linkedlist: `#include <iostream>
-#include <vector>
-#include <sstream>
+        string: `#include <iostream>
 #include <string>
-#include <algorithm>
 using namespace std;
 
-struct ListNode {
-    int val;
-    ListNode *next;
-    ListNode() : val(0), next(nullptr) {}
-    ListNode(int x) : val(x), next(nullptr) {}
-    ListNode(int x, ListNode *next) : val(x), next(next) {}
-};
+/*
+ * {description}
+ */
 
-class Solution {
-public:
-    /**
-     * {description}
-     */
-    ListNode* solve() {
-        // Try to read input
-        string line1, line2;
-        if (getline(cin, line1) && getline(cin, line2)) {
-            cout << "Input: list1 = " << line1 << ", list2 = " << line2 << endl;
-            
-            vector<int> list1Values = parseArray(line1);
-            vector<int> list2Values = parseArray(line2);
-            
-            ListNode* list1 = arrayToLinkedList(list1Values);
-            ListNode* list2 = arrayToLinkedList(list2Values);
-            
-            ListNode* result = mergeTwoLists(list1, list2);
-            cout << "Output: " << linkedListToString(result) << endl;
-            cout << "Final Result: " << linkedListToString(result) << endl;
-            
-            return result;
+int main() {
+    // Example string processing
+    string s = "III";
+    
+    // Your code here
+    cout << "Processing string: " << s << endl;
+    
+    return 0;
+}`,
+
+        roman: `#include <iostream>
+#include <string>
+#include <unordered_map>
+using namespace std;
+
+/*
+ * Roman to Integer
+ * Convert a roman numeral to an integer
+ */
+
+int romanToInt(string s) {
+    unordered_map<char, int> romanMap = {
+        {'I', 1}, {'V', 5}, {'X', 10}, {'L', 50},
+        {'C', 100}, {'D', 500}, {'M', 1000}
+    };
+    
+    int total = 0;
+    int prevValue = 0;
+    
+    // Process from right to left
+    for (int i = s.length() - 1; i >= 0; i--) {
+        int currentValue = romanMap[s[i]];
+        
+        if (currentValue < prevValue) {
+            total -= currentValue;
+        } else {
+            total += currentValue;
         }
-        
-        // Fallback to example data
-        cout << "Using example data:" << endl;
-        cout << "Input: list1 = [1,2,4], list2 = [1,3,4]" << endl;
-        
-        vector<int> list1Values = {1, 2, 4};
-        vector<int> list2Values = {1, 3, 4};
-        
-        ListNode* list1 = arrayToLinkedList(list1Values);
-        ListNode* list2 = arrayToLinkedList(list2Values);
-        
-        ListNode* result = mergeTwoLists(list1, list2);
-        cout << "Output: " << linkedListToString(result) << endl;
-        cout << "Final Result: " << linkedListToString(result) << endl;
-        
-        return result;
+        prevValue = currentValue;
     }
     
-private:
-    vector<int> parseArray(string s) {
-        vector<int> result;
-        s.erase(remove(s.begin(), s.end(), '['), s.end());
-        s.erase(remove(s.begin(), s.end(), ']'), s.end());
-        s.erase(remove(s.begin(), s.end(), ' '), s.end());
+    return total;
+}
+
+int main() {
+    // Test cases
+    vector<string> testCases = {"III", "LVIII", "MCMXCIV"};
+    
+    for (const string& roman : testCases) {
+        int result = romanToInt(roman);
+        cout << "Roman: " << roman << " -> Integer: " << result << endl;
+    }
+    
+    // Test with input
+    cout << "\\n--- Testing with input ---" << endl;
+    string input;
+    cout << "Enter a Roman numeral: ";
+    if (cin >> input) {
+        int result = romanToInt(input);
+        cout << "Roman: " << input << " -> Integer: " << result << endl;
+    }
+    
+    return 0;
+}`
+      },
+      
+      java: {
+        basic: `import java.util.*;
+import java.io.*;
+
+public class Main {
+    /*
+     * {description}
+     */
+    
+    public static void main(String[] args) {
+        // Your code here
+        System.out.println("Hello, World!");
+    }
+}`,
         
-        if (s.empty()) return result;
+        array: `import java.util.*;
+import java.io.*;
+
+public class Main {
+    /*
+     * {description}
+     */
+    
+    public static void main(String[] args) {
+        // Example: Two Sum problem
+        int[] nums = {2, 7, 11, 15};
+        int target = 9;
         
-        stringstream ss(s);
-        string item;
-        while (getline(ss, item, ',')) {
-            if (!item.empty()) {
-                try {
-                    result.push_back(stoi(item));
-                } catch (...) {
-                    // Skip invalid numbers
+        // Your code here
+        for (int i = 0; i < nums.length; i++) {
+            for (int j = i + 1; j < nums.length; j++) {
+                if (nums[i] + nums[j] == target) {
+                    System.out.println("Indices: [" + i + ", " + j + "]");
+                    return;
                 }
             }
         }
-        return result;
-    }
-    
-    ListNode* arrayToLinkedList(vector<int>& values) {
-        if (values.empty()) return nullptr;
-        ListNode* head = new ListNode(values[0]);
-        ListNode* current = head;
-        for (int i = 1; i < values.size(); i++) {
-            current->next = new ListNode(values[i]);
-            current = current->next;
-        }
-        return head;
-    }
-    
-    string linkedListToString(ListNode* head) {
-        string result = "[";
-        bool first = true;
-        while (head) {
-            if (!first) result += ",";
-            result += to_string(head->val);
-            head = head->next;
-            first = false;
-        }
-        result += "]";
-        return result;
-    }
-    
-    ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {
-        ListNode dummy;
-        ListNode* current = &dummy;
         
-        while (list1 && list2) {
-            if (list1->val <= list2->val) {
-                current->next = list1;
-                list1 = list1->next;
-            } else {
-                current->next = list2;
-                list2 = list2->next;
-            }
-            current = current->next;
-        }
-        
-        current->next = list1 ? list1 : list2;
-        return dummy.next;
+        System.out.println("No solution found");
     }
-};
+}`,
+        
+        string: `import java.util.*;
+import java.io.*;
 
-int main() {
-    Solution solution;
-    ListNode* result = solution.solve();
-    return 0;
+public class Main {
+    /*
+     * {description}
+     */
+    
+    public static void main(String[] args) {
+        // Example string processing
+        String s = "III";
+        
+        // Your code here
+        System.out.println("Processing string: " + s);
+    }
+}`,
+
+        roman: `import java.util.*;
+import java.io.*;
+
+public class Main {
+    /*
+     * Roman to Integer
+     * Convert a roman numeral to an integer
+     */
+    
+    public static int romanToInt(String s) {
+        Map<Character, Integer> romanMap = new HashMap<>();
+        romanMap.put('I', 1);
+        romanMap.put('V', 5);
+        romanMap.put('X', 10);
+        romanMap.put('L', 50);
+        romanMap.put('C', 100);
+        romanMap.put('D', 500);
+        romanMap.put('M', 1000);
+        
+        int total = 0;
+        int prevValue = 0;
+        
+        // Process from right to left
+        for (int i = s.length() - 1; i >= 0; i--) {
+            char c = s.charAt(i);
+            int value = romanMap.get(c);
+            
+            if (value < prevValue) {
+                total -= value;
+            } else {
+                total += value;
+            }
+            prevValue = value;
+        }
+        
+        return total;
+    }
+    
+    public static void main(String[] args) {
+        // Test cases
+        String[] testCases = {"III", "LVIII", "MCMXCIV"};
+        
+        for (String roman : testCases) {
+            int result = romanToInt(roman);
+            System.out.println("Roman: " + roman + " -> Integer: " + result);
+        }
+        
+        // Test with input
+        System.out.println("\\n--- Testing with input ---");
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter a Roman numeral: ");
+        
+        try {
+            String input = scanner.nextLine().trim();
+            if (!input.isEmpty()) {
+                int result = romanToInt(input);
+                System.out.println("Roman: " + input + " -> Integer: " + result);
+            }
+        } catch (Exception e) {
+            System.out.println("Error reading input: " + e.getMessage());
+        } finally {
+            scanner.close();
+        }
+    }
 }`
+      },
+      
+      python: {
+        basic: `"""
+{description}
+"""
+
+def solution():
+    # Your code here
+    return "Hello, World!"
+
+# Test your solution
+if __name__ == "__main__":
+    result = solution()
+    print(f"Result: {result}")`,
+        
+        array: `"""
+{description}
+"""
+
+def two_sum(nums, target):
+    # Your code here
+    for i in range(len(nums)):
+        for j in range(i + 1, len(nums)):
+            if nums[i] + nums[j] == target:
+                return [i, j]
+    return []
+
+# Test your solution
+if __name__ == "__main__":
+    # Example test case
+    nums = [2, 7, 11, 15]
+    target = 9
+    result = two_sum(nums, target)
+    print(f"Input: nums = {nums}, target = {target}")
+    print(f"Output: {result}")`,
+        
+        string: `"""
+{description}
+"""
+
+def process_string(s):
+    # Your code here
+    return len(s)
+
+# Test your solution
+if __name__ == "__main__":
+    # Example test case
+    s = "III"
+    result = process_string(s)
+    print(f"Input: {s}")
+    print(f"Output: {result}")`,
+
+        roman: `"""
+Roman to Integer
+Convert a roman numeral to an integer
+"""
+
+def roman_to_int(s):
+    roman_map = {
+        'I': 1,
+        'V': 5,
+        'X': 10,
+        'L': 50,
+        'C': 100,
+        'D': 500,
+        'M': 1000
+    }
+    
+    total = 0
+    prev_value = 0
+    
+    # Process from right to left
+    for char in reversed(s.upper()):
+        value = roman_map[char]
+        if value < prev_value:
+            total -= value
+        else:
+            total += value
+        prev_value = value
+    
+    return total
+
+# Test your solution
+if __name__ == "__main__":
+    # Test cases
+    test_cases = ["III", "LVIII", "MCMXCIV"]
+    
+    for roman in test_cases:
+        result = roman_to_int(roman)
+        print(f"Roman: {roman} -> Integer: {result}")
+    
+    # Test with input
+    print("\\n--- Testing with input ---")
+    try:
+        user_input = input("Enter a Roman numeral: ").strip()
+        if user_input:
+            result = roman_to_int(user_input)
+            print(f"Roman: {user_input} -> Integer: {result}")
+    except (EOFError, KeyboardInterrupt):
+        print("\\nInput cancelled")
+    except KeyError as e:
+        print(f"Invalid Roman numeral character: {e}")
+    except Exception as e:
+        print(f"Error: {e}")`
       }
     };
   }
@@ -846,13 +482,9 @@ int main() {
     const descLower = description.toLowerCase();
     const catLower = category.toLowerCase();
     
-    // Check for specific patterns
-    if (titleLower.includes('linked') || descLower.includes('linked list') || catLower.includes('linked')) {
-      return 'linkedlist';
-    }
-    
-    if (titleLower.includes('tree') || descLower.includes('binary tree') || catLower.includes('tree')) {
-      return 'tree';
+    // Check for specific problem types
+    if (titleLower.includes('roman')) {
+      return 'roman';
     }
     
     if (titleLower.includes('string') || catLower.includes('string') || descLower.includes('substring')) {
@@ -868,7 +500,6 @@ int main() {
   }
 
   extractExampleFromDescription(description) {
-    // Extract first example from description
     const exampleMatch = description.match(/Example \d+:\s*Input:\s*([^\n]+)/i);
     if (exampleMatch) {
       return exampleMatch[1].trim();
@@ -876,35 +507,36 @@ int main() {
     return 'nums = [2, 7, 11, 15], target = 9';
   }
 
-  generateSolutionHint(title, problemType) {
+  generateSolutionHint(title, problemType, language) {
     const hints = {
-      array: {
-        'two sum': 'for i in range(len(nums)):\n        for j in range(i + 1, len(nums)):\n            if nums[i] + nums[j] == target:\n                return [i, j]',
-        'default': '# Iterate through the array\n    # Apply your logic here\n    # Return the result'
+      c: {
+        array: '// Iterate through the array\n    // Apply your logic here\n    // Print the result',
+        string: '// Process the string\n    // Your logic here\n    // Print result',
+        roman: '// Create a mapping for roman numerals\n    // Process from right to left\n    // Handle subtraction cases',
+        basic: '// Write your solution here\n    // Print the result'
       },
-      linkedlist: {
-        'merge': 'dummy = ListNode()\n    current = dummy\n    # Merge logic here\n    return dummy.next',
-        'default': '# Process the linked list\n    # Your logic here\n    # Return modified list'
+      cpp: {
+        array: '// Iterate through the array\n    // Apply your logic here\n    // Return the result',
+        string: '// Process the string\n    // Your logic here\n    // Return result',
+        roman: '// Create a mapping for roman numerals\n    // Process from right to left\n    // Handle subtraction cases',
+        basic: '// Write your solution here\n    // Return the result'
       },
-      string: {
-        'palindrome': '# Check if string is palindrome\n    # Compare characters from both ends',
-        'default': '# Process the string\n    # Your logic here\n    # Return result'
+      java: {
+        array: '// Iterate through the array\n        // Apply your logic here\n        // Print the result',
+        string: '// Process the string\n        // Your logic here\n        // Print result',
+        roman: '// Create a HashMap for roman numerals\n        // Process from right to left\n        // Handle subtraction cases',
+        basic: '// Write your solution here\n        // Print the result'
       },
-      basic: {
-        'default': '# Write your solution here\n    # Return the result'
+      python: {
+        array: '# Iterate through the array\n    # Apply your logic here\n    # Return the result',
+        string: '# Process the string\n    # Your logic here\n    # Return result',
+        roman: '# Create a dictionary for roman numerals\n    # Process from right to left\n    # Handle subtraction cases',
+        basic: '# Write your solution here\n    # Return the result'
       }
     };
     
-    const titleLower = title.toLowerCase();
-    const typeHints = hints[problemType] || hints.basic;
-    
-    for (const [key, hint] of Object.entries(typeHints)) {
-      if (key !== 'default' && titleLower.includes(key)) {
-        return hint;
-      }
-    }
-    
-    return typeHints.default || hints.basic.default;
+    const langHints = hints[language] || hints.python;
+    return langHints[problemType] || langHints.basic;
   }
 
   generateTemplate(language, problem) {
@@ -916,23 +548,21 @@ int main() {
     }
     
     const exampleInput = this.extractExampleFromDescription(problem.description);
-    const solutionHint = this.generateSolutionHint(problem.title, problemType);
+    const solutionHint = this.generateSolutionHint(problem.title, problemType, language);
     const exampleString = problemType === 'string' ? 'hello world' : '';
     
     return template
       .replace(/{description}/g, problem.description.split('\n')[0] || problem.title)
-      .replace(/{example_input}/g, `# ${exampleInput}`)
+      .replace(/{example_input}/g, `// ${exampleInput}`)
       .replace(/{solution_hint}/g, solutionHint)
       .replace(/{example_string}/g, exampleString);
   }
 
-  // Enhanced method to get template with problem context
   getTemplateForProblem(language, problemId, problemData) {
     try {
       return this.generateTemplate(language, problemData);
     } catch (error) {
       console.error(`Error generating template for ${language}:`, error);
-      // Fallback to basic template
       return this.templates[language]?.basic || `// Template not available for ${language}`;
     }
   }

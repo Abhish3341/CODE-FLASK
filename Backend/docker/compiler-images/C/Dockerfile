@@ -1,4 +1,4 @@
-FROM openjdk:11-alpine
+FROM gcc:9-alpine
 
 # Create non-root user
 RUN addgroup -g 1000 coderunner && \
@@ -13,11 +13,8 @@ RUN apk update && apk upgrade
 # Remove unnecessary packages
 RUN apk del --purge wget curl
 
-# Set JVM options for security and resource limits
-ENV JAVA_OPTS="-Xmx128m -Xms64m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
-
 # Switch to non-root user
 USER coderunner
 
 # Default command
-CMD ["java"]
+CMD ["gcc"]

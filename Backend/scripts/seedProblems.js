@@ -36,7 +36,7 @@ Constraints:
     category: "Arrays",
     acceptance: 49,
     totalSubmissions: 1000000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Add Two Numbers",
@@ -65,7 +65,7 @@ Constraints:
     category: "Linked Lists",
     acceptance: 38,
     totalSubmissions: 800000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Longest Substring Without Repeating Characters",
@@ -93,7 +93,7 @@ Constraints:
     category: "Strings",
     acceptance: 33,
     totalSubmissions: 900000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Median of Two Sorted Arrays",
@@ -122,7 +122,7 @@ Constraints:
     category: "Arrays",
     acceptance: 35,
     totalSubmissions: 600000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Longest Palindromic Substring",
@@ -144,7 +144,7 @@ Constraints:
     category: "Strings",
     acceptance: 32,
     totalSubmissions: 750000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "ZigZag Conversion",
@@ -178,7 +178,7 @@ Constraints:
     category: "Strings",
     acceptance: 42,
     totalSubmissions: 500000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Reverse Integer",
@@ -204,7 +204,7 @@ Constraints:
     category: "Math",
     acceptance: 26,
     totalSubmissions: 850000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "String to Integer (atoi)",
@@ -242,7 +242,7 @@ Constraints:
     category: "Strings",
     acceptance: 16,
     totalSubmissions: 1200000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Palindrome Number",
@@ -275,7 +275,7 @@ Follow up: Could you solve it without converting the integer to a string?`,
     category: "Math",
     acceptance: 52,
     totalSubmissions: 900000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Regular Expression Matching",
@@ -311,7 +311,7 @@ Constraints:
     category: "Dynamic Programming",
     acceptance: 27,
     totalSubmissions: 700000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Container With Most Water",
@@ -340,7 +340,7 @@ Constraints:
     category: "Two Pointers",
     acceptance: 54,
     totalSubmissions: 800000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Integer to Roman",
@@ -386,7 +386,7 @@ Constraints:
     category: "Math",
     acceptance: 59,
     totalSubmissions: 600000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Roman to Integer",
@@ -434,7 +434,7 @@ Constraints:
     category: "Math",
     acceptance: 58,
     totalSubmissions: 700000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Longest Common Prefix",
@@ -459,7 +459,7 @@ Constraints:
     category: "Strings",
     acceptance: 40,
     totalSubmissions: 850000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "3Sum",
@@ -494,7 +494,7 @@ Constraints:
     category: "Two Pointers",
     acceptance: 32,
     totalSubmissions: 950000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "3Sum Closest",
@@ -522,7 +522,7 @@ Constraints:
     category: "Two Pointers",
     acceptance: 46,
     totalSubmissions: 600000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Letter Combinations of a Phone Number",
@@ -558,7 +558,7 @@ Constraints:
     category: "Backtracking",
     acceptance: 55,
     totalSubmissions: 700000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "4Sum",
@@ -586,7 +586,7 @@ Constraints:
     category: "Two Pointers",
     acceptance: 36,
     totalSubmissions: 550000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Remove Nth Node From End of List",
@@ -615,7 +615,7 @@ Follow up: Could you do this in one pass?`,
     category: "Linked Lists",
     acceptance: 39,
     totalSubmissions: 800000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Valid Parentheses",
@@ -646,7 +646,7 @@ Constraints:
     category: "Stack",
     acceptance: 40,
     totalSubmissions: 1100000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Merge Two Sorted Lists",
@@ -676,7 +676,7 @@ Constraints:
     category: "Linked Lists",
     acceptance: 61,
     totalSubmissions: 900000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Generate Parentheses",
@@ -696,7 +696,7 @@ Constraints:
     category: "Backtracking",
     acceptance: 71,
     totalSubmissions: 650000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Merge k Sorted Lists",
@@ -735,7 +735,7 @@ Constraints:
     category: "Linked Lists",
     acceptance: 47,
     totalSubmissions: 750000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Swap Nodes in Pairs",
@@ -762,7 +762,7 @@ Follow up: Can you solve the problem in O(1) extra memory space?`,
     category: "Linked Lists",
     acceptance: 58,
     totalSubmissions: 600000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Reverse Nodes in k-Group",
@@ -790,7 +790,7 @@ Follow-up: Can you solve the problem in O(1) extra memory space?`,
     category: "Linked Lists",
     acceptance: 53,
     totalSubmissions: 500000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Remove Duplicates from Sorted Array",
@@ -822,7 +822,7 @@ Constraints:
     category: "Arrays",
     acceptance: 50,
     totalSubmissions: 1000000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Remove Element",
@@ -854,7 +854,7 @@ Constraints:
     category: "Arrays",
     acceptance: 53,
     totalSubmissions: 800000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Find the Index of the First Occurrence in a String",
@@ -878,7 +878,7 @@ Constraints:
     category: "Strings",
     acceptance: 37,
     totalSubmissions: 900000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Divide Two Integers",
@@ -907,7 +907,7 @@ Constraints:
     category: "Math",
     acceptance: 17,
     totalSubmissions: 850000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Substring with Concatenation of All Words",
@@ -947,7 +947,7 @@ Constraints:
     category: "Sliding Window",
     acceptance: 30,
     totalSubmissions: 400000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Next Permutation",
@@ -986,7 +986,7 @@ Constraints:
     category: "Arrays",
     acceptance: 37,
     totalSubmissions: 700000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Longest Valid Parentheses",
@@ -1013,7 +1013,7 @@ Constraints:
     category: "Dynamic Programming",
     acceptance: 32,
     totalSubmissions: 600000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Search in Rotated Sorted Array",
@@ -1047,7 +1047,7 @@ Constraints:
     category: "Binary Search",
     acceptance: 38,
     totalSubmissions: 850000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Find First and Last Position of Element in Sorted Array",
@@ -1078,7 +1078,7 @@ Constraints:
     category: "Binary Search",
     acceptance: 42,
     totalSubmissions: 750000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Search Insert Position",
@@ -1107,7 +1107,7 @@ Constraints:
     category: "Binary Search",
     acceptance: 42,
     totalSubmissions: 900000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Valid Sudoku",
@@ -1156,7 +1156,7 @@ Constraints:
     category: "Hash Table",
     acceptance: 56,
     totalSubmissions: 650000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Sudoku Solver",
@@ -1184,7 +1184,7 @@ Constraints:
     category: "Backtracking",
     acceptance: 59,
     totalSubmissions: 400000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Count and Say",
@@ -1217,7 +1217,7 @@ Constraints:
     category: "Strings",
     acceptance: 50,
     totalSubmissions: 600000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Combination Sum",
@@ -1252,7 +1252,7 @@ Constraints:
     category: "Backtracking",
     acceptance: 68,
     totalSubmissions: 700000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Combination Sum II",
@@ -1288,7 +1288,7 @@ Constraints:
     category: "Backtracking",
     acceptance: 52,
     totalSubmissions: 550000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "First Missing Positive",
@@ -1318,7 +1318,7 @@ Constraints:
     category: "Arrays",
     acceptance: 36,
     totalSubmissions: 650000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Trapping Rain Water",
@@ -1341,7 +1341,7 @@ Constraints:
     category: "Two Pointers",
     acceptance: 58,
     totalSubmissions: 800000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Multiply Strings",
@@ -1365,7 +1365,7 @@ Constraints:
     category: "Math",
     acceptance: 38,
     totalSubmissions: 600000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Wildcard Matching",
@@ -1399,7 +1399,7 @@ Constraints:
     category: "Dynamic Programming",
     acceptance: 26,
     totalSubmissions: 500000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Jump Game II",
@@ -1431,7 +1431,7 @@ Constraints:
     category: "Greedy",
     acceptance: 38,
     totalSubmissions: 650000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Permutations",
@@ -1457,7 +1457,7 @@ Constraints:
     category: "Backtracking",
     acceptance: 74,
     totalSubmissions: 800000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Permutations II",
@@ -1493,7 +1493,7 @@ Constraints:
     category: "Backtracking",
     acceptance: 57,
     totalSubmissions: 600000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Rotate Image",
@@ -1517,7 +1517,7 @@ Constraints:
     category: "Arrays",
     acceptance: 70,
     totalSubmissions: 750000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Group Anagrams",
@@ -1545,7 +1545,7 @@ Constraints:
     category: "Hash Table",
     acceptance: 67,
     totalSubmissions: 900000,
-    version: "python3"
+    version: "multi-language"
   },
   {
     title: "Pow(x, n)",
@@ -1574,7 +1574,7 @@ Constraints:
     category: "Math",
     acceptance: 33,
     totalSubmissions: 850000,
-    version: "python3"
+    version: "multi-language"
   }
 ];
 
@@ -1592,7 +1592,7 @@ async function seedProblems() {
     console.log(`Inserted ${insertedProblems.length} problems`);
 
     await mongoose.disconnect();
-    console.log('Database seeded successfully with 50 problems including descriptions');
+    console.log('Database seeded successfully with 50 problems supporting all 4 languages (C, C++, Java, Python)');
   } catch (error) {
     console.error('Error seeding database:', error);
     process.exit(1);

@@ -35,15 +35,96 @@ $directories = @(
     "../temp",
     "../docker",
     "../docker/compiler-images",
-    "../docker/compiler-images/python",
-    "../docker/compiler-images/node", 
+    "../docker/compiler-images/c",
+    "../docker/compiler-images/cpp", 
     "../docker/compiler-images/java",
-    "../docker/compiler-images/cpp"
+    "../docker/compiler-images/python"
 )
 
 foreach ($dir in $directories) {
     New-Item -ItemType Directory -Force -Path $dir | Out-Null
 }
+
+# Create Dockerfile for C
+Write-Host "📝 Creating C Dockerfile..." -ForegroundColor Yellow
+$cDockerfile = @"
+FROM gcc:9-alpine
+
+# Create non-root user
+RUN addgroup -g 1000 coderunner && \
+    adduser -D -s /bin/sh -u 1000 -G coderunner coderunner
+
+# Set working directory
+WORKDIR /app
+
+# Install security updates
+RUN apk update && apk upgrade
+
+# Remove unnecessary packages
+RUN apk del --purge wget curl
+
+# Switch to non-root user
+USER coderunner
+
+# Default command
+CMD ["gcc"]
+"@
+$cDockerfile | Out-File -FilePath "../docker/compiler-images/c/Dockerfile" -Encoding UTF8
+
+# Create Dockerfile for C++
+Write-Host "📝 Creating C++ Dockerfile..." -ForegroundColor Yellow
+$cppDockerfile = @"
+FROM gcc:9-alpine
+
+# Create non-root user
+RUN addgroup -g 1000 coderunner && \
+    adduser -D -s /bin/sh -u 1000 -G coderunner coderunner
+
+# Set working directory
+WORKDIR /app
+
+# Install security updates
+RUN apk update && apk upgrade
+
+# Remove unnecessary packages
+RUN apk del --purge wget curl
+
+# Switch to non-root user
+USER coderunner
+
+# Default command
+CMD ["g++"]
+"@
+$cppDockerfile | Out-File -FilePath "../docker/compiler-images/cpp/Dockerfile" -Encoding UTF8
+
+# Create Dockerfile for Java
+Write-Host "📝 Creating Java Dockerfile..." -ForegroundColor Yellow
+$javaDockerfile = @"
+FROM openjdk:11-alpine
+
+# Create non-root user
+RUN addgroup -g 1000 coderunner && \
+    adduser -D -s /bin/sh -u 1000 -G coderunner coderunner
+
+# Set working directory
+WORKDIR /app
+
+# Install security updates
+RUN apk update && apk upgrade
+
+# Remove unnecessary packages
+RUN apk del --purge wget curl
+
+# Set JVM options for security and resource limits
+ENV JAVA_OPTS="-Xmx128m -Xms64m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+# Switch to non-root user
+USER coderunner
+
+# Default command
+CMD ["java"]
+"@
+$javaDockerfile | Out-File -FilePath "../docker/compiler-images/java/Dockerfile" -Encoding UTF8
 
 # Create Dockerfile for Python
 Write-Host "📝 Creating Python Dockerfile..." -ForegroundColor Yellow
@@ -75,108 +156,24 @@ CMD ["python"]
 "@
 $pythonDockerfile | Out-File -FilePath "../docker/compiler-images/python/Dockerfile" -Encoding UTF8
 
-# Create Dockerfile for Node.js
-Write-Host "📝 Creating Node.js Dockerfile..." -ForegroundColor Yellow
-$nodeDockerfile = @"
-FROM node:16-alpine
-
-# Create non-root user
-RUN addgroup -g 1000 coderunner && \
-    adduser -D -s /bin/sh -u 1000 -G coderunner coderunner
-
-# Set working directory
-WORKDIR /app
-
-# Install security updates
-RUN apk update && apk upgrade
-
-# Remove unnecessary packages
-RUN apk del --purge wget curl
-
-# Set resource limits
-ENV NODE_ENV=production
-
-# Switch to non-root user
-USER coderunner
-
-# Default command
-CMD ["node"]
-"@
-$nodeDockerfile | Out-File -FilePath "../docker/compiler-images/node/Dockerfile" -Encoding UTF8
-
-# Create Dockerfile for Java
-Write-Host "📝 Creating Java Dockerfile..." -ForegroundColor Yellow
-$javaDockerfile = @"
-FROM openjdk:11-alpine
-
-# Create non-root user
-RUN addgroup -g 1000 coderunner && \
-    adduser -D -s /bin/sh -u 1000 -G coderunner coderunner
-
-# Set working directory
-WORKDIR /app
-
-# Install security updates
-RUN apk update && apk upgrade
-
-# Remove unnecessary packages
-RUN apk del --purge wget curl
-
-# Set JVM options for security and resource limits
-ENV JAVA_OPTS="-Xmx128m -Xms64m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
-
-# Switch to non-root user
-USER coderunner
-
-# Default command
-CMD ["java"]
-"@
-$javaDockerfile | Out-File -FilePath "../docker/compiler-images/java/Dockerfile" -Encoding UTF8
-
-# Create Dockerfile for C++
-Write-Host "📝 Creating C++ Dockerfile..." -ForegroundColor Yellow
-$cppDockerfile = @"
-FROM gcc:9-alpine
-
-# Create non-root user
-RUN addgroup -g 1000 coderunner && \
-    adduser -D -s /bin/sh -u 1000 -G coderunner coderunner
-
-# Set working directory
-WORKDIR /app
-
-# Install security updates
-RUN apk update && apk upgrade
-
-# Remove unnecessary packages
-RUN apk del --purge wget curl
-
-# Switch to non-root user
-USER coderunner
-
-# Default command
-CMD ["gcc"]
-"@
-$cppDockerfile | Out-File -FilePath "../docker/compiler-images/cpp/Dockerfile" -Encoding UTF8
-
 # Build custom compiler images
 Write-Host "🔨 Building secure compiler images..." -ForegroundColor Cyan
 
-Write-Host "Building Python compiler image..." -ForegroundColor Yellow
-docker build -t codeflask/python-compiler:latest ../docker/compiler-images/python/
-
-Write-Host "Building Node.js compiler image..." -ForegroundColor Yellow
-docker build -t codeflask/node-compiler:latest ../docker/compiler-images/node/
-
-Write-Host "Building Java compiler image..." -ForegroundColor Yellow
-docker build -t codeflask/java-compiler:latest ../docker/compiler-images/java/
+Write-Host "Building C compiler image..." -ForegroundColor Yellow
+docker build -t codeflask/c-compiler:latest ../docker/compiler-images/c/
 
 Write-Host "Building C++ compiler image..." -ForegroundColor Yellow
 docker build -t codeflask/cpp-compiler:latest ../docker/compiler-images/cpp/
 
+Write-Host "Building Java compiler image..." -ForegroundColor Yellow
+docker build -t codeflask/java-compiler:latest ../docker/compiler-images/java/
+
+Write-Host "Building Python compiler image..." -ForegroundColor Yellow
+docker build -t codeflask/python-compiler:latest ../docker/compiler-images/python/
+
 # Pull additional base images
 Write-Host "📥 Pulling base Docker images..." -ForegroundColor Cyan
-$images = @("python:3.9-alpine", "node:16-alpine", "openjdk:11-alpine", "gcc:9-alpine")
+$images = @("gcc:9-alpine", "openjdk:11-alpine", "python:3.9-alpine")
 
 foreach ($image in $images) {
     Write-Host "Pulling $image..." -ForegroundColor Yellow

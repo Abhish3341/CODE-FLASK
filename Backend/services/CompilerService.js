@@ -9,19 +9,49 @@ class CompilerService {
     this.dockerAvailable = false;
     this.dockerChecked = false;
     this.dockerImagesReady = {
-      python: false,
-      javascript: false,
+      c: false,
+      cpp: false,
       java: false,
-      cpp: false
+      python: false
     };
     this.nativeInterpreters = {
-      python: false,
-      javascript: true, // Node.js is available since we're running it
+      c: false,
+      cpp: false,
       java: false,
-      cpp: false
+      python: false
     };
     
     this.languageConfigs = {
+      c: {
+        image: 'gcc:latest',
+        extension: '.c',
+        compileCommand: ['gcc', '-o', '/tmp/main', '/app/code.c'],
+        runCommand: ['/tmp/main'],
+        nativeCommand: ['gcc'],
+        timeout: 15000,
+        memoryLimit: '256m',
+        cpuLimit: '0.5'
+      },
+      cpp: {
+        image: 'gcc:latest',
+        extension: '.cpp',
+        compileCommand: ['g++', '-o', '/tmp/main', '/app/code.cpp'],
+        runCommand: ['/tmp/main'],
+        nativeCommand: ['g++'],
+        timeout: 15000,
+        memoryLimit: '256m',
+        cpuLimit: '0.5'
+      },
+      java: {
+        image: 'openjdk:11',
+        extension: '.java',
+        compileCommand: ['javac', '-d', '/tmp', '/app/Main.java'],
+        runCommand: ['java', '-cp', '/tmp', 'Main'],
+        nativeCommand: ['javac'],
+        timeout: 15000,
+        memoryLimit: '256m',
+        cpuLimit: '0.5'
+      },
       python: {
         image: 'python:3.9-alpine',
         extension: '.py',
@@ -30,36 +60,6 @@ class CompilerService {
         nativeCommand: ['python'],
         timeout: 10000,
         memoryLimit: '128m',
-        cpuLimit: '0.5'
-      },
-      javascript: {
-        image: 'node:16-alpine',
-        extension: '.js',
-        compileCommand: null,
-        runCommand: ['node', '/app/code.js'],
-        nativeCommand: ['node'],
-        timeout: 10000,
-        memoryLimit: '128m',
-        cpuLimit: '0.5'
-      },
-      java: {
-        image: 'openjdk:11-alpine',
-        extension: '.java',
-        compileCommand: ['javac', '/app/Main.java'],
-        runCommand: ['java', '-cp', '/app', 'Main'],
-        nativeCommand: ['java'],
-        timeout: 15000,
-        memoryLimit: '256m',
-        cpuLimit: '0.5'
-      },
-      cpp: {
-        image: 'gcc:9-alpine',
-        extension: '.cpp',
-        compileCommand: ['g++', '-o', '/app/main', '/app/code.cpp'],
-        runCommand: ['/app/main'],
-        nativeCommand: ['g++'],
-        timeout: 15000,
-        memoryLimit: '256m',
         cpuLimit: '0.5'
       }
     };
@@ -86,20 +86,17 @@ class CompilerService {
     console.log('🔍 Checking Docker availability...');
     
     try {
-      // Single, comprehensive Docker check
       const dockerCheck = await this.runCommand('docker', ['--version'], process.cwd(), '', 3000);
       
       if (dockerCheck.exitCode === 0 && dockerCheck.stdout.includes('Docker version')) {
         console.log('🐳 Docker Engine: Available');
         
-        // Check if Docker daemon is running
         const daemonCheck = await this.runCommand('docker', ['info'], process.cwd(), '', 3000);
         
         if (daemonCheck.exitCode === 0) {
           this.dockerAvailable = true;
           console.log('🐳 Docker Daemon: Running');
           
-          // Check images only if Docker is fully available
           await this.checkDockerImages();
         } else {
           this.dockerAvailable = false;
@@ -165,9 +162,10 @@ class CompilerService {
     console.log('🔍 Checking native interpreters...');
     
     const interpreters = {
-      python: ['python', '--version'],
+      c: ['gcc', '--version'],
+      cpp: ['g++', '--version'],
       java: ['javac', '-version'],
-      cpp: ['g++', '--version']
+      python: ['python', '--version']
     };
 
     for (const [language, command] of Object.entries(interpreters)) {
@@ -228,7 +226,7 @@ class CompilerService {
     }
 
     if (!this.languageConfigs[language]) {
-      throw new Error(`Unsupported language: ${language}`);
+      throw new Error(`Unsupported language: ${language}. Supported languages: ${Object.keys(this.languageConfigs).join(', ')}`);
     }
 
     return true;
@@ -239,12 +237,10 @@ class CompilerService {
 
     console.log(`🚀 Executing ${language} code`);
 
-    // Ensure Docker status is current
     if (!this.dockerChecked) {
       await this.performSingleDockerCheck();
     }
 
-    // Check execution capabilities
     const canExecuteWithDocker = this.dockerAvailable && this.dockerImagesReady[language];
     const canExecuteNatively = this.nativeInterpreters[language];
 
@@ -259,14 +255,13 @@ class CompilerService {
       return {
         success: false,
         output: '',
-        error: `Cannot execute ${language} code. Neither Docker nor native ${language} interpreter is available. Please install ${language} or ensure Docker is running with the required image.`,
+        error: `Cannot execute ${language} code. Neither Docker nor native ${language} compiler/interpreter is available. Please install ${language} or ensure Docker is running with the required image.`,
         executionTime: 0,
         memoryUsed: 0,
         executionMethod: 'unavailable'
       };
     }
 
-    // Prefer Docker if available, fallback to native
     if (canExecuteWithDocker) {
       try {
         console.log(`🐳 Executing ${language} code in Docker container`);
@@ -281,7 +276,7 @@ class CompilerService {
           return {
             success: false,
             output: '',
-            error: `Docker execution failed and no native ${language} interpreter available: ${error.message}`,
+            error: `Docker execution failed and no native ${language} compiler/interpreter available: ${error.message}`,
             executionTime: 0,
             memoryUsed: 0,
             executionMethod: 'failed'
@@ -302,17 +297,16 @@ class CompilerService {
     try {
       await fs.mkdir(tempPath, { recursive: true });
 
-      // Write code to file
       let filename = `code${config.extension}`;
       if (language === 'java') {
         filename = 'Main.java';
+        // Ensure the class name is Main
         code = code.replace(/public\s+class\s+\w+/g, 'public class Main');
       }
 
       const codePath = path.join(tempPath, filename);
       await fs.writeFile(codePath, code);
 
-      // Compile if needed
       if (config.compileCommand) {
         const compileResult = await this.runDockerCommand(config.image, config.compileCommand, tempPath, '', 30000);
         if (compileResult.exitCode !== 0) {
@@ -320,7 +314,6 @@ class CompilerService {
         }
       }
 
-      // Execute code
       const result = await this.runDockerCommand(
         config.image,
         config.runCommand,
@@ -341,7 +334,6 @@ class CompilerService {
     } catch (error) {
       throw error;
     } finally {
-      // Cleanup
       try {
         await fs.rm(tempPath, { recursive: true, force: true });
       } catch (cleanupError) {
@@ -360,8 +352,7 @@ class CompilerService {
         '--network', 'none',
         '--memory', '128m',
         '--cpus', '0.5',
-        '--read-only',
-        '--tmpfs', '/tmp:rw,noexec,nosuid,size=10m',
+        '--tmpfs', '/tmp:rw,exec,size=100m',
         '-v', `${volumePath}:/app:ro`,
         '-w', '/app',
         image,
@@ -435,8 +426,7 @@ class CompilerService {
       const codePath = path.join(tempPath, filename);
       await fs.writeFile(codePath, code);
 
-      // Compile if needed
-      if (config.compileCommand && language !== 'python' && language !== 'javascript') {
+      if (config.compileCommand && language !== 'python') {
         const compileCmd = this.getNativeCommand(language, 'compile', tempPath);
         if (compileCmd) {
           const compileResult = await this.runCommand(compileCmd[0], compileCmd.slice(1), tempPath, '', 30000);
@@ -446,7 +436,6 @@ class CompilerService {
         }
       }
 
-      // Execute
       const execCmd = this.getNativeCommand(language, 'run', tempPath);
       const startTime = Date.now();
       const result = await this.runCommand(execCmd[0], execCmd.slice(1), tempPath, input, config.timeout);
@@ -483,15 +472,11 @@ class CompilerService {
     const codePath = path.join(tempPath, `code${this.languageConfigs[language].extension}`);
     
     switch (language) {
-      case 'python':
-        return ['python', codePath];
-      case 'javascript':
-        return ['node', codePath];
-      case 'java':
+      case 'c':
         if (type === 'compile') {
-          return ['javac', path.join(tempPath, 'Main.java')];
+          return ['gcc', '-o', path.join(tempPath, 'main'), codePath];
         } else {
-          return ['java', '-cp', tempPath, 'Main'];
+          return [path.join(tempPath, 'main')];
         }
       case 'cpp':
         if (type === 'compile') {
@@ -499,13 +484,20 @@ class CompilerService {
         } else {
           return [path.join(tempPath, 'main')];
         }
+      case 'java':
+        if (type === 'compile') {
+          return ['javac', '-d', tempPath, path.join(tempPath, 'Main.java')];
+        } else {
+          return ['java', '-cp', tempPath, 'Main'];
+        }
+      case 'python':
+        return ['python', codePath];
       default:
         throw new Error(`Unsupported language: ${language}`);
     }
   }
 
   async getHealthStatus() {
-    // Ensure we have current Docker status
     if (!this.dockerChecked) {
       await this.performSingleDockerCheck();
     }

@@ -14,6 +14,14 @@ router.post('/execute', authMiddleware, async (req, res) => {
       });
     }
 
+    // Validate supported languages
+    const supportedLanguages = ['c', 'cpp', 'java', 'python'];
+    if (!supportedLanguages.includes(language)) {
+      return res.status(400).json({
+        error: `Unsupported language: ${language}. Supported languages: ${supportedLanguages.join(', ')}`
+      });
+    }
+
     console.log(`Executing ${language} code for user ${req.user.id}`);
     
     const result = await CompilerService.executeCode(code, language, input);
@@ -67,7 +75,7 @@ router.get('/languages', authMiddleware, async (req, res) => {
     res.json({
       languages: health.supportedLanguages.map(lang => ({
         name: lang,
-        displayName: lang.charAt(0).toUpperCase() + lang.slice(1),
+        displayName: lang === 'cpp' ? 'C++' : lang.charAt(0).toUpperCase() + lang.slice(1),
         dockerSupport: health.dockerAvailable,
         securityLevel: health.dockerAvailable ? 'high' : 'medium'
       }))

@@ -32,23 +32,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
   } | null>(null);
   const [executionMethod, setExecutionMethod] = useState<'docker' | 'native' | null>(null);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
-  const [showInputHint, setShowInputHint] = useState(false);
   const [isCheckingHealth, setIsCheckingHealth] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
 
-  // Load template when language changes
   useEffect(() => {
     loadTemplate();
     checkCompilerHealth();
   }, [language, problemId]);
-
-  // Set default input for linked list problems
-  useEffect(() => {
-    if (problemId && (problemId.includes('merge') || code.includes('ListNode'))) {
-      setInput('[1,2,4]\n[1,3,4]');
-    }
-  }, [problemId, code]);
 
   const loadTemplate = async () => {
     setIsLoadingTemplate(true);
@@ -57,7 +48,6 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
       setCode(response.data.template);
     } catch (error) {
       console.error('Failed to load template:', error);
-      // Fallback to basic template
       setCode(getBasicTemplate(language));
     } finally {
       setIsLoadingTemplate(false);
@@ -66,68 +56,40 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
 
   const getBasicTemplate = (lang: string) => {
     const templates = {
-      python: `def solution():
-    """
-    Write your solution here
-    """
-    # Your code here
-    pass
+      c: `#include <stdio.h>
+#include <stdlib.h>
 
-# Test your solution
-if __name__ == "__main__":
-    result = solution()
-    print(f"Result: {result}")`,
-
-      javascript: `function solution() {
-    /**
-     * Write your solution here
-     */
+int main() {
     // Your code here
-    return null;
-}
+    printf("Hello, World!\\n");
+    return 0;
+}`,
 
-// Test your solution
-console.log("Result:", solution());`,
+      cpp: `#include <iostream>
+using namespace std;
+
+int main() {
+    // Your code here
+    cout << "Hello, World!" << endl;
+    return 0;
+}`,
 
       java: `import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        Solution solution = new Solution();
-        System.out.println("Result: " + solution.solve());
-    }
-}
-
-class Solution {
-    /**
-     * Write your solution here
-     */
-    public Object solve() {
         // Your code here
-        return null;
+        System.out.println("Hello, World!");
     }
 }`,
 
-      cpp: `#include <iostream>
-#include <vector>
-using namespace std;
+      python: `def solution():
+    # Your code here
+    return "Hello, World!"
 
-class Solution {
-public:
-    /**
-     * Write your solution here
-     */
-    auto solve() {
-        // Your code here
-        return 0;
-    }
-};
-
-int main() {
-    Solution solution;
-    cout << "Result: " << solution.solve() << endl;
-    return 0;
-}`
+if __name__ == "__main__":
+    result = solution()
+    print(f"Result: {result}")`
     };
 
     return templates[lang as keyof typeof templates] || templates.python;
@@ -144,7 +106,7 @@ int main() {
         status: 'unhealthy',
         docker: 'unavailable',
         security: 'low',
-        supportedLanguages: ['python', 'javascript', 'java', 'cpp']
+        supportedLanguages: ['c', 'cpp', 'java', 'python']
       });
     } finally {
       setIsCheckingHealth(false);
@@ -206,12 +168,10 @@ int main() {
     try {
       console.log('📤 Submitting solution (this will be tracked)');
 
-      // First run the code to get output if not already run
       if (!output && !error) {
         await runCode();
       }
 
-      // Submit the solution
       const submitResponse = await axiosInstance.post('/api/submissions', {
         problemId,
         code,
@@ -219,14 +179,13 @@ int main() {
         output: output || '',
         executionTime: executionTime || undefined,
         memoryUsed: memoryUsed || undefined,
-        timeSpent: 5 // Default 5 minutes - could be tracked more accurately
+        timeSpent: 5
       });
 
       if (submitResponse.data.id) {
         setSubmitSuccess(true);
         setSubmitMessage(submitResponse.data.message || 'Solution submitted successfully! 🎉');
         
-        // Call the parent onSubmit callback
         onSubmit({
           code,
           language,
@@ -236,7 +195,6 @@ int main() {
           error: error || undefined
         });
 
-        // Auto-hide success message after 3 seconds
         setTimeout(() => {
           setSubmitSuccess(false);
           setSubmitMessage('');
@@ -301,8 +259,6 @@ int main() {
     );
   };
 
-  const isLinkedListProblem = problemId?.includes('merge') || code.includes('ListNode');
-
   if (isLoadingTemplate) {
     return (
       <div className="h-full flex items-center justify-center bg-[var(--color-bg-primary)]">
@@ -313,7 +269,6 @@ int main() {
 
   return (
     <div className="h-full flex flex-col bg-[var(--color-bg-primary)]">
-      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
         <div className="flex items-center gap-4">
           <select
@@ -321,10 +276,10 @@ int main() {
             onChange={(e) => setLanguage(e.target.value)}
             className="px-3 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
+            <option value="c">C (GCC)</option>
+            <option value="cpp">C++ (G++)</option>
+            <option value="java">Java 11</option>
             <option value="python">Python 3.9</option>
-            <option value="javascript">JavaScript (Node.js)</option>
-            <option value="java">Java 17</option>
-            <option value="cpp">C++ (GCC)</option>
           </select>
           
           <button
@@ -336,7 +291,6 @@ int main() {
             Reset
           </button>
 
-          {/* Security Status Indicator */}
           <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-bg-secondary)] rounded-lg">
             {getSecurityIcon()}
             <span className="text-sm text-[var(--color-text-secondary)]">
@@ -373,7 +327,6 @@ int main() {
         </div>
       </div>
 
-      {/* Success Message */}
       {submitSuccess && (
         <div className="bg-green-100 dark:bg-green-900 border-l-4 border-green-500 p-4">
           <div className="flex items-center">
@@ -383,7 +336,6 @@ int main() {
         </div>
       )}
 
-      {/* Security Warning */}
       {compilerHealth?.docker === 'unavailable' && (
         <div className="bg-orange-100 dark:bg-orange-900 border-l-4 border-orange-500 p-4">
           <div className="flex items-start">
@@ -405,41 +357,6 @@ int main() {
         </div>
       )}
 
-      {/* Collapsible Input Helper for Linked List Problems */}
-      {isLinkedListProblem && (
-        <div className="bg-blue-100 dark:bg-blue-900 border-l-4 border-blue-500">
-          <button
-            onClick={() => setShowInputHint(!showInputHint)}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
-          >
-            <div className="flex items-center">
-              <CheckCircle className="w-5 h-5 text-blue-500 mr-3" />
-              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                💡 Input Format for Linked Lists
-              </h3>
-            </div>
-            {showInputHint ? 
-              <ChevronUp className="w-4 h-4 text-blue-500" /> : 
-              <ChevronDown className="w-4 h-4 text-blue-500" />
-            }
-          </button>
-          
-          {showInputHint && (
-            <div className="px-4 pb-4">
-              <div className="text-sm text-blue-700 dark:text-blue-300">
-                <p>For linked list problems, provide input in the format:</p>
-                <div className="bg-blue-200 dark:bg-blue-800 p-2 rounded text-xs font-mono mt-2">
-                  [1,2,4]<br/>
-                  [1,3,4]
-                </div>
-                <p className="mt-2">Each line represents one linked list. The code will automatically parse this format.</p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Code Editor */}
       <div className="flex-1 flex">
         <div className="flex-1 flex flex-col">
           <div className="p-4 border-b border-[var(--color-border)]">
@@ -454,9 +371,7 @@ int main() {
           />
         </div>
 
-        {/* Input/Output Panel */}
         <div className="w-1/3 border-l border-[var(--color-border)] flex flex-col">
-          {/* Input Section */}
           <div className="flex-1 flex flex-col">
             <div className="p-4 border-b border-[var(--color-border)]">
               <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Input</h3>
@@ -468,14 +383,10 @@ int main() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="flex-1 p-4 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] font-mono text-sm resize-none focus:outline-none"
-              placeholder={isLinkedListProblem ? 
-                "For linked lists:\n[1,2,4]\n[1,3,4]" : 
-                "Enter input for your program..."
-              }
+              placeholder="Enter input for your program..."
             />
           </div>
 
-          {/* Output Section */}
           <div className="flex-1 flex flex-col border-t border-[var(--color-border)]">
             <div className="p-4 border-b border-[var(--color-border)]">
               <div className="flex items-center justify-between">

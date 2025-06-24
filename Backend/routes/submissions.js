@@ -10,7 +10,6 @@ router.get('/', authMiddleware, async (req, res) => {
     try {
         console.log('📋 Fetching submissions for user:', req.user.id);
         
-        // Get submissions for the authenticated user only
         const submissions = await Submission.find({ 
             userId: req.user.id 
         }).sort({ submittedAt: -1 }).lean();
@@ -21,14 +20,12 @@ router.get('/', authMiddleware, async (req, res) => {
             return res.json([]);
         }
 
-        // Format submissions with problem details
         const formattedSubmissions = await Promise.all(
             submissions.map(async (submission, index) => {
                 let problemTitle = 'Unknown Problem';
                 let problemDifficulty = 'Unknown';
                 
                 try {
-                    // Handle both ObjectId and string problemId
                     const problemId = submission.problemId;
                     if (problemId) {
                         const problem = await Problem.findById(problemId).lean();
@@ -41,12 +38,10 @@ router.get('/', authMiddleware, async (req, res) => {
                     console.error('Error finding problem for submission:', error);
                 }
 
-                // Format the submission date
                 const submittedDate = new Date(submission.submittedAt);
                 const formattedDate = submittedDate.toLocaleDateString() + ' ' + 
                                    submittedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                // Determine status based on output analysis
                 let status = 'Completed';
                 if (submission.results && submission.results.length > 0) {
                     const result = submission.results[0];
@@ -71,9 +66,9 @@ router.get('/', authMiddleware, async (req, res) => {
                     runtime: submission.executionTime ? `${submission.executionTime}ms` : 'N/A',
                     memory: submission.memoryUsed ? `${submission.memoryUsed}KB` : 'N/A',
                     submittedAt: formattedDate,
-                    code: submission.code, // Include code for viewing
+                    code: submission.code,
                     output: submission.results?.[0]?.output || '',
-                    submissionNumber: submissions.length - index // Show newest first
+                    submissionNumber: submissions.length - index
                 };
             })
         );
@@ -98,6 +93,14 @@ router.post('/', authMiddleware, async (req, res) => {
         if (!code || !language || !problemId) {
             return res.status(400).json({ 
                 error: 'Missing required fields: code, language, and problemId are required' 
+            });
+        }
+
+        // Validate language
+        const supportedLanguages = ['c', 'cpp', 'java', 'python'];
+        if (!supportedLanguages.includes(language)) {
+            return res.status(400).json({
+                error: `Unsupported language: ${language}. Supported languages: ${supportedLanguages.join(', ')}`
             });
         }
 
@@ -186,7 +189,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
     try {
         const submission = await Submission.findOne({
             _id: req.params.id,
-            userId: req.user.id // Ensure user can only access their own submissions
+            userId: req.user.id
         }).lean();
 
         if (!submission) {

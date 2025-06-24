@@ -5,13 +5,13 @@ const submissionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
-        index: true // Add index for faster queries
+        index: true
     },
     problemId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Problem',
         required: true,
-        index: true // Add index for faster queries
+        index: true
     },
     code: {
         type: String,
@@ -20,15 +20,15 @@ const submissionSchema = new mongoose.Schema({
     language: {
         type: String,
         required: true,
-        enum: ['python', 'javascript', 'java', 'cpp'],
-        index: true // Add index for filtering
+        enum: ['c', 'cpp', 'java', 'python'],
+        index: true
     },
     status: {
         type: String,
         required: true,
         enum: ['pending', 'running', 'completed', 'error'],
         default: 'completed',
-        index: true // Add index for filtering
+        index: true
     },
     results: [{
         testCase: {
@@ -52,17 +52,13 @@ const submissionSchema = new mongoose.Schema({
     submittedAt: {
         type: Date,
         default: Date.now,
-        index: true // Add index for sorting
+        index: true
     }
 }, {
     timestamps: true
 });
 
-// Compound index for efficient user submission queries
 submissionSchema.index({ userId: 1, submittedAt: -1 });
-
-// Compound index for problem-specific queries
 submissionSchema.index({ problemId: 1, submittedAt: -1 });
 
-// Check if model exists before compiling
 module.exports = mongoose.models.Submission || mongoose.model('Submission', submissionSchema);

@@ -7,7 +7,7 @@ const Activity = require('../models/Activity');
 const TemplateService = require('../services/TemplateService');
 const ActivityService = require('../services/ActivityService');
 
-// Get all problems with user's solve status and activity status (without acceptance/submissions)
+// Get all problems with user's solve status and activity status
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const problems = await Problem.find().select('title difficulty category');
@@ -27,11 +27,11 @@ router.get('/', authMiddleware, async (req, res) => {
                 attemptedProblems.add(problemIdStr);
             } else if (activity.type === 'submitted') {
                 submittedProblems.add(problemIdStr);
-                attemptedProblems.add(problemIdStr); // Submitted implies attempted
+                attemptedProblems.add(problemIdStr);
             } else if (activity.type === 'solved') {
                 solvedProblems.add(problemIdStr);
-                submittedProblems.add(problemIdStr); // Solved implies submitted
-                attemptedProblems.add(problemIdStr); // Solved implies attempted
+                submittedProblems.add(problemIdStr);
+                attemptedProblems.add(problemIdStr);
             }
         });
         
@@ -56,7 +56,6 @@ router.get('/', authMiddleware, async (req, res) => {
                 difficulty: problem.difficulty,
                 category: problem.category,
                 status: status,
-                // Legacy field for backward compatibility
                 solved: solvedProblems.has(problemIdStr)
             };
         });
@@ -92,7 +91,7 @@ router.get('/:id/template/:language', authMiddleware, async (req, res) => {
         const { id, language } = req.params;
         
         // Validate language
-        const supportedLanguages = ['python', 'javascript', 'java', 'cpp'];
+        const supportedLanguages = ['c', 'cpp', 'java', 'python'];
         if (!supportedLanguages.includes(language)) {
             return res.status(400).json({ error: 'Unsupported language' });
         }
@@ -146,14 +145,14 @@ router.get('/stats', authMiddleware, async (req, res) => {
                 hard: { solved: 0, attempted: 0 }
             },
             languageBreakdown: {
-                python: { solved: 0, attempted: 0 },
-                javascript: { solved: 0, attempted: 0 },
+                c: { solved: 0, attempted: 0 },
+                cpp: { solved: 0, attempted: 0 },
                 java: { solved: 0, attempted: 0 },
-                cpp: { solved: 0, attempted: 0 }
+                python: { solved: 0, attempted: 0 }
             }
         };
 
-        // Get total problems count (this should always work)
+        // Get total problems count
         let totalProblems = 0;
         try {
             totalProblems = await Problem.countDocuments();
@@ -179,16 +178,15 @@ router.get('/stats', authMiddleware, async (req, res) => {
                     mediumProblems: { solved: 0, attempted: 0 },
                     hardProblems: { solved: 0, attempted: 0 },
                     languageStats: {
-                        python: { solved: 0, attempted: 0 },
-                        javascript: { solved: 0, attempted: 0 },
+                        c: { solved: 0, attempted: 0 },
+                        cpp: { solved: 0, attempted: 0 },
                         java: { solved: 0, attempted: 0 },
-                        cpp: { solved: 0, attempted: 0 }
+                        python: { solved: 0, attempted: 0 }
                     }
                 });
             }
         } catch (userStatsError) {
             console.error('Error with user stats:', userStatsError);
-            // Return default response if user stats fail
             return res.json({ ...defaultResponse, totalProblems });
         }
 
@@ -213,7 +211,7 @@ router.get('/stats', authMiddleware, async (req, res) => {
             averageTime: userStats?.averageTime || 0,
             ranking: ranking,
             totalSubmissions: userStats?.totalSubmissions || 0,
-            timeSpent: Math.round((userStats?.timeSpent || 0) / 60), // Convert to hours
+            timeSpent: Math.round((userStats?.timeSpent || 0) / 60),
             difficultyBreakdown: {
                 easy: {
                     solved: userStats?.easyProblems?.solved || 0,
@@ -229,21 +227,21 @@ router.get('/stats', authMiddleware, async (req, res) => {
                 }
             },
             languageBreakdown: {
-                python: {
-                    solved: userStats?.languageStats?.python?.solved || 0,
-                    attempted: userStats?.languageStats?.python?.attempted || 0
+                c: {
+                    solved: userStats?.languageStats?.c?.solved || 0,
+                    attempted: userStats?.languageStats?.c?.attempted || 0
                 },
-                javascript: {
-                    solved: userStats?.languageStats?.javascript?.solved || 0,
-                    attempted: userStats?.languageStats?.javascript?.attempted || 0
+                cpp: {
+                    solved: userStats?.languageStats?.cpp?.solved || 0,
+                    attempted: userStats?.languageStats?.cpp?.attempted || 0
                 },
                 java: {
                     solved: userStats?.languageStats?.java?.solved || 0,
                     attempted: userStats?.languageStats?.java?.attempted || 0
                 },
-                cpp: {
-                    solved: userStats?.languageStats?.cpp?.solved || 0,
-                    attempted: userStats?.languageStats?.cpp?.attempted || 0
+                python: {
+                    solved: userStats?.languageStats?.python?.solved || 0,
+                    attempted: userStats?.languageStats?.python?.attempted || 0
                 }
             }
         };
@@ -251,7 +249,6 @@ router.get('/stats', authMiddleware, async (req, res) => {
         res.json(response);
     } catch (error) {
         console.error('Error fetching user stats:', error);
-        // Always return a valid response structure
         res.status(200).json({
             problemsSolved: 0,
             totalProblems: 0,
@@ -266,10 +263,10 @@ router.get('/stats', authMiddleware, async (req, res) => {
                 hard: { solved: 0, attempted: 0 }
             },
             languageBreakdown: {
-                python: { solved: 0, attempted: 0 },
-                javascript: { solved: 0, attempted: 0 },
+                c: { solved: 0, attempted: 0 },
+                cpp: { solved: 0, attempted: 0 },
                 java: { solved: 0, attempted: 0 },
-                cpp: { solved: 0, attempted: 0 }
+                python: { solved: 0, attempted: 0 }
             }
         });
     }

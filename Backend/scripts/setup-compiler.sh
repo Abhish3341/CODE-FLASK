@@ -20,7 +20,7 @@ echo "✅ Docker is available"
 # Create necessary directories
 echo "📁 Creating directories..."
 mkdir -p ../temp
-mkdir -p ../docker/compiler-images/{python,node,java,cpp}
+mkdir -p ../docker/compiler-images/{c,cpp,java,python}
 
 # Build custom compiler images
 echo "🔨 Building secure compiler images..."
@@ -30,10 +30,9 @@ chmod +x build-compiler-images.sh
 
 # Pull additional base images
 echo "📥 Pulling base Docker images..."
-docker pull python:3.9-alpine
-docker pull node:16-alpine
-docker pull openjdk:11-alpine
 docker pull gcc:9-alpine
+docker pull openjdk:11-alpine
+docker pull python:3.9-alpine
 
 # Test compiler service
 echo "🧪 Testing compiler service..."
