@@ -428,7 +428,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Progress Overview and Recommendations with improved sizing */}
+        {/* Progress Overview and Recommendations with optimized sizing for 3 problems */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Progress Overview - Takes 2/5 of the width */}
           <div className="lg:col-span-2 card dashboard-tile p-6">
@@ -486,82 +486,89 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Activity and Recommendations - Takes 3/5 of the width and extends full height */}
-          <div className="lg:col-span-3 card dashboard-tile p-6 min-h-[800px] flex flex-col">
+          {/* Activity and Recommendations - Optimized for exactly 3 problems */}
+          <div className="lg:col-span-3 card dashboard-tile p-6 flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">Activity and Recommendations</h3>
             </div>
             
-            <div className="space-y-4 flex-1">
+            {/* Problem Cards Container - Fixed height for 3 problems */}
+            <div className="flex-1 flex flex-col">
               {data.recommendedProblems.length > 0 ? (
-                data.recommendedProblems.map((problem) => (
-                  <div key={problem.id} className={`p-4 rounded-lg problem-card ${getStatusColor(problem.status)}`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className="flex-shrink-0">
-                          {getStatusIcon(problem.status)}
-                        </div>
-
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h4 className="font-medium text-[var(--color-text-primary)]">
-                              {problem.title}
-                            </h4>
-                            <span className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 badge ${getDifficultyColor(problem.difficulty)}`}>
-                              {getDifficultyIcon(problem.difficulty)}
-                              {problem.difficulty}
-                            </span>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium badge ${
-                              problem.status === 'solved' ? 'bg-green-500/20 text-green-500' :
-                              problem.status === 'submitted' ? 'bg-blue-500/20 text-blue-500' :
-                              problem.status === 'attempted' ? 'bg-yellow-500/20 text-yellow-500' :
-                              'bg-gray-500/20 text-gray-500'
-                            }`}>
-                              {getStatusText(problem.status)}
-                            </span>
+                <div className="space-y-5">
+                  {data.recommendedProblems.slice(0, 3).map((problem, index) => (
+                    <div key={problem.id} className={`p-5 rounded-lg problem-card transition-all duration-300 ${getStatusColor(problem.status)}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="flex-shrink-0">
+                            {getStatusIcon(problem.status)}
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
-                            <Code className="w-4 h-4" />
-                            {problem.category}
-                          </div>
-                        </div>
 
-                        <div className="flex-shrink-0">
-                          <button
-                            onClick={() => handleSolveProblem(problem.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium button-group ${getSolveButtonStyle(problem.status)}`}
-                            title="Open in new tab"
-                          >
-                            {getSolveButtonText(problem.status)}
-                            <ExternalLink className="w-4 h-4" />
-                          </button>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-3">
+                              <h4 className="font-semibold text-lg text-[var(--color-text-primary)] truncate">
+                                {problem.title}
+                              </h4>
+                              <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 badge flex-shrink-0 ${getDifficultyColor(problem.difficulty)}`}>
+                                {getDifficultyIcon(problem.difficulty)}
+                                {problem.difficulty}
+                              </span>
+                              <span className={`px-3 py-1 rounded-full text-sm font-medium badge flex-shrink-0 ${
+                                problem.status === 'solved' ? 'bg-green-500/20 text-green-500' :
+                                problem.status === 'submitted' ? 'bg-blue-500/20 text-blue-500' :
+                                problem.status === 'attempted' ? 'bg-yellow-500/20 text-yellow-500' :
+                                'bg-gray-500/20 text-gray-500'
+                              }`}>
+                                {getStatusText(problem.status)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+                              <Code className="w-4 h-4 flex-shrink-0" />
+                              <span className="truncate">{problem.category}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex-shrink-0 ml-4">
+                            <button
+                              onClick={() => handleSolveProblem(problem.id)}
+                              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium button-group transition-all duration-200 ${getSolveButtonStyle(problem.status)}`}
+                              title="Open in new tab"
+                            >
+                              {getSolveButtonText(problem.status)}
+                              <ExternalLink className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               ) : (
-                <div className="text-center text-[var(--color-text-secondary)] py-8 flex-1 flex flex-col justify-center">
-                  <CheckCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Great job! You've solved all recommended problems.</p>
+                <div className="text-center text-[var(--color-text-secondary)] py-12 flex-1 flex flex-col justify-center">
+                  <CheckCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <h4 className="text-lg font-medium mb-2">Great job!</h4>
+                  <p>You've solved all recommended problems.</p>
                 </div>
               )}
-            </div>
 
-            {/* Additional Progress Stats - Always at bottom */}
-            <div className="mt-auto pt-6 border-t border-[var(--color-border)]">
-              <div className="grid grid-cols-2 gap-4 text-center">
-                <div className="dashboard-tile p-4 bg-[var(--color-bg-primary)] rounded-lg">
-                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                    {progressOverview.totalActiveDays}
-                  </p>
-                  <p className="text-sm text-[var(--color-text-secondary)]">Active Days</p>
-                </div>
-                <div className="dashboard-tile p-4 bg-[var(--color-bg-primary)] rounded-lg">
-                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                    {progressOverview.averageSessionTime}m
-                  </p>
-                  <p className="text-sm text-[var(--color-text-secondary)]">Avg Session</p>
+              {/* Spacer to push stats to bottom */}
+              <div className="flex-1"></div>
+
+              {/* Additional Progress Stats - Always at bottom with proper spacing */}
+              <div className="mt-8 pt-6 border-t border-[var(--color-border)]">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="dashboard-tile p-5 bg-[var(--color-bg-primary)] rounded-lg text-center">
+                    <p className="text-3xl font-bold text-[var(--color-text-primary)] mb-1">
+                      {progressOverview.totalActiveDays}
+                    </p>
+                    <p className="text-sm text-[var(--color-text-secondary)] font-medium">Active Days</p>
+                  </div>
+                  <div className="dashboard-tile p-5 bg-[var(--color-bg-primary)] rounded-lg text-center">
+                    <p className="text-3xl font-bold text-[var(--color-text-primary)] mb-1">
+                      {progressOverview.averageSessionTime}m
+                    </p>
+                    <p className="text-sm text-[var(--color-text-secondary)] font-medium">Avg Session</p>
+                  </div>
                 </div>
               </div>
             </div>
