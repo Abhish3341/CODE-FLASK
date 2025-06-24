@@ -198,7 +198,7 @@ const Dashboard = () => {
         </div>
         <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
           <div 
-            className="bg-green-500 h-2 rounded-full transition-all duration-500"
+            className="bg-green-500 h-2 rounded-full progress-bar"
             style={{ width: `${(easy / maxRate) * 100}%` }}
           ></div>
         </div>
@@ -212,7 +212,7 @@ const Dashboard = () => {
         </div>
         <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
           <div 
-            className="bg-yellow-500 h-2 rounded-full transition-all duration-500"
+            className="bg-yellow-500 h-2 rounded-full progress-bar"
             style={{ width: `${(medium / maxRate) * 100}%` }}
           ></div>
         </div>
@@ -226,7 +226,7 @@ const Dashboard = () => {
         </div>
         <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
           <div 
-            className="bg-red-500 h-2 rounded-full transition-all duration-500"
+            className="bg-red-500 h-2 rounded-full progress-bar"
             style={{ width: `${(hard / maxRate) * 100}%` }}
           ></div>
         </div>
@@ -321,7 +321,7 @@ const Dashboard = () => {
             return (
               <div key={index} className="flex flex-col items-center gap-2">
                 <div 
-                  className={`w-8 h-8 rounded-sm transition-all duration-300 hover:ring-2 hover:ring-indigo-300 cursor-pointer ${getIntensityColor(intensity)}`}
+                  className={`w-8 h-8 rounded-sm chart-element cursor-pointer ${getIntensityColor(intensity)}`}
                   title={`${day.count} activities on ${day.day} (${day.timeSpent} minutes)`}
                 ></div>
                 <span className="text-xs text-[var(--color-text-secondary)] font-medium">
@@ -385,10 +385,10 @@ const Dashboard = () => {
           </p>
         </div>
 
-        {/* Main Stats Grid */}
+        {/* Main Stats Grid with enhanced transitions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-          <div className="card p-6">
-            <Trophy className="w-8 h-8 text-yellow-500 mb-4" />
+          <div className="card stats-card p-6">
+            <Trophy className="w-8 h-8 text-yellow-500 mb-4 icon-transition" />
             <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-1">Rank</h3>
             <p className="text-4xl font-bold text-yellow-500">
               {stats.rank === 0 ? '-' : `#${stats.rank}`}
@@ -398,8 +398,8 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <Link to="/app/problems" className="card p-6 hover:shadow-lg transition-all cursor-pointer">
-            <Code className="w-8 h-8 text-[#4B96F8] mb-4" />
+          <Link to="/app/problems" className="card stats-card p-6 cursor-pointer">
+            <Code className="w-8 h-8 text-[#4B96F8] mb-4 icon-transition" />
             <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-1">Solved</h3>
             <p className="text-4xl font-bold text-[#4B96F8]">
               {stats.problemsSolved}/{stats.totalProblems}
@@ -409,8 +409,8 @@ const Dashboard = () => {
             </p>
           </Link>
 
-          <div className="card p-6">
-            <TrendingUp className="w-8 h-8 text-[#4ADE80] mb-4" />
+          <div className="card stats-card p-6">
+            <TrendingUp className="w-8 h-8 text-[#4ADE80] mb-4 icon-transition" />
             <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-1">Success Rate</h3>
             <p className="text-4xl font-bold text-[#4ADE80]">{stats.successRate}%</p>
             <p className="text-sm text-[var(--color-text-secondary)] mt-1">
@@ -418,8 +418,8 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <div className="card p-6">
-            <Clock className="w-8 h-8 text-[#A855F7] mb-4" />
+          <div className="card stats-card p-6">
+            <Clock className="w-8 h-8 text-[#A855F7] mb-4 icon-transition" />
             <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-1">Avg. Time</h3>
             <p className="text-4xl font-bold text-[#A855F7]">{stats.averageTime}m</p>
             <p className="text-sm text-[var(--color-text-secondary)] mt-1">
@@ -428,62 +428,20 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Difficulty Breakdown */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Easy Problems</h3>
-              <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-green-500 mb-2">{stats.easyProblems.solved}</p>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {stats.easyProblems.attempted} attempted
-            </p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Medium Problems</h3>
-              <div className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-yellow-500" />
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-yellow-500 mb-2">{stats.mediumProblems.solved}</p>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {stats.mediumProblems.attempted} attempted
-            </p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Hard Problems</h3>
-              <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center">
-                <Award className="w-5 h-5 text-red-500" />
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-red-500 mb-2">{stats.hardProblems.solved}</p>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {stats.hardProblems.attempted} attempted
-            </p>
-          </div>
-        </div>
-
-        {/* Progress Overview and Recommendations */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Progress Overview */}
-          <div className="card p-6">
+        {/* Progress Overview and Recommendations with improved sizing */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Progress Overview - Takes 2/5 of the width */}
+          <div className="lg:col-span-2 card dashboard-tile p-6">
             <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
               Progress Overview
             </h3>
             
             {/* Key Metrics */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-[var(--color-bg-primary)] p-4 rounded-lg">
+              <div className="bg-[var(--color-bg-primary)] p-4 rounded-lg dashboard-tile">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-orange-500/20 rounded-lg">
-                    <Flame className="w-5 h-5 text-orange-500" />
+                    <Flame className="w-5 h-5 text-orange-500 icon-transition" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-[var(--color-text-primary)]">
@@ -494,10 +452,10 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              <div className="bg-[var(--color-bg-primary)] p-4 rounded-lg">
+              <div className="bg-[var(--color-bg-primary)] p-4 rounded-lg dashboard-tile">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Clock className="w-5 h-5 text-blue-500" />
+                    <Clock className="w-5 h-5 text-blue-500 icon-transition" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-[var(--color-text-primary)]">
@@ -528,16 +486,16 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Recommended Problems */}
-          <div className="card p-6">
+          {/* Activity and Recommendations - Takes 3/5 of the width and extends full height */}
+          <div className="lg:col-span-3 card dashboard-tile p-6 min-h-[800px] flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">Activity and Recommendations</h3>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-4 flex-1">
               {data.recommendedProblems.length > 0 ? (
                 data.recommendedProblems.map((problem) => (
-                  <div key={problem.id} className={`p-4 rounded-lg transition-all hover:shadow-md ${getStatusColor(problem.status)}`}>
+                  <div key={problem.id} className={`p-4 rounded-lg problem-card ${getStatusColor(problem.status)}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4 flex-1">
                         <div className="flex-shrink-0">
@@ -549,11 +507,11 @@ const Dashboard = () => {
                             <h4 className="font-medium text-[var(--color-text-primary)]">
                               {problem.title}
                             </h4>
-                            <span className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 ${getDifficultyColor(problem.difficulty)}`}>
+                            <span className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 badge ${getDifficultyColor(problem.difficulty)}`}>
                               {getDifficultyIcon(problem.difficulty)}
                               {problem.difficulty}
                             </span>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium badge ${
                               problem.status === 'solved' ? 'bg-green-500/20 text-green-500' :
                               problem.status === 'submitted' ? 'bg-blue-500/20 text-blue-500' :
                               problem.status === 'attempted' ? 'bg-yellow-500/20 text-yellow-500' :
@@ -571,7 +529,7 @@ const Dashboard = () => {
                         <div className="flex-shrink-0">
                           <button
                             onClick={() => handleSolveProblem(problem.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium ${getSolveButtonStyle(problem.status)}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium button-group ${getSolveButtonStyle(problem.status)}`}
                             title="Open in new tab"
                           >
                             {getSolveButtonText(problem.status)}
@@ -583,23 +541,23 @@ const Dashboard = () => {
                   </div>
                 ))
               ) : (
-                <div className="text-center text-[var(--color-text-secondary)] py-8">
+                <div className="text-center text-[var(--color-text-secondary)] py-8 flex-1 flex flex-col justify-center">
                   <CheckCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Great job! You've solved all recommended problems.</p>
                 </div>
               )}
             </div>
 
-            {/* Additional Progress Stats */}
-            <div className="mt-6 pt-6 border-t border-[var(--color-border)]">
+            {/* Additional Progress Stats - Always at bottom */}
+            <div className="mt-auto pt-6 border-t border-[var(--color-border)]">
               <div className="grid grid-cols-2 gap-4 text-center">
-                <div>
+                <div className="dashboard-tile p-4 bg-[var(--color-bg-primary)] rounded-lg">
                   <p className="text-2xl font-bold text-[var(--color-text-primary)]">
                     {progressOverview.totalActiveDays}
                   </p>
                   <p className="text-sm text-[var(--color-text-secondary)]">Active Days</p>
                 </div>
-                <div>
+                <div className="dashboard-tile p-4 bg-[var(--color-bg-primary)] rounded-lg">
                   <p className="text-2xl font-bold text-[var(--color-text-primary)]">
                     {progressOverview.averageSessionTime}m
                   </p>

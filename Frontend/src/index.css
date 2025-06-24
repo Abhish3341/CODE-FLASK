@@ -9,6 +9,12 @@
     --color-text-primary: #111827;
     --color-text-secondary: #4B5563;
     --color-border: #E5E7EB;
+    
+    /* Spotify-style hover colors */
+    --color-hover-light: #F8FAFC;
+    --color-hover-medium: #F1F5F9;
+    --color-hover-strong: #E2E8F0;
+    --color-hover-accent: #EEF2FF;
   }
 
   .dark {
@@ -17,6 +23,12 @@
     --color-text-primary: #FFFFFF;
     --color-text-secondary: #9CA3AF;
     --color-border: #374151;
+    
+    /* Spotify-style hover colors for dark mode */
+    --color-hover-light: #1E293B;
+    --color-hover-medium: #334155;
+    --color-hover-strong: #475569;
+    --color-hover-accent: #312E81;
   }
 }
 
@@ -107,23 +119,294 @@ body {
   background: var(--color-text-primary);
 }
 
-/* Component styles */
+/* Spotify-Style Component Effects */
 .card {
-  @apply bg-[var(--color-bg-secondary)] rounded-xl shadow-lg transition-all duration-200;
+  @apply bg-[var(--color-bg-secondary)] rounded-xl shadow-lg transition-all duration-300 ease-out;
+}
+
+.card:hover {
+  background-color: var(--color-hover-light);
+  @apply shadow-xl;
 }
 
 .input {
-  @apply bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500;
+  @apply bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200;
+}
+
+.input:focus {
+  @apply border-indigo-500 shadow-md;
+  background-color: var(--color-hover-accent);
 }
 
 .button {
-  @apply px-4 py-2 rounded-lg transition-colors duration-200;
+  @apply px-4 py-2 rounded-lg transition-all duration-200 ease-out;
+}
+
+.button:hover {
+  background-color: var(--color-hover-medium);
 }
 
 .button-primary {
   @apply bg-indigo-600 hover:bg-indigo-700 text-white;
 }
 
+.button-primary:hover {
+  @apply shadow-lg bg-indigo-700;
+}
+
 .button-secondary {
-  @apply bg-[var(--color-bg-secondary)] hover:bg-[var(--color-border)] text-[var(--color-text-primary)];
+  @apply bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)];
+}
+
+.button-secondary:hover {
+  background-color: var(--color-hover-medium);
+}
+
+/* Dashboard Tiles - Spotify-style color changes */
+.dashboard-tile {
+  @apply transition-all duration-300 ease-out;
+}
+
+.dashboard-tile:hover {
+  background-color: var(--color-hover-light);
+  @apply shadow-lg;
+}
+
+/* Stats Cards - Subtle color shifts */
+.stats-card {
+  @apply transition-all duration-300 ease-out;
+}
+
+.stats-card:hover {
+  background-color: var(--color-hover-light);
+  @apply shadow-xl;
+}
+
+/* Problem Cards - Gentle background changes */
+.problem-card {
+  @apply transition-all duration-300 ease-out;
+}
+
+.problem-card:hover {
+  background-color: var(--color-hover-light);
+  @apply shadow-md;
+}
+
+/* Submission Rows - Subtle highlighting */
+.submission-row {
+  @apply transition-all duration-200 ease-out;
+}
+
+.submission-row:hover {
+  background-color: var(--color-hover-light);
+}
+
+/* Navigation Items - Spotify-style background changes */
+.nav-item {
+  @apply transition-all duration-200 ease-out;
+}
+
+.nav-item:hover {
+  background-color: var(--color-hover-medium);
+  @apply shadow-md;
+}
+
+/* Table Rows - Gentle hover effects */
+.table-row {
+  @apply transition-all duration-200 ease-out;
+}
+
+.table-row:hover {
+  background-color: var(--color-hover-light);
+}
+
+/* Form Fields - Subtle focus effects */
+.form-field {
+  @apply transition-all duration-200 ease-out;
+}
+
+.form-field:focus-within {
+  background-color: var(--color-hover-accent);
+  @apply shadow-sm;
+}
+
+/* Interactive Elements - Color-based feedback */
+.interactive-element {
+  @apply transition-all duration-200 ease-out;
+}
+
+.interactive-element:hover {
+  background-color: var(--color-hover-light);
+}
+
+.interactive-element:active {
+  background-color: var(--color-hover-medium);
+}
+
+/* Button Groups - Coordinated color changes */
+.button-group button {
+  @apply transition-all duration-200 ease-out;
+}
+
+.button-group button:hover {
+  background-color: var(--color-hover-medium);
+}
+
+/* Icon Containers - Subtle background shifts */
+.icon-container {
+  @apply transition-all duration-200 ease-out;
+}
+
+.icon-container:hover {
+  background-color: var(--color-hover-light);
+}
+
+/* Progress Bars - Smooth color transitions */
+.progress-bar {
+  @apply transition-all duration-500 ease-out;
+}
+
+/* Chart Elements - Gentle color feedback */
+.chart-element {
+  @apply transition-all duration-300 ease-out;
+}
+
+.chart-element:hover {
+  background-color: var(--color-hover-strong);
+  @apply shadow-sm;
+}
+
+/* Badges - Subtle color enhancement */
+.badge {
+  @apply transition-all duration-200 ease-out;
+}
+
+.badge:hover {
+  background-color: var(--color-hover-light);
+  @apply shadow-sm;
+}
+
+/* Modal Overlays */
+.modal-overlay {
+  @apply transition-opacity duration-300 ease-out;
+}
+
+.modal-content {
+  @apply transition-all duration-300 ease-out;
+}
+
+/* Loading Skeleton Animations */
+.skeleton {
+  @apply animate-pulse;
+}
+
+/* Smooth Scrolling */
+.scrollable-content {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced Focus States */
+.focus-enhanced:focus {
+  @apply ring-4 ring-indigo-200 ring-opacity-50 transition-all duration-200;
+  background-color: var(--color-hover-accent);
+}
+
+/* Sidebar Navigation - Spotify-style */
+.sidebar-item {
+  @apply transition-all duration-200 ease-out;
+}
+
+.sidebar-item:hover {
+  background-color: var(--color-hover-medium);
+}
+
+/* Settings Cards - Gentle color changes */
+.settings-card {
+  @apply transition-all duration-300 ease-out;
+}
+
+.settings-card:hover {
+  background-color: var(--color-hover-light);
+}
+
+/* List Items - Subtle highlighting */
+.list-item {
+  @apply transition-all duration-200 ease-out;
+}
+
+.list-item:hover {
+  background-color: var(--color-hover-light);
+}
+
+/* Search and Filter Elements */
+.search-element {
+  @apply transition-all duration-200 ease-out;
+}
+
+.search-element:focus {
+  background-color: var(--color-hover-accent);
+}
+
+/* Activity Cards - Gentle background shifts */
+.activity-card {
+  @apply transition-all duration-300 ease-out;
+}
+
+.activity-card:hover {
+  background-color: var(--color-hover-light);
+}
+
+/* Course Cards - Spotify-style hover */
+.course-card {
+  @apply transition-all duration-300 ease-out;
+}
+
+.course-card:hover {
+  background-color: var(--color-hover-light);
+  @apply shadow-lg;
+}
+
+/* Recommendation Items */
+.recommendation-item {
+  @apply transition-all duration-300 ease-out;
+}
+
+.recommendation-item:hover {
+  background-color: var(--color-hover-light);
+}
+
+/* Tab Navigation */
+.tab-item {
+  @apply transition-all duration-200 ease-out;
+}
+
+.tab-item:hover {
+  background-color: var(--color-hover-light);
+}
+
+/* Dropdown Items */
+.dropdown-item {
+  @apply transition-all duration-200 ease-out;
+}
+
+.dropdown-item:hover {
+  background-color: var(--color-hover-medium);
+}
+
+/* Status Indicators - Enhanced with color changes */
+.status-indicator {
+  @apply transition-all duration-200 ease-out;
+}
+
+.status-indicator:hover {
+  background-color: var(--color-hover-light);
+}
+
+/* Footer Links */
+.footer-link {
+  @apply transition-all duration-200 ease-out;
+}
+
+.footer-link:hover {
+  background-color: var(--color-hover-light);
 }
