@@ -126,7 +126,7 @@ const About = () => {
           whether it’s uninspired UI/UX or an overwhelming learning curve, many aspiring developers struggle to stay motivated.
         </p>
         <p className="mb-6">
-          We set out to change that. From day one, our goal was to build <strong>a fully featured online judge platform</strong> that doesn’t just work — but <strong>feels great to use.</strong> 
+          We set out to change that. From day one, our goal was to build <strong>a fully featured online judge platform</strong> that doesn’t just work — but <strong>feels great to use. </strong> 
           Clean design, intuitive workflows, and a distraction-free environment make solving problems feel less like a task and more like progress.
         </p>
         <p className="mb-6">
