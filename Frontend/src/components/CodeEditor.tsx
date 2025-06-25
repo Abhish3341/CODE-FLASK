@@ -219,15 +219,15 @@ if __name__ == "__main__":
   };
 
   const getSecurityIcon = () => {
-    if (!compilerHealth) return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+    if (!compilerHealth) return <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />;
     
     switch (compilerHealth.security) {
       case 'high':
-        return <Shield className="w-4 h-4 text-green-500" />;
+        return <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />;
       case 'medium':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+        return <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />;
       default:
-        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+        return <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />;
     }
   };
 
@@ -253,8 +253,8 @@ if __name__ == "__main__":
           ? 'bg-green-500/20 text-green-500' 
           : 'bg-orange-500/20 text-orange-500'
       }`}>
-        {executionMethod === 'docker' ? <Shield className="w-3 h-3" /> : <Zap className="w-3 h-3" />}
-        {executionMethod === 'docker' ? 'Secure' : 'Native'}
+        {executionMethod === 'docker' ? <Shield className="w-2 h-2 sm:w-3 sm:h-3" /> : <Zap className="w-2 h-2 sm:w-3 sm:h-3" />}
+        <span className="hidden sm:inline">{executionMethod === 'docker' ? 'Secure' : 'Native'}</span>
       </div>
     );
   };
@@ -262,19 +262,19 @@ if __name__ == "__main__":
   if (isLoadingTemplate) {
     return (
       <div className="h-full flex items-center justify-center bg-[var(--color-bg-primary)]">
-        <div className="text-[var(--color-text-secondary)]">Loading template...</div>
+        <div className="text-[var(--color-text-secondary)] text-sm sm:text-base">Loading template...</div>
       </div>
     );
   }
 
   return (
     <div className="h-full flex flex-col bg-[var(--color-bg-primary)]">
-      <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border-b border-[var(--color-border)] gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="px-3 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-2 sm:px-3 py-1.5 sm:py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
           >
             <option value="c">C (GCC)</option>
             <option value="cpp">C++ (G++)</option>
@@ -284,25 +284,26 @@ if __name__ == "__main__":
           
           <button
             onClick={resetCode}
-            className="flex items-center gap-2 px-3 py-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors text-sm sm:text-base"
             title="Reset Code"
           >
-            <RotateCcw className="w-4 h-4" />
-            Reset
+            <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Reset</span>
           </button>
 
-          <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-bg-secondary)] rounded-lg">
+          <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-[var(--color-bg-secondary)] rounded-lg">
             {getSecurityIcon()}
-            <span className="text-sm text-[var(--color-text-secondary)]">
-              {getSecurityText()}
+            <span className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
+              <span className="hidden sm:inline">{getSecurityText()}</span>
+              <span className="sm:hidden">Security</span>
             </span>
             <button
               onClick={refreshCompilerStatus}
               disabled={isCheckingHealth}
-              className="ml-2 p-1 hover:bg-[var(--color-border)] rounded transition-colors"
+              className="ml-1 sm:ml-2 p-1 hover:bg-[var(--color-border)] rounded transition-colors"
               title="Refresh Status"
             >
-              <RefreshCw className={`w-3 h-3 ${isCheckingHealth ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-2 h-2 sm:w-3 sm:h-3 ${isCheckingHealth ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
@@ -311,16 +312,16 @@ if __name__ == "__main__":
           <button
             onClick={runCode}
             disabled={isRunning || isSubmitting}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
           >
-            {isRunning ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {isRunning ? <Square className="w-3 h-3 sm:w-4 sm:h-4" /> : <Play className="w-3 h-3 sm:w-4 sm:h-4" />}
             {isRunning ? 'Running...' : 'Run'}
           </button>
           
           <button
             onClick={submitCode}
             disabled={isRunning || isSubmitting}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
           >
             {isSubmitting ? 'Submitting...' : 'Submit'}
           </button>
@@ -328,23 +329,23 @@ if __name__ == "__main__":
       </div>
 
       {submitSuccess && (
-        <div className="bg-green-100 dark:bg-green-900 border-l-4 border-green-500 p-4">
+        <div className="bg-green-100 dark:bg-green-900 border-l-4 border-green-500 p-3 sm:p-4">
           <div className="flex items-center">
-            <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-            <p className="text-green-700 dark:text-green-200 font-medium">{submitMessage}</p>
+            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-3" />
+            <p className="text-green-700 dark:text-green-200 font-medium text-sm sm:text-base">{submitMessage}</p>
           </div>
         </div>
       )}
 
       {compilerHealth?.docker === 'unavailable' && (
-        <div className="bg-orange-100 dark:bg-orange-900 border-l-4 border-orange-500 p-4">
+        <div className="bg-orange-100 dark:bg-orange-900 border-l-4 border-orange-500 p-3 sm:p-4">
           <div className="flex items-start">
-            <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5 mr-3" />
+            <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 mt-0.5 mr-3" />
             <div>
               <h3 className="text-sm font-medium text-orange-800 dark:text-orange-200">
                 Docker Engine Not Running - Using Fallback Mode
               </h3>
-              <div className="mt-2 text-sm text-orange-700 dark:text-orange-300">
+              <div className="mt-2 text-xs sm:text-sm text-orange-700 dark:text-orange-300">
                 <p>Code will run in native mode with reduced security. For maximum security:</p>
                 <ol className="list-decimal list-inside mt-1 space-y-1">
                   <li>Start Docker Desktop application</li>
@@ -357,23 +358,23 @@ if __name__ == "__main__":
         </div>
       )}
 
-      <div className="flex-1 flex">
+      <div className="flex-1 flex flex-col lg:flex-row">
         <div className="flex-1 flex flex-col">
-          <div className="p-4 border-b border-[var(--color-border)]">
+          <div className="p-3 sm:p-4 border-b border-[var(--color-border)]">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Code Editor</h3>
           </div>
           <textarea
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="flex-1 p-4 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] font-mono text-sm resize-none focus:outline-none"
+            className="flex-1 p-3 sm:p-4 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] font-mono text-xs sm:text-sm resize-none focus:outline-none"
             placeholder="Write your code here..."
             spellCheck={false}
           />
         </div>
 
-        <div className="w-1/3 border-l border-[var(--color-border)] flex flex-col">
+        <div className="w-full lg:w-1/3 border-t lg:border-t-0 lg:border-l border-[var(--color-border)] flex flex-col">
           <div className="flex-1 flex flex-col">
-            <div className="p-4 border-b border-[var(--color-border)]">
+            <div className="p-3 sm:p-4 border-b border-[var(--color-border)]">
               <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Input</h3>
               <p className="text-xs text-[var(--color-text-secondary)]">
                 Enter test input for your program
@@ -382,39 +383,39 @@ if __name__ == "__main__":
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className="flex-1 p-4 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] font-mono text-sm resize-none focus:outline-none"
+              className="flex-1 p-3 sm:p-4 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] font-mono text-xs sm:text-sm resize-none focus:outline-none min-h-[100px] lg:min-h-0"
               placeholder="Enter input for your program..."
             />
           </div>
 
           <div className="flex-1 flex flex-col border-t border-[var(--color-border)]">
-            <div className="p-4 border-b border-[var(--color-border)]">
-              <div className="flex items-center justify-between">
+            <div className="p-3 sm:p-4 border-b border-[var(--color-border)]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <h3 className="text-sm font-medium text-[var(--color-text-primary)]">Output</h3>
-                <div className="flex items-center gap-4 text-xs text-[var(--color-text-secondary)]">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-[var(--color-text-secondary)]">
                   {executionTime !== null && (
                     <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {executionTime}ms
+                      <Clock className="w-2 h-2 sm:w-3 sm:h-3" />
+                      <span className="text-xs">{executionTime}ms</span>
                     </div>
                   )}
                   {memoryUsed !== null && (
                     <div className="flex items-center gap-1">
-                      <MemoryStick className="w-3 h-3" />
-                      {memoryUsed}KB
+                      <MemoryStick className="w-2 h-2 sm:w-3 sm:h-3" />
+                      <span className="text-xs">{memoryUsed}KB</span>
                     </div>
                   )}
                   {getExecutionMethodBadge()}
                 </div>
               </div>
             </div>
-            <div className="flex-1 p-4 bg-[var(--color-bg-secondary)]">
+            <div className="flex-1 p-3 sm:p-4 bg-[var(--color-bg-secondary)] min-h-[100px] lg:min-h-0">
               {error ? (
-                <div className="text-red-500 font-mono text-sm whitespace-pre-wrap">{error}</div>
+                <div className="text-red-500 font-mono text-xs sm:text-sm whitespace-pre-wrap">{error}</div>
               ) : output ? (
-                <div className="text-[var(--color-text-primary)] font-mono text-sm whitespace-pre-wrap">{output}</div>
+                <div className="text-[var(--color-text-primary)] font-mono text-xs sm:text-sm whitespace-pre-wrap">{output}</div>
               ) : (
-                <div className="text-[var(--color-text-secondary)] text-sm">Run your code to see output here...</div>
+                <div className="text-[var(--color-text-secondary)] text-xs sm:text-sm">Run your code to see output here...</div>
               )}
             </div>
           </div>

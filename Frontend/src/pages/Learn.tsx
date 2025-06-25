@@ -34,19 +34,19 @@ const Learn = () => {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col">
-      <div className="flex-1 p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-[var(--color-text-primary)]">Learning Center</h1>
-          <p className="text-[var(--color-text-secondary)]">Master coding concepts through structured courses</p>
+      <div className="flex-1 p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-[var(--color-text-primary)]">Learning Center</h1>
+          <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">Master coding concepts through structured courses</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {courses.map((course) => (
-            <div key={course.id} className="card">
-              <div className="p-6">
+            <div key={course.id} className="card course-card">
+              <div className="p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <BookOpen className="w-8 h-8 text-[var(--color-button-primary)]" />
-                  <span className={`px-3 py-1 rounded-full text-sm ${
+                  <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--color-button-primary)]" />
+                  <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm ${
                     course.level === 'Beginner' ? 'bg-green-500/20 text-green-500' :
                     course.level === 'Intermediate' ? 'bg-yellow-500/20 text-yellow-500' :
                     'bg-red-500/20 text-red-500'
@@ -54,23 +54,23 @@ const Learn = () => {
                     {course.level}
                   </span>
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-[var(--color-text-primary)]">{course.title}</h3>
-                <p className="text-[var(--color-text-secondary)] mb-4">{course.description}</p>
-                <div className="flex items-center gap-4 text-sm text-[var(--color-text-secondary)] mb-6">
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-[var(--color-text-primary)]">{course.title}</h3>
+                <p className="text-sm sm:text-base text-[var(--color-text-secondary)] mb-4">{course.description}</p>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-[var(--color-text-secondary)] mb-6">
                   <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                     {course.duration}
                   </div>
                   <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-500" />
+                    <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
                     {course.rating}
                   </div>
                   <div className="flex items-center gap-1">
-                    <Award className="w-4 h-4" />
+                    <Award className="w-3 h-3 sm:w-4 sm:h-4" />
                     {course.students} students
                   </div>
                 </div>
-                <button className="button button-primary w-full">
+                <button className="button button-primary w-full text-sm sm:text-base">
                   Start Learning
                 </button>
               </div>
@@ -79,15 +79,15 @@ const Learn = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-[var(--color-border)]">
-        <div className="container mx-auto px-6">
-          <div className="flex items-center justify-between">
+      {/* Footer - Responsive */}
+      <footer className="py-6 sm:py-8 border-t border-[var(--color-border)]">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Code2 className="w-6 h-6 text-indigo-500" />
+              <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
               <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
             </div>
-            <div className="text-[var(--color-text-secondary)]">
+            <div className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
               © 2025 CodeFlask. All rights reserved.
             </div>
           </div>

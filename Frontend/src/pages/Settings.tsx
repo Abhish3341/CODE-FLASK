@@ -249,6 +249,7 @@ const Settings = () => {
     if (emailRestrictionTimer) {
       clearTimeout(emailRestrictionTimer);
       setEmailRestrictionTimer(null);
+    
     }
     setShowEmailRestrictionMessage(false);
     // Reset form data to current profile values
@@ -390,7 +391,7 @@ const Settings = () => {
     switch (authMethod) {
       case 'google':
         return (
-          <svg className="w-4 h-4" viewBox="0 0 24 24">
+          <svg className="w-3 h-3 sm:w-4 sm:h-4" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -399,12 +400,12 @@ const Settings = () => {
         );
       case 'github':
         return (
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
           </svg>
         );
       default:
-        return <Info className="w-4 h-4" />;
+        return <Info className="w-3 h-3 sm:w-4 sm:h-4" />;
     }
   };
 
@@ -413,15 +414,15 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col">
-      <div className="flex-1 p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[var(--color-text-primary)] mb-2">Settings</h1>
-          <p className="text-[var(--color-text-secondary)]">Manage your account and preferences</p>
+      <div className="flex-1 p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-2">Settings</h1>
+          <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">Manage your account and preferences</p>
         </div>
 
         {profile?.isFirstLogin && (
           <div className="bg-indigo-100 dark:bg-indigo-900 p-4 rounded-lg mb-6">
-            <p className="text-indigo-700 dark:text-indigo-200">
+            <p className="text-indigo-700 dark:text-indigo-200 text-sm sm:text-base">
               Welcome! Please confirm or update your profile details below. 
               This first update won't count towards your update limit.
             </p>
@@ -430,7 +431,7 @@ const Settings = () => {
 
         {!profile?.isFirstLogin && profile?.profileUpdates.remaining < 3 && (
           <div className="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-lg mb-6">
-            <p className="text-yellow-700 dark:text-yellow-200">
+            <p className="text-yellow-700 dark:text-yellow-200 text-sm sm:text-base">
               You have {profile.profileUpdates.remaining} profile updates remaining.
             </p>
           </div>
@@ -444,12 +445,12 @@ const Settings = () => {
               className="flex items-center justify-between p-3 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors rounded-lg"
               onClick={() => setIsOAuthInfoExpanded(!isOAuthInfoExpanded)}
             >
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-800 rounded-full">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 dark:bg-blue-800 rounded-full">
                   {getOAuthIcon(profile.authMethod)}
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                  <h3 className="text-xs sm:text-sm font-medium text-blue-800 dark:text-blue-200">
                     {getOAuthProviderName(profile.authMethod)} Account
                   </h3>
                   <p className="text-xs text-blue-600 dark:text-blue-300">
@@ -462,8 +463,8 @@ const Settings = () => {
                   {isOAuthInfoExpanded ? 'Less info' : 'More info'}
                 </span>
                 {isOAuthInfoExpanded ? 
-                  <ChevronUp className="w-4 h-4 text-blue-600 dark:text-blue-400" /> : 
-                  <ChevronDown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" /> : 
+                  <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
                 }
               </div>
             </div>
@@ -472,7 +473,7 @@ const Settings = () => {
             {isOAuthInfoExpanded && (
               <div className="px-3 pb-3 border-t border-blue-200 dark:border-blue-800 mt-2 pt-3">
                 <div className="bg-blue-100 dark:bg-blue-800/50 p-3 rounded-lg">
-                  <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                  <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-300 mb-2">
                     <strong>Account Restrictions:</strong>
                   </p>
                   <ul className="text-xs text-blue-600 dark:text-blue-400 space-y-1 ml-4">
@@ -489,15 +490,15 @@ const Settings = () => {
         {error && (
           <div className="bg-red-100 dark:bg-red-900 p-4 rounded-lg mb-6">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
-              <p className="text-red-700 dark:text-red-200">{error}</p>
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 mt-0.5" />
+              <p className="text-red-700 dark:text-red-200 text-sm sm:text-base">{error}</p>
             </div>
           </div>
         )}
 
         {success && (
           <div className="bg-green-100 dark:bg-green-900 p-4 rounded-lg mb-6">
-            <p className="text-green-700 dark:text-green-200">{success}</p>
+            <p className="text-green-700 dark:text-green-200 text-sm sm:text-base">{success}</p>
           </div>
         )}
 
@@ -505,12 +506,12 @@ const Settings = () => {
         {showEmailRestrictionMessage && profile?.isOAuthUser && isEditing && (
           <div className="bg-orange-100 dark:bg-orange-900 p-4 rounded-lg mb-6 animate-pulse">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5" />
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 mt-0.5" />
               <div>
-                <h3 className="text-orange-800 dark:text-orange-200 font-medium mb-1">
+                <h3 className="text-orange-800 dark:text-orange-200 font-medium mb-1 text-sm sm:text-base">
                   Email Cannot Be Changed
                 </h3>
-                <p className="text-orange-700 dark:text-orange-300 text-sm">
+                <p className="text-orange-700 dark:text-orange-300 text-xs sm:text-sm">
                   Your email address is managed by {getOAuthProviderName(profile.authMethod)} 
                   and cannot be modified here. To change your email, please update it in your {getOAuthProviderName(profile.authMethod)} account settings.
                 </p>
@@ -522,11 +523,11 @@ const Settings = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
-                <User className="w-5 h-5" />
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
+          <div className="xl:col-span-2">
+            <div className="card p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] mb-4 sm:mb-6 flex items-center gap-2">
+                <User className="w-4 h-4 sm:w-5 sm:h-5" />
                 Profile Settings
               </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -539,7 +540,7 @@ const Settings = () => {
                     name="firstname"
                     value={formData.firstname}
                     onChange={handleInputChange}
-                    className={`input w-full ${!isEditing ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
+                    className={`input w-full text-sm sm:text-base ${!isEditing ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
                     disabled={!isEditing}
                     required
                   />
@@ -553,7 +554,7 @@ const Settings = () => {
                     name="lastname"
                     value={formData.lastname}
                     onChange={handleInputChange}
-                    className={`input w-full ${!isEditing ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
+                    className={`input w-full text-sm sm:text-base ${!isEditing ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
                     disabled={!isEditing}
                     required
                   />
@@ -572,7 +573,7 @@ const Settings = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className={`input w-full ${
+                    className={`input w-full text-sm sm:text-base ${
                       !isEditing || profile?.isOAuthUser 
                         ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed' 
                         : ''
@@ -582,12 +583,12 @@ const Settings = () => {
                     title={profile?.isOAuthUser ? `Email is managed by ${getOAuthProviderName(profile.authMethod)}` : ''}
                   />
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   {!isEditing ? (
                     <button
                       type="button"
                       onClick={handleEdit}
-                      className="button button-primary"
+                      className="button button-primary text-sm sm:text-base"
                     >
                       Edit Profile
                     </button>
@@ -595,7 +596,7 @@ const Settings = () => {
                     <>
                       <button
                         type="submit"
-                        className={`button button-primary ${(!hasChanges || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`button button-primary text-sm sm:text-base ${(!hasChanges || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
                         disabled={!hasChanges || isSubmitting}
                       >
                         {isSubmitting ? 'Saving...' : 'Save Changes'}
@@ -603,7 +604,7 @@ const Settings = () => {
                       <button
                         type="button"
                         onClick={handleCancel}
-                        className="button button-secondary"
+                        className="button button-secondary text-sm sm:text-base"
                         disabled={isSubmitting}
                       >
                         Cancel
@@ -616,16 +617,16 @@ const Settings = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
-                <Monitor className="w-5 h-5" />
+            <div className="card p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] mb-4 sm:mb-6 flex items-center gap-2">
+                <Monitor className="w-4 h-4 sm:w-5 sm:h-5" />
                 Appearance
               </h2>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                    <span className="text-[var(--color-text-primary)]">Dark Mode</span>
+                    {isDarkMode ? <Moon className="w-4 h-4 sm:w-5 sm:h-5" /> : <Sun className="w-4 h-4 sm:w-5 sm:h-5" />}
+                    <span className="text-[var(--color-text-primary)] text-sm sm:text-base">Dark Mode</span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -634,29 +635,29 @@ const Settings = () => {
                       checked={isDarkMode}
                       onChange={toggleTheme}
                     />
-                    <div className="w-11 h-6 bg-[var(--color-border)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <div className="w-9 h-5 sm:w-11 sm:h-6 bg-[var(--color-border)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                   </label>
                 </div>
               </div>
             </div>
 
             {/* Authentication Method Info */}
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
-                <Shield className="w-5 h-5" />
+            <div className="card p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
                 Authentication Method
               </h2>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-[var(--color-bg-secondary)] rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 bg-indigo-100 dark:bg-indigo-800 rounded-full">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 bg-indigo-100 dark:bg-indigo-800 rounded-full">
                       {getOAuthIcon(profile?.authMethod || 'email')}
                     </div>
                     <div>
-                      <p className="font-medium text-[var(--color-text-primary)]">
+                      <p className="font-medium text-[var(--color-text-primary)] text-sm sm:text-base">
                         {getAuthMethodDisplay(profile?.authMethod || 'email')}
                       </p>
-                      <p className="text-sm text-[var(--color-text-secondary)]">
+                      <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
                         {profile?.isOAuthUser 
                           ? `Authenticated via ${getOAuthProviderName(profile.authMethod)}`
                           : 'Traditional email and password authentication'
@@ -671,28 +672,28 @@ const Settings = () => {
         </div>
 
         {/* Password Section */}
-        <div className="mt-8">
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                <Shield className="w-5 h-5" />
+        <div className="mt-6 sm:mt-8">
+          <div className="card p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
                 Security Settings
               </h2>
             </div>
 
             {passwordError && (
               <div className="bg-red-100 dark:bg-red-900 p-4 rounded-lg mb-6">
-                <p className="text-red-700 dark:text-red-200">{passwordError}</p>
+                <p className="text-red-700 dark:text-red-200 text-sm sm:text-base">{passwordError}</p>
               </div>
             )}
 
             {!showPasswordSection ? (
-              <div className="flex items-center justify-between p-4 bg-[var(--color-bg-secondary)] rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Lock className="w-5 h-5 text-[var(--color-text-secondary)]" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-[var(--color-bg-secondary)] rounded-lg gap-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-text-secondary)]" />
                   <div>
-                    <h3 className="font-medium text-[var(--color-text-primary)]">Change Password</h3>
-                    <p className="text-sm text-[var(--color-text-secondary)]">
+                    <h3 className="font-medium text-[var(--color-text-primary)] text-sm sm:text-base">Change Password</h3>
+                    <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
                       {profile?.isOAuthUser 
                         ? `Password is managed by ${getOAuthProviderName(profile.authMethod)}`
                         : 'Update your account password for better security'
@@ -702,7 +703,7 @@ const Settings = () => {
                 </div>
                 <button
                   onClick={handlePasswordSectionToggle}
-                  className={`button ${profile?.isOAuthUser ? 'button-secondary opacity-50 cursor-not-allowed' : 'button-primary'}`}
+                  className={`button text-sm sm:text-base ${profile?.isOAuthUser ? 'button-secondary opacity-50 cursor-not-allowed' : 'button-primary'}`}
                   disabled={profile?.isOAuthUser}
                 >
                   Change Password
@@ -712,7 +713,7 @@ const Settings = () => {
               <div>
                 {passwordSuccess && (
                   <div className="bg-green-100 dark:bg-green-900 p-4 rounded-lg mb-6">
-                    <p className="text-green-700 dark:text-green-200">{passwordSuccess}</p>
+                    <p className="text-green-700 dark:text-green-200 text-sm sm:text-base">{passwordSuccess}</p>
                   </div>
                 )}
 
@@ -727,7 +728,7 @@ const Settings = () => {
                         name="currentPassword"
                         value={passwordForm.currentPassword}
                         onChange={handlePasswordChange}
-                        className="input w-full pr-12"
+                        className="input w-full pr-10 sm:pr-12 text-sm sm:text-base"
                         required
                       />
                       <button
@@ -735,7 +736,7 @@ const Settings = () => {
                         onClick={() => togglePasswordVisibility('current')}
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
                       >
-                        {showPasswords.current ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {showPasswords.current ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                       </button>
                     </div>
                   </div>
@@ -750,7 +751,7 @@ const Settings = () => {
                         name="newPassword"
                         value={passwordForm.newPassword}
                         onChange={handlePasswordChange}
-                        className="input w-full pr-12"
+                        className="input w-full pr-10 sm:pr-12 text-sm sm:text-base"
                         required
                         minLength={8}
                       />
@@ -759,10 +760,10 @@ const Settings = () => {
                         onClick={() => togglePasswordVisibility('new')}
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
                       >
-                        {showPasswords.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {showPasswords.new ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                       </button>
                     </div>
-                    <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                    <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mt-1">
                       Password must be at least 8 characters long and contain uppercase, lowercase, numbers, and special characters.
                     </p>
                   </div>
@@ -777,7 +778,7 @@ const Settings = () => {
                         name="confirmPassword"
                         value={passwordForm.confirmPassword}
                         onChange={handlePasswordChange}
-                        className="input w-full pr-12"
+                        className="input w-full pr-10 sm:pr-12 text-sm sm:text-base"
                         required
                       />
                       <button
@@ -785,15 +786,15 @@ const Settings = () => {
                         onClick={() => togglePasswordVisibility('confirm')}
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
                       >
-                        {showPasswords.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {showPasswords.confirm ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <button
                       type="submit"
-                      className={`button button-primary ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`button button-primary text-sm sm:text-base ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? 'Updating Password...' : 'Update Password'}
@@ -801,7 +802,7 @@ const Settings = () => {
                     <button
                       type="button"
                       onClick={handlePasswordSectionToggle}
-                      className="button button-secondary"
+                      className="button button-secondary text-sm sm:text-base"
                       disabled={isSubmitting}
                     >
                       Cancel
@@ -815,27 +816,27 @@ const Settings = () => {
 
         {/* Password Confirmation Modal */}
         {showPasswordConfirmation && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-[var(--color-bg-secondary)] p-6 rounded-lg max-w-md w-full mx-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-[var(--color-bg-secondary)] p-4 sm:p-6 rounded-lg max-w-md w-full">
               <div className="flex items-center gap-3 mb-4">
-                <AlertTriangle className="w-6 h-6 text-yellow-500" />
-                <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+                <h3 className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)]">
                   Security Confirmation
                 </h3>
               </div>
-              <p className="text-[var(--color-text-secondary)] mb-6">
+              <p className="text-[var(--color-text-secondary)] mb-6 text-sm sm:text-base">
                 You are about to access the password change section. This action will allow you to modify your account security settings. Are you sure you want to continue?
               </p>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <button
                   onClick={confirmPasswordSectionAccess}
-                  className="button button-primary flex-1"
+                  className="button button-primary flex-1 text-sm sm:text-base"
                 >
                   Yes, Continue
                 </button>
                 <button
                   onClick={cancelPasswordSectionAccess}
-                  className="button button-secondary flex-1"
+                  className="button button-secondary flex-1 text-sm sm:text-base"
                 >
                   Cancel
                 </button>
@@ -845,15 +846,15 @@ const Settings = () => {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-[var(--color-border)]">
-        <div className="container mx-auto px-6">
-          <div className="flex items-center justify-between">
+      {/* Footer - Responsive */}
+      <footer className="py-6 sm:py-8 border-t border-[var(--color-border)]">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Code2 className="w-6 h-6 text-indigo-500" />
+              <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
               <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
             </div>
-            <div className="text-[var(--color-text-secondary)]">
+            <div className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
               © 2025 CodeFlask. All rights reserved.
             </div>
           </div>

@@ -174,7 +174,7 @@ const Login = () => {
     switch (authMethod) {
       case 'google':
         return (
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -182,11 +182,11 @@ const Login = () => {
           </svg>
         );
       case 'github':
-        return <Github className="w-5 h-5" />;
+        return <Github className="w-4 h-4 sm:w-5 sm:h-5" />;
       case 'email':
-        return <AlertTriangle className="w-5 h-5" />;
+        return <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />;
       default:
-        return <Info className="w-5 h-5" />;
+        return <Info className="w-4 h-4 sm:w-5 sm:h-5" />;
     }
   };
 
@@ -249,18 +249,19 @@ const Login = () => {
               <span className="text-xl font-bold text-[var(--color-text-primary)]">CodeFlask</span>
             </Link>
             
+            
           </div>
         </nav>
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className="card p-8 w-full max-w-md">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-2 text-[var(--color-text-primary)]">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
+        <div className="card p-6 sm:p-8 w-full max-w-md">
+          <div className="text-center mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-[var(--color-text-primary)]">
               {isSignUp ? 'Create Account' : 'Welcome Back'}
             </h2>
-            <p className="text-[var(--color-text-secondary)]">
+            <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
               {isSignUp ? 'Sign up to start coding' : 'Sign in to continue coding'}
             </p>
           </div>
@@ -272,7 +273,7 @@ const Login = () => {
                 <div className={`${getConflictTextColor(conflictInfo.authMethod)}`}>
                   {getConflictIcon(conflictInfo.authMethod)}
                 </div>
-                <p className={`text-sm ${getConflictTextColor(conflictInfo.authMethod)}`}>
+                <p className={`text-xs sm:text-sm ${getConflictTextColor(conflictInfo.authMethod)}`}>
                   {conflictInfo.message}
                 </p>
               </div>
@@ -282,13 +283,13 @@ const Login = () => {
           {/* Generic Error Message */}
           {error && !conflictInfo && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-              <span className="block sm:inline">{error}</span>
+              <span className="block sm:inline text-sm sm:text-base">{error}</span>
             </div>
           )}
 
           <form onSubmit={handleEmailSubmit} className="space-y-4 mb-6">
             {isSignUp && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                     First Name
@@ -300,7 +301,7 @@ const Login = () => {
                       setFirstName(e.target.value);
                       clearConflictAndError();
                     }}
-                    className="w-full px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)]"
+                    className="w-full px-3 sm:px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] text-sm sm:text-base"
                     required
                     disabled={isLoading}
                   />
@@ -316,7 +317,7 @@ const Login = () => {
                       setLastName(e.target.value);
                       clearConflictAndError();
                     }}
-                    className="w-full px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)]"
+                    className="w-full px-3 sm:px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] text-sm sm:text-base"
                     required
                     disabled={isLoading}
                   />
@@ -335,7 +336,7 @@ const Login = () => {
                   setEmail(e.target.value);
                   clearConflictAndError();
                 }}
-                className="w-full px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)]"
+                className="w-full px-3 sm:px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] text-sm sm:text-base"
                 required
                 disabled={isLoading}
               />
@@ -353,7 +354,7 @@ const Login = () => {
                     setPassword(e.target.value);
                     clearConflictAndError();
                   }}
-                  className="w-full px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] pr-12"
+                  className="w-full px-3 sm:px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] pr-10 sm:pr-12 text-sm sm:text-base"
                   required
                   disabled={isLoading}
                   minLength={6}
@@ -363,14 +364,14 @@ const Login = () => {
                   onClick={togglePasswordVisibility}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                 </button>
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2.5 sm:py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               disabled={isLoading}
             >
               {isLoading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
@@ -388,7 +389,7 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
               <button
                 type="button"
@@ -399,10 +400,10 @@ const Login = () => {
                     googleLoginButton.click();
                   }
                 }}
-                className="w-full py-3 px-4 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-border)] rounded-lg transition-colors font-medium flex items-center justify-center gap-2 text-[var(--color-text-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2.5 sm:py-3 px-4 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-border)] rounded-lg transition-colors font-medium flex items-center justify-center gap-2 text-[var(--color-text-primary)] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 disabled={isLoading}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 48 48">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 48 48">
                   <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
                   <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
                   <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
@@ -429,10 +430,10 @@ const Login = () => {
                 clearConflictAndError();
                 handleGithubLogin();
               }}
-              className="w-full py-3 px-4 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-border)] rounded-lg transition-colors font-medium flex items-center justify-center gap-2 text-[var(--color-text-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2.5 sm:py-3 px-4 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-border)] rounded-lg transition-colors font-medium flex items-center justify-center gap-2 text-[var(--color-text-primary)] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               disabled={isLoading}
             >
-              <Github className="w-5 h-5" />
+              <Github className="w-4 h-4 sm:w-5 sm:h-5" />
               Continue with GitHub
             </button>
           </div>
@@ -456,17 +457,17 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-[var(--color-border)]">
-        <div className="container mx-auto px-6">
-          <div className="flex items-center justify-between">
+      {/* Footer - Responsive */}
+      <footer className="py-6 sm:py-8 border-t border-[var(--color-border)]">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Link to="/" onClick={handleRedirect} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <Code2 className="w-6 h-6 text-indigo-500" />
+                <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
                 <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
               </Link>
             </div>
-            <div className="text-[var(--color-text-secondary)]">
+            <div className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
               © 2025 CodeFlask. All rights reserved.
             </div>
           </div>

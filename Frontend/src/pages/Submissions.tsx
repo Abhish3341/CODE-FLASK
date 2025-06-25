@@ -127,14 +127,14 @@ const Submissions = () => {
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case 'accepted':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />;
       case 'wrong answer':
       case 'error':
-        return <XCircle className="w-4 h-4 text-red-500" />;
+        return <XCircle className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />;
       case 'time limit exceeded':
-        return <Clock className="w-4 h-4 text-yellow-500" />;
+        return <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />;
       default:
-        return <AlertCircle className="w-4 h-4 text-blue-500" />;
+        return <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />;
     }
   };
 
@@ -164,15 +164,15 @@ const Submissions = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col">
-        <div className="flex-1 p-8">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-300 rounded w-1/4 mb-4"></div>
-            <div className="h-4 bg-gray-300 rounded w-1/3 mb-8"></div>
+            <div className="h-6 sm:h-8 bg-gray-300 rounded w-1/2 sm:w-1/4 mb-4"></div>
+            <div className="h-3 sm:h-4 bg-gray-300 rounded w-2/3 sm:w-1/3 mb-6 sm:mb-8"></div>
             
             {/* Stats Cards Skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-24 bg-gray-300 rounded"></div>
+                <div key={i} className="h-20 sm:h-24 bg-gray-300 rounded"></div>
               ))}
             </div>
             
@@ -194,14 +194,14 @@ const Submissions = () => {
         </div>
         
         {/* Footer */}
-        <footer className="py-8 border-t border-[var(--color-border)]">
-          <div className="container mx-auto px-6">
-            <div className="flex items-center justify-between">
+        <footer className="py-6 sm:py-8 border-t border-[var(--color-border)]">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <Code2 className="w-6 h-6 text-indigo-500" />
+                <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
                 <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
               </div>
-              <div className="text-[var(--color-text-secondary)]">
+              <div className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
                 © 2025 CodeFlask. All rights reserved.
               </div>
             </div>
@@ -213,12 +213,12 @@ const Submissions = () => {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col">
-      <div className="flex-1 p-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8">
+        {/* Header - Responsive */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-[var(--color-text-primary)] mb-2">My Submissions</h1>
-            <p className="text-[var(--color-text-secondary)]">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-2">My Submissions</h1>
+            <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
               Track your coding submissions and progress
             </p>
           </div>
@@ -226,10 +226,10 @@ const Submissions = () => {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-border)] transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-border)] transition-colors disabled:opacity-50 text-sm sm:text-base"
             >
-              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh
+              <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
             </button>
           </div>
         </div>
@@ -241,59 +241,59 @@ const Submissions = () => {
           </div>
         )}
 
-        {/* Stats Cards */}
+        {/* Stats Cards - Responsive */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="card p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-500/10 rounded-lg">
-                  <Code className="w-6 h-6 text-blue-500" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+            <div className="card p-4 sm:p-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-blue-500/10 rounded-lg">
+                  <Code className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-[var(--color-text-secondary)] text-sm">Total Submissions</p>
-                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  <p className="text-[var(--color-text-secondary)] text-xs sm:text-sm">Total Submissions</p>
+                  <p className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)]">
                     {stats.totalSubmissions}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="card p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-500/10 rounded-lg">
-                  <Calendar className="w-6 h-6 text-green-500" />
+            <div className="card p-4 sm:p-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-green-500/10 rounded-lg">
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-[var(--color-text-secondary)] text-sm">This Week</p>
-                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  <p className="text-[var(--color-text-secondary)] text-xs sm:text-sm">This Week</p>
+                  <p className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)]">
                     {stats.recentSubmissions}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="card p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-500/10 rounded-lg">
-                  <Clock className="w-6 h-6 text-purple-500" />
+            <div className="card p-4 sm:p-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-purple-500/10 rounded-lg">
+                  <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
                 </div>
                 <div>
-                  <p className="text-[var(--color-text-secondary)] text-sm">Avg. Runtime</p>
-                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  <p className="text-[var(--color-text-secondary)] text-xs sm:text-sm">Avg. Runtime</p>
+                  <p className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)]">
                     {stats.averageExecutionTime}ms
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="card p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-yellow-500/10 rounded-lg">
-                  <Code className="w-6 h-6 text-yellow-500" />
+            <div className="card p-4 sm:p-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-yellow-500/10 rounded-lg">
+                  <Code className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
                 </div>
                 <div>
-                  <p className="text-[var(--color-text-secondary)] text-sm">Top Language</p>
-                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  <p className="text-[var(--color-text-secondary)] text-xs sm:text-sm">Top Language</p>
+                  <p className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)]">
                     {Object.keys(stats.languageBreakdown).length > 0 
                       ? Object.entries(stats.languageBreakdown)
                           .sort(([,a], [,b]) => b - a)[0]?.[0] || 'None'
@@ -306,23 +306,23 @@ const Submissions = () => {
           </div>
         )}
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] w-5 h-5" />
+        {/* Filters - Responsive */}
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-6">
+          <div className="relative flex-1 sm:flex-none sm:w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] w-4 h-4 sm:w-5 sm:h-5" />
             <input
               type="text"
               placeholder="Search submissions..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64"
+              className="pl-9 sm:pl-10 pr-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full text-sm sm:text-base"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 sm:px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
           >
             <option value="all">All Status</option>
             {getUniqueStatuses().map(status => (
@@ -333,7 +333,7 @@ const Submissions = () => {
           <select
             value={languageFilter}
             onChange={(e) => setLanguageFilter(e.target.value)}
-            className="px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 sm:px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
           >
             <option value="all">All Languages</option>
             {getUniqueLanguages().map(language => (
@@ -344,99 +344,144 @@ const Submissions = () => {
           </select>
         </div>
 
-        {/* Submissions Table */}
+        {/* Submissions Table - Responsive */}
         <div className="card overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-[var(--color-bg-secondary)]">
-                <th className="px-6 py-4 text-left text-[var(--color-text-primary)] w-16">#</th>
-                <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Status</th>
-                <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Problem</th>
-                <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Difficulty</th>
-                <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Language</th>
-                <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Runtime</th>
-                <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Memory</th>
-                <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Submitted</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSubmissions.map((submission, index) => (
-                <tr 
-                  key={submission.id} 
-                  className="border-t border-[var(--color-border)] hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer"
-                  onClick={() => setSelectedSubmission(submission)}
-                >
-                  <td className="px-6 py-4 text-[var(--color-text-secondary)] font-mono text-sm">
-                    {submission.submissionNumber || (filteredSubmissions.length - index)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className={`flex items-center gap-2 ${getStatusColor(submission.status)}`}>
-                      {getStatusIcon(submission.status)}
-                      {submission.status}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 font-medium text-[var(--color-text-primary)]">
-                    {submission.problem}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-sm ${getDifficultyColor(submission.difficulty)}`}>
-                      {submission.difficulty}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-[var(--color-text-secondary)]">
-                    {submission.language.charAt(0).toUpperCase() + submission.language.slice(1)}
-                  </td>
-                  <td className="px-6 py-4 text-[var(--color-text-secondary)]">{submission.runtime}</td>
-                  <td className="px-6 py-4 text-[var(--color-text-secondary)]">{submission.memory}</td>
-                  <td className="px-6 py-4 text-[var(--color-text-secondary)]">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      {submission.submittedAt}
-                    </div>
-                  </td>
+          {/* Desktop Table */}
+          <div className="hidden lg:block">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-[var(--color-bg-secondary)]">
+                  <th className="px-6 py-4 text-left text-[var(--color-text-primary)] w-16">#</th>
+                  <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Status</th>
+                  <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Problem</th>
+                  <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Difficulty</th>
+                  <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Language</th>
+                  <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Runtime</th>
+                  <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Memory</th>
+                  <th className="px-6 py-4 text-left text-[var(--color-text-primary)]">Submitted</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredSubmissions.map((submission, index) => (
+                  <tr 
+                    key={submission.id} 
+                    className="border-t border-[var(--color-border)] hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer"
+                    onClick={() => setSelectedSubmission(submission)}
+                  >
+                    <td className="px-6 py-4 text-[var(--color-text-secondary)] font-mono text-sm">
+                      {submission.submissionNumber || (filteredSubmissions.length - index)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className={`flex items-center gap-2 ${getStatusColor(submission.status)}`}>
+                        {getStatusIcon(submission.status)}
+                        {submission.status}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-medium text-[var(--color-text-primary)]">
+                      {submission.problem}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-sm ${getDifficultyColor(submission.difficulty)}`}>
+                        {submission.difficulty}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-[var(--color-text-secondary)]">
+                      {submission.language.charAt(0).toUpperCase() + submission.language.slice(1)}
+                    </td>
+                    <td className="px-6 py-4 text-[var(--color-text-secondary)]">{submission.runtime}</td>
+                    <td className="px-6 py-4 text-[var(--color-text-secondary)]">{submission.memory}</td>
+                    <td className="px-6 py-4 text-[var(--color-text-secondary)]">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        {submission.submittedAt}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="lg:hidden space-y-4 p-4">
+            {filteredSubmissions.map((submission, index) => (
+              <div 
+                key={submission.id}
+                className="bg-[var(--color-bg-secondary)] p-4 rounded-lg cursor-pointer hover:bg-[var(--color-border)] transition-colors"
+                onClick={() => setSelectedSubmission(submission)}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono text-[var(--color-text-secondary)]">
+                      #{submission.submissionNumber || (filteredSubmissions.length - index)}
+                    </span>
+                    <div className={`flex items-center gap-1 ${getStatusColor(submission.status)}`}>
+                      {getStatusIcon(submission.status)}
+                      <span className="text-sm font-medium">{submission.status}</span>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs ${getDifficultyColor(submission.difficulty)}`}>
+                    {submission.difficulty}
+                  </span>
+                </div>
+                
+                <h3 className="font-medium text-[var(--color-text-primary)] mb-2 truncate">
+                  {submission.problem}
+                </h3>
+                
+                <div className="flex items-center justify-between text-xs text-[var(--color-text-secondary)]">
+                  <div className="flex items-center gap-4">
+                    <span>{submission.language.charAt(0).toUpperCase() + submission.language.slice(1)}</span>
+                    <span>{submission.runtime}</span>
+                    <span>{submission.memory}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {submission.submittedAt}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
           
           {filteredSubmissions.length === 0 && !loading && (
-            <div className="text-center py-12 text-[var(--color-text-secondary)]">
+            <div className="text-center py-8 sm:py-12 text-[var(--color-text-secondary)]">
               {submissions.length === 0 ? (
                 <div>
-                  <Code className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">No submissions yet</h3>
-                  <p>Start solving problems to see your submissions here!</p>
+                  <Code className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-base sm:text-lg font-medium mb-2">No submissions yet</h3>
+                  <p className="text-sm sm:text-base">Start solving problems to see your submissions here!</p>
                 </div>
               ) : (
                 <div>
-                  <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">No submissions found</h3>
-                  <p>Try adjusting your search criteria.</p>
+                  <Search className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-base sm:text-lg font-medium mb-2">No submissions found</h3>
+                  <p className="text-sm sm:text-base">Try adjusting your search criteria.</p>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* Submission Detail Modal */}
+        {/* Submission Detail Modal - Responsive */}
         {selectedSubmission && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-[var(--color-bg-secondary)] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-[var(--color-border)]">
+              <div className="p-4 sm:p-6 border-b border-[var(--color-border)]">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
+                  <h2 className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)]">
                     Submission Details
                   </h2>
                   <button
                     onClick={() => setSelectedSubmission(null)}
-                    className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] text-2xl"
+                    className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] text-xl sm:text-2xl"
                   >
                     ×
                   </button>
                 </div>
               </div>
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   <div>
                     <h3 className="font-medium text-[var(--color-text-primary)] mb-2">Problem</h3>
                     <p className="text-[var(--color-text-secondary)]">{selectedSubmission.problem}</p>
@@ -463,7 +508,7 @@ const Submissions = () => {
                 {selectedSubmission.code && (
                   <div className="mb-6">
                     <h3 className="font-medium text-[var(--color-text-primary)] mb-2">Code</h3>
-                    <pre className="bg-[var(--color-bg-primary)] p-4 rounded-lg overflow-x-auto text-sm">
+                    <pre className="bg-[var(--color-bg-primary)] p-3 sm:p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
                       <code className="text-[var(--color-text-primary)]">{selectedSubmission.code}</code>
                     </pre>
                   </div>
@@ -472,7 +517,7 @@ const Submissions = () => {
                 {selectedSubmission.output && (
                   <div>
                     <h3 className="font-medium text-[var(--color-text-primary)] mb-2">Output</h3>
-                    <pre className="bg-[var(--color-bg-primary)] p-4 rounded-lg overflow-x-auto text-sm">
+                    <pre className="bg-[var(--color-bg-primary)] p-3 sm:p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
                       <code className="text-[var(--color-text-primary)]">{selectedSubmission.output}</code>
                     </pre>
                   </div>
@@ -483,15 +528,15 @@ const Submissions = () => {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-[var(--color-border)]">
-        <div className="container mx-auto px-6">
-          <div className="flex items-center justify-between">
+      {/* Footer - Responsive */}
+      <footer className="py-6 sm:py-8 border-t border-[var(--color-border)]">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Code2 className="w-6 h-6 text-indigo-500" />
+              <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
               <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
             </div>
-            <div className="text-[var(--color-text-secondary)]">
+            <div className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
               © 2025 CodeFlask. All rights reserved.
             </div>
           </div>
