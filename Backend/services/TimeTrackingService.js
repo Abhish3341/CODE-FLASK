@@ -136,7 +136,7 @@ class TimeTrackingService {
     }
   }
 
-  // Combined Dashboard Stats
+  // Combined Dashboard Stats - Enhanced for Problem-Solving Focus
   static async getDashboardTimeStats(userId) {
     try {
       const [sessionStats, problemStats] = await Promise.all([
@@ -144,35 +144,92 @@ class TimeTrackingService {
         this.getProblemTimeStats(userId)
       ]);
 
+      // Calculate problem-solving focused metrics
+      const averageTimePerSolved = problemStats.averageTimePerSolved || 0;
+      const averageTimePerProblem = problemStats.averageTimePerProblem || 0;
+      
+      // Use problem-solving time as primary metric, fall back to session time
+      const primaryAvgTime = averageTimePerSolved > 0 ? averageTimePerSolved : 
+                           (averageTimePerProblem > 0 ? averageTimePerProblem : sessionStats.averageSessionTime);
+
+      // Calculate this week's problem-solving time
+      const thisWeekProblemTime = await this.getThisWeekProblemTime(userId);
+      const thisWeekTime = thisWeekProblemTime > 0 ? thisWeekProblemTime : sessionStats.thisWeekTime;
+
       return {
-        // Session-based metrics
+        // Session-based metrics (fallback)
         averageSessionTime: sessionStats.averageSessionTime,
-        thisWeekTime: sessionStats.thisWeekTime,
         totalSessionTime: sessionStats.totalTime,
-        activeDays: sessionStats.activeDays,
         totalSessions: sessionStats.totalSessions,
         
-        // Problem-based metrics
-        averageTimePerProblem: Math.round(problemStats.averageTimePerProblem || 0),
-        averageTimePerSolved: Math.round(problemStats.averageTimePerSolved || 0),
+        // Problem-focused metrics (primary)
+        averageTimePerProblem: Math.round(averageTimePerProblem),
+        averageTimePerSolved: Math.round(averageTimePerSolved),
+        thisWeekTime: Math.round(thisWeekTime),
+        activeDays: Math.max(sessionStats.activeDays, await this.getProblemActiveDays(userId)),
+        
+        // Performance metrics
         fastestSolve: problemStats.fastestSolve || 0,
         slowestSolve: problemStats.slowestSolve || 0,
-        totalProblemTime: problemStats.totalTimeSpent || 0
+        totalProblemTime: problemStats.totalTimeSpent || 0,
+        
+        // Combined metrics for dashboard display
+        primaryAvgTime: Math.round(primaryAvgTime),
+        hasProblemData: problemStats.solvedProblems > 0
       };
     } catch (error) {
       console.error('Error getting dashboard time stats:', error);
       return {
         averageSessionTime: 0,
+        averageTimePerProblem: 0,
+        averageTimePerSolved: 0,
         thisWeekTime: 0,
         totalSessionTime: 0,
         activeDays: 0,
         totalSessions: 0,
-        averageTimePerProblem: 0,
-        averageTimePerSolved: 0,
         fastestSolve: 0,
         slowestSolve: 0,
-        totalProblemTime: 0
+        totalProblemTime: 0,
+        primaryAvgTime: 0,
+        hasProblemData: false
       };
+    }
+  }
+
+  // Helper method to get this week's problem-solving time
+  static async getThisWeekProblemTime(userId) {
+    try {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      const problemTimes = await ProblemTime.find({
+        userId,
+        openedAt: { $gte: oneWeekAgo }
+      });
+
+      return problemTimes.reduce((total, pt) => total + (pt.timeTaken || 0), 0);
+    } catch (error) {
+      console.error('Error getting this week problem time:', error);
+      return 0;
+    }
+  }
+
+  // Helper method to get problem-solving active days
+  static async getProblemActiveDays(userId) {
+    try {
+      const problemTimes = await ProblemTime.find({ userId });
+      const activeDays = new Set();
+      
+      problemTimes.forEach(pt => {
+        if (pt.openedAt) {
+          activeDays.add(pt.openedAt.toDateString());
+        }
+      });
+      
+      return activeDays.size;
+    } catch (error) {
+      console.error('Error getting problem active days:', error);
+      return 0;
     }
   }
 

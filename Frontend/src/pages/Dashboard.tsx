@@ -23,6 +23,13 @@ interface DashboardData {
       java: { solved: number; attempted: number };
       python: { solved: number; attempted: number };
     };
+    // Enhanced time tracking stats
+    averageSessionTime: number;
+    thisWeekTime: number;
+    totalSessionTime: number;
+    activeDays: number;
+    fastestSolve: number;
+    slowestSolve: number;
   };
   progressOverview: {
     currentStreak: number;
@@ -45,6 +52,11 @@ interface DashboardData {
     };
     totalActiveDays: number;
     averageSessionTime: number;
+    // Enhanced time metrics
+    averageTimePerProblem: number;
+    fastestSolve: number;
+    slowestSolve: number;
+    totalSessionTime: number;
   };
   recommendedProblems: Array<{
     id: string;
@@ -54,6 +66,18 @@ interface DashboardData {
     status: 'not-attempted' | 'attempted' | 'submitted' | 'solved';
   }>;
   userLevel: string;
+  timeStats: {
+    averageSessionTime: number;
+    thisWeekTime: number;
+    totalSessionTime: number;
+    activeDays: number;
+    totalSessions: number;
+    averageTimePerProblem: number;
+    averageTimePerSolved: number;
+    fastestSolve: number;
+    slowestSolve: number;
+    totalProblemTime: number;
+  };
 }
 
 const Dashboard = () => {
@@ -62,6 +86,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [realTimeStats, setRealTimeStats] = useState<any>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -74,6 +99,10 @@ const Dashboard = () => {
 
         const response = await axiosInstance.get('/api/dashboard');
         setData(response.data);
+        
+        // Fetch real-time time tracking stats
+        const timeStatsResponse = await axiosInstance.get('/api/time/dashboard/stats');
+        setRealTimeStats(timeStatsResponse.data);
       } catch (err: any) {
         setError(err.response?.data?.error || 'Failed to load dashboard data');
         console.error('Dashboard data fetch error:', err);
@@ -83,6 +112,18 @@ const Dashboard = () => {
     };
 
     fetchDashboardData();
+
+    // Set up periodic refresh for real-time stats (every 30 seconds)
+    const interval = setInterval(async () => {
+      try {
+        const timeStatsResponse = await axiosInstance.get('/api/time/dashboard/stats');
+        setRealTimeStats(timeStatsResponse.data);
+      } catch (error) {
+        console.error('Failed to refresh time stats:', error);
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleSolveProblem = (problemId: string) => {
@@ -345,6 +386,17 @@ const Dashboard = () => {
     );
   };
 
+  // Helper function to format time in minutes to readable format
+  const formatTime = (minutes: number) => {
+    if (minutes < 60) {
+      return `${Math.round(minutes)}m`;
+    } else {
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = Math.round(minutes % 60);
+      return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+    }
+  };
+
   if (loading) {
     return (
       <div className="h-full p-4 sm:p-6 lg:p-8 bg-[var(--color-bg-primary)]">
@@ -372,6 +424,9 @@ const Dashboard = () => {
   if (!data) return null;
 
   const { stats, progressOverview } = data;
+
+  // Use real-time stats if available, otherwise fall back to data stats
+  const currentTimeStats = realTimeStats || data.timeStats || {};
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col">
@@ -470,7 +525,7 @@ const Dashboard = () => {
                   </div>
                   <div>
                     <p className="text-lg sm:text-2xl font-bold text-[var(--color-text-primary)]">
-                      {Math.round(progressOverview.thisWeekTime / 60)}h
+                      {formatTime(currentTimeStats.thisWeekTime || progressOverview.thisWeekTime || 0)}
                     </p>
                     <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">This Week</p>
                   </div>
@@ -567,18 +622,18 @@ const Dashboard = () => {
               {/* Spacer to push stats to bottom */}
               <div className="flex-1"></div>
 
-              {/* Additional Progress Stats - Responsive grid */}
+              {/* Enhanced Progress Stats with Real-time Time Data */}
               <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-[var(--color-border)]">
                 <div className="grid grid-cols-2 gap-4 sm:gap-6">
                   <div className="dashboard-tile p-4 sm:p-5 bg-[var(--color-bg-primary)] rounded-lg text-center">
                     <p className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-1">
-                      {progressOverview.totalActiveDays}
+                      {currentTimeStats.activeDays || progressOverview.totalActiveDays || 0}
                     </p>
                     <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] font-medium">Active Days</p>
                   </div>
                   <div className="dashboard-tile p-4 sm:p-5 bg-[var(--color-bg-primary)] rounded-lg text-center">
                     <p className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-1">
-                      {progressOverview.averageSessionTime}m
+                      {formatTime(currentTimeStats.averageTimePerSolved || currentTimeStats.averageTimePerProblem || progressOverview.averageSessionTime || 0)}
                     </p>
                     <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] font-medium">Avg Session</p>
                   </div>
