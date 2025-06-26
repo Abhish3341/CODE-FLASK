@@ -287,10 +287,7 @@ const ProblemView = () => {
                 <Code className="w-4 h-4" />
                 {problem.category}
               </div>
-              <div className="flex items-center gap-1">
-                <CheckCircle className="w-4 h-4" />
-                {problem.acceptance}% acceptance
-              </div>
+             
               <div className="flex items-center gap-1">
                 <Users className="w-4 h-4" />
                 {problem.totalSubmissions} submissions
@@ -313,32 +310,8 @@ const ProblemView = () => {
                 Description
               </div>
             </button>
-            <button
-              onClick={() => setActiveTab('solutions')}
-              className={`px-6 py-3 text-sm font-medium transition-colors ${
-                activeTab === 'solutions'
-                  ? 'text-indigo-600 border-b-2 border-indigo-600'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Lightbulb className="w-4 h-4" />
-                Solutions
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('discuss')}
-              className={`px-6 py-3 text-sm font-medium transition-colors ${
-                activeTab === 'discuss'
-                  ? 'text-indigo-600 border-b-2 border-indigo-600'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Discuss
-              </div>
-            </button>
+            
+            
           </div>
 
           {/* Content */}
@@ -404,21 +377,9 @@ const ProblemView = () => {
               </div>
             )}
             
-            {activeTab === 'solutions' && (
-              <div className="text-center py-12 text-[var(--color-text-secondary)]">
-                <Lightbulb className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">Solutions Coming Soon</h3>
-                <p>Community solutions and explanations will be available here.</p>
-              </div>
-            )}
             
-            {activeTab === 'discuss' && (
-              <div className="text-center py-12 text-[var(--color-text-secondary)]">
-                <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">Discussion Coming Soon</h3>
-                <p>Join the community discussion about this problem.</p>
-              </div>
-            )}
+            
+            
           </div>
         </div>
       </Panel>
