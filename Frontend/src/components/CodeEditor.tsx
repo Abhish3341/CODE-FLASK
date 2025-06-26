@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Square, RotateCcw, Settings, Clock, MemoryStick, AlertTriangle, CheckCircle, Shield, Zap, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
+import { Play, Square, RotateCcw, Settings, Clock, MemoryStick, AlertTriangle, CheckCircle, Shield, Zap, ChevronDown, ChevronUp, RefreshCw, TestTube, User, Lightbulb, Eye } from 'lucide-react';
 import axiosInstance from '../utils/axiosConfig';
+import ScoreTracker from './ScoreTracker';
 
 interface CodeEditorProps {
   problemId: string;
@@ -11,7 +12,22 @@ interface CodeEditorProps {
     executionTime?: number;
     memoryUsed?: number;
     error?: string;
+    score?: number;
   }) => void;
+}
+
+interface TestCase {
+  input: string;
+  expected: string;
+}
+
+interface ScoreData {
+  score: number;
+  clickedHint: boolean;
+  clickedSolution: boolean;
+  wrongAttempts: number;
+  passed: boolean;
+  exists: boolean;
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
@@ -35,11 +51,114 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
   const [isCheckingHealth, setIsCheckingHealth] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
+  const [testMode, setTestMode] = useState<'manual' | 'sample'>('manual');
+  const [sampleCases, setSampleCases] = useState<TestCase[]>([]);
+  const [testResults, setTestResults] = useState<Array<{
+    input: string;
+    expected: string;
+    actual: string;
+    passed: boolean;
+    error?: string;
+  }>>([]);
+  const [isTestingAll, setIsTestingAll] = useState(false);
+
+  // Score tracking state
+  const [scoreData, setScoreData] = useState<ScoreData>({
+    score: 0,
+    clickedHint: false,
+    clickedSolution: false,
+    wrongAttempts: 0,
+    passed: false,
+    exists: false
+  });
+  const [showScoreTracker, setShowScoreTracker] = useState(true);
+  const [isLoadingScore, setIsLoadingScore] = useState(false);
 
   useEffect(() => {
     loadTemplate();
     checkCompilerHealth();
+    fetchSampleCases();
+    fetchScoreData();
   }, [language, problemId]);
+
+  const fetchScoreData = async () => {
+    setIsLoadingScore(true);
+    try {
+      const response = await axiosInstance.get(`/api/scores/problem/${problemId}`);
+      setScoreData(response.data);
+    } catch (error) {
+      console.error('Failed to fetch score data:', error);
+    } finally {
+      setIsLoadingScore(false);
+    }
+  };
+
+  const handleHintClick = async () => {
+    try {
+      const response = await axiosInstance.post(`/api/scores/hint/${problemId}`, {
+        language
+      });
+      
+      // Update score data
+      setScoreData(prev => ({
+        ...prev,
+        clickedHint: true,
+        score: response.data.score
+      }));
+
+      // Show hint penalty message
+      setSubmitMessage(`💡 Hint used! -30 points penalty applied. Current score: ${response.data.score}/100`);
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setSubmitMessage('');
+      }, 3000);
+
+    } catch (error) {
+      console.error('Failed to record hint usage:', error);
+    }
+  };
+
+  const handleSolutionClick = async () => {
+    try {
+      const response = await axiosInstance.post(`/api/scores/solution/${problemId}`, {
+        language
+      });
+      
+      // Update score data
+      setScoreData(prev => ({
+        ...prev,
+        clickedSolution: true,
+        score: 0
+      }));
+
+      // Show solution penalty message
+      setSubmitMessage(`🔓 Solution viewed! Score reset to 0.`);
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setSubmitMessage('');
+      }, 3000);
+
+    } catch (error) {
+      console.error('Failed to record solution viewing:', error);
+    }
+  };
+
+  const fetchSampleCases = async () => {
+    try {
+      const response = await axiosInstance.get(`/api/problems/${problemId}`);
+      if (response.data.examples) {
+        const cases = response.data.examples.map((example: any) => ({
+          input: example.input,
+          expected: example.output
+        }));
+        setSampleCases(cases);
+      }
+    } catch (error) {
+      console.error('Failed to fetch sample cases:', error);
+    }
+  };
 
   const loadTemplate = async () => {
     setIsLoadingTemplate(true);
@@ -117,18 +236,13 @@ if __name__ == "__main__":
     await checkCompilerHealth();
   };
 
-  const runCode = async () => {
+  const runCode = async (testInput?: string) => {
     if (!code.trim()) {
       setError('Please write some code before running');
-      return;
+      return null;
     }
 
-    setIsRunning(true);
-    setError('');
-    setOutput('');
-    setExecutionTime(null);
-    setMemoryUsed(null);
-    setExecutionMethod(null);
+    const inputToUse = testInput !== undefined ? testInput : input.trim();
 
     try {
       console.log('🏃 Running code (test only - no submission tracking)');
@@ -136,21 +250,103 @@ if __name__ == "__main__":
       const response = await axiosInstance.post('/api/compiler/execute', {
         code,
         language,
-        input: input.trim()
+        input: inputToUse
       });
 
       if (response.data.success) {
-        setOutput(response.data.output);
-        setExecutionTime(response.data.executionTime);
-        setMemoryUsed(response.data.memoryUsed);
-        setExecutionMethod(response.data.executionMethod);
+        return {
+          output: response.data.output,
+          executionTime: response.data.executionTime,
+          memoryUsed: response.data.memoryUsed,
+          executionMethod: response.data.executionMethod,
+          error: null
+        };
       } else {
-        setError(response.data.error || 'Code execution failed');
+        return {
+          output: '',
+          executionTime: 0,
+          memoryUsed: 0,
+          executionMethod: response.data.executionMethod,
+          error: response.data.error || 'Code execution failed'
+        };
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to execute code');
-    } finally {
-      setIsRunning(false);
+      return {
+        output: '',
+        executionTime: 0,
+        memoryUsed: 0,
+        executionMethod: null,
+        error: err.response?.data?.error || 'Failed to execute code'
+      };
+    }
+  };
+
+  const handleRunCode = async () => {
+    setIsRunning(true);
+    setError('');
+    setOutput('');
+    setExecutionTime(null);
+    setMemoryUsed(null);
+    setExecutionMethod(null);
+    setTestResults([]);
+
+    const result = await runCode();
+    
+    if (result) {
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setOutput(result.output);
+        setExecutionTime(result.executionTime);
+        setMemoryUsed(result.memoryUsed);
+        setExecutionMethod(result.executionMethod);
+      }
+    }
+
+    setIsRunning(false);
+  };
+
+  const runAllSampleCases = async () => {
+    if (!code.trim()) {
+      setError('Please write some code before testing');
+      return;
+    }
+
+    setIsTestingAll(true);
+    setError('');
+    setTestResults([]);
+
+    const results = [];
+
+    for (const testCase of sampleCases) {
+      const result = await runCode(testCase.input);
+      
+      if (result) {
+        const actualOutput = result.output.trim();
+        const expectedOutput = testCase.expected.trim();
+        const passed = actualOutput === expectedOutput;
+
+        results.push({
+          input: testCase.input,
+          expected: expectedOutput,
+          actual: actualOutput,
+          passed,
+          error: result.error
+        });
+      }
+    }
+
+    setTestResults(results);
+    setIsTestingAll(false);
+
+    // Show summary
+    const passedCount = results.filter(r => r.passed).length;
+    const totalCount = results.length;
+    
+    if (passedCount === totalCount) {
+      setOutput(`✅ All ${totalCount} test cases passed!`);
+    } else {
+      setOutput(`❌ ${passedCount}/${totalCount} test cases passed`);
     }
   };
 
@@ -168,10 +364,24 @@ if __name__ == "__main__":
     try {
       console.log('📤 Submitting solution (this will be tracked)');
 
+      // First run the code if not already run
       if (!output && !error) {
-        await runCode();
+        await handleRunCode();
       }
 
+      // Determine if solution passed based on output
+      const passed = output && 
+                    !output.toLowerCase().includes('error') && 
+                    !output.toLowerCase().includes('exception') &&
+                    !output.toLowerCase().includes('failed') &&
+                    !output.toLowerCase().includes('traceback') &&
+                    (output.toLowerCase().includes('passed') || 
+                     output.toLowerCase().includes('success') ||
+                     output.includes('✅') ||
+                     output.includes('✓') ||
+                     output.toLowerCase().includes('correct'));
+
+      // Submit to submissions endpoint
       const submitResponse = await axiosInstance.post('/api/submissions', {
         problemId,
         code,
@@ -182,9 +392,26 @@ if __name__ == "__main__":
         timeSpent: 5
       });
 
+      // Update score
+      const scoreResponse = await axiosInstance.post(`/api/scores/submission/${problemId}`, {
+        passed,
+        language,
+        submissionId: submitResponse.data.id,
+        timeSpent: 5
+      });
+
+      // Update local score data
+      setScoreData(prev => ({
+        ...prev,
+        score: scoreResponse.data.score,
+        wrongAttempts: scoreResponse.data.wrongAttempts,
+        passed: scoreResponse.data.passed,
+        exists: true
+      }));
+
       if (submitResponse.data.id) {
         setSubmitSuccess(true);
-        setSubmitMessage(submitResponse.data.message || 'Solution submitted successfully! 🎉');
+        setSubmitMessage(scoreResponse.data.message || 'Solution submitted successfully! 🎉');
         
         onSubmit({
           code,
@@ -192,13 +419,14 @@ if __name__ == "__main__":
           output: output || '',
           executionTime: executionTime || undefined,
           memoryUsed: memoryUsed || undefined,
-          error: error || undefined
+          error: error || undefined,
+          score: scoreResponse.data.score
         });
 
         setTimeout(() => {
           setSubmitSuccess(false);
           setSubmitMessage('');
-        }, 3000);
+        }, 5000);
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to submit solution');
@@ -216,6 +444,7 @@ if __name__ == "__main__":
     setExecutionMethod(null);
     setSubmitSuccess(false);
     setSubmitMessage('');
+    setTestResults([]);
   };
 
   const getSecurityIcon = () => {
@@ -309,14 +538,73 @@ if __name__ == "__main__":
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Hint Button */}
           <button
-            onClick={runCode}
-            disabled={isRunning || isSubmitting}
-            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+            onClick={handleHintClick}
+            disabled={scoreData.clickedHint || scoreData.clickedSolution}
+            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+            title={scoreData.clickedHint ? "Hint already used" : "Get a hint (-30 points)"}
           >
-            {isRunning ? <Square className="w-3 h-3 sm:w-4 sm:h-4" /> : <Play className="w-3 h-3 sm:w-4 sm:h-4" />}
-            {isRunning ? 'Running...' : 'Run'}
+            <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Hint</span>
           </button>
+
+          {/* Solution Button */}
+          <button
+            onClick={handleSolutionClick}
+            disabled={scoreData.clickedSolution}
+            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+            title={scoreData.clickedSolution ? "Solution already viewed" : "View solution (Score = 0)"}
+          >
+            <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Solution</span>
+          </button>
+
+          {/* Test Mode Toggle */}
+          <div className="flex items-center gap-1 bg-[var(--color-bg-secondary)] rounded-lg p-1">
+            <button
+              onClick={() => setTestMode('manual')}
+              className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                testMode === 'manual' 
+                  ? 'bg-indigo-600 text-white' 
+                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+              }`}
+            >
+              <User className="w-3 h-3" />
+              <span className="hidden sm:inline">Manual</span>
+            </button>
+            <button
+              onClick={() => setTestMode('sample')}
+              className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                testMode === 'sample' 
+                  ? 'bg-indigo-600 text-white' 
+                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+              }`}
+            >
+              <TestTube className="w-3 h-3" />
+              <span className="hidden sm:inline">Sample</span>
+            </button>
+          </div>
+
+          {testMode === 'manual' ? (
+            <button
+              onClick={handleRunCode}
+              disabled={isRunning || isSubmitting}
+              className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+            >
+              {isRunning ? <Square className="w-3 h-3 sm:w-4 sm:h-4" /> : <Play className="w-3 h-3 sm:w-4 sm:h-4" />}
+              {isRunning ? 'Running...' : 'Run'}
+            </button>
+          ) : (
+            <button
+              onClick={runAllSampleCases}
+              disabled={isTestingAll || isSubmitting || sampleCases.length === 0}
+              className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+            >
+              {isTestingAll ? <Square className="w-3 h-3 sm:w-4 sm:h-4" /> : <TestTube className="w-3 h-3 sm:w-4 sm:h-4" />}
+              {isTestingAll ? 'Testing...' : `Test (${sampleCases.length})`}
+            </button>
+          )}
           
           <button
             onClick={submitCode}
@@ -373,52 +661,177 @@ if __name__ == "__main__":
         </div>
 
         <div className="w-full lg:w-1/3 border-t lg:border-t-0 lg:border-l border-[var(--color-border)] flex flex-col">
-          <div className="flex-1 flex flex-col">
-            <div className="p-3 sm:p-4 border-b border-[var(--color-border)]">
-              <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Input</h3>
-              <p className="text-xs text-[var(--color-text-secondary)]">
-                Enter test input for your program
-              </p>
-            </div>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className="flex-1 p-3 sm:p-4 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] font-mono text-xs sm:text-sm resize-none focus:outline-none min-h-[100px] lg:min-h-0"
-              placeholder="Enter input for your program..."
-            />
-          </div>
-
-          <div className="flex-1 flex flex-col border-t border-[var(--color-border)]">
-            <div className="p-3 sm:p-4 border-b border-[var(--color-border)]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <h3 className="text-sm font-medium text-[var(--color-text-primary)]">Output</h3>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-[var(--color-text-secondary)]">
-                  {executionTime !== null && (
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-2 h-2 sm:w-3 sm:h-3" />
-                      <span className="text-xs">{executionTime}ms</span>
-                    </div>
-                  )}
-                  {memoryUsed !== null && (
-                    <div className="flex items-center gap-1">
-                      <MemoryStick className="w-2 h-2 sm:w-3 sm:h-3" />
-                      <span className="text-xs">{memoryUsed}KB</span>
-                    </div>
-                  )}
-                  {getExecutionMethodBadge()}
-                </div>
+          {/* Score Tracker */}
+          {showScoreTracker && (
+            <div className="border-b border-[var(--color-border)]">
+              <div className="p-3 sm:p-4 flex items-center justify-between">
+                <h3 className="text-sm font-medium text-[var(--color-text-primary)]">Score Tracker</h3>
+                <button
+                  onClick={() => setShowScoreTracker(!showScoreTracker)}
+                  className="p-1 hover:bg-[var(--color-border)] rounded transition-colors"
+                >
+                  <ChevronUp className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+                {isLoadingScore ? (
+                  <div className="text-center text-[var(--color-text-secondary)] py-4">
+                    Loading score...
+                  </div>
+                ) : (
+                  <ScoreTracker
+                    score={scoreData.score}
+                    clickedHint={scoreData.clickedHint}
+                    clickedSolution={scoreData.clickedSolution}
+                    wrongAttempts={scoreData.wrongAttempts}
+                    passed={scoreData.passed}
+                    compact={true}
+                  />
+                )}
               </div>
             </div>
-            <div className="flex-1 p-3 sm:p-4 bg-[var(--color-bg-secondary)] min-h-[100px] lg:min-h-0">
-              {error ? (
-                <div className="text-red-500 font-mono text-xs sm:text-sm whitespace-pre-wrap">{error}</div>
-              ) : output ? (
-                <div className="text-[var(--color-text-primary)] font-mono text-xs sm:text-sm whitespace-pre-wrap">{output}</div>
-              ) : (
-                <div className="text-[var(--color-text-secondary)] text-xs sm:text-sm">Run your code to see output here...</div>
-              )}
+          )}
+
+          {!showScoreTracker && (
+            <div className="border-b border-[var(--color-border)]">
+              <div className="p-3 sm:p-4 flex items-center justify-between">
+                <h3 className="text-sm font-medium text-[var(--color-text-primary)]">Score: {scoreData.score}/100</h3>
+                <button
+                  onClick={() => setShowScoreTracker(!showScoreTracker)}
+                  className="p-1 hover:bg-[var(--color-border)] rounded transition-colors"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
+
+          {testMode === 'manual' ? (
+            <>
+              <div className="flex-1 flex flex-col">
+                <div className="p-3 sm:p-4 border-b border-[var(--color-border)]">
+                  <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Input</h3>
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    Enter test input for your program
+                  </p>
+                </div>
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  className="flex-1 p-3 sm:p-4 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] font-mono text-xs sm:text-sm resize-none focus:outline-none min-h-[100px] lg:min-h-0"
+                  placeholder="Enter input for your program..."
+                />
+              </div>
+
+              <div className="flex-1 flex flex-col border-t border-[var(--color-border)]">
+                <div className="p-3 sm:p-4 border-b border-[var(--color-border)]">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h3 className="text-sm font-medium text-[var(--color-text-primary)]">Output</h3>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-[var(--color-text-secondary)]">
+                      {executionTime !== null && (
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-2 h-2 sm:w-3 sm:h-3" />
+                          <span className="text-xs">{executionTime}ms</span>
+                        </div>
+                      )}
+                      {memoryUsed !== null && (
+                        <div className="flex items-center gap-1">
+                          <MemoryStick className="w-2 h-2 sm:w-3 sm:h-3" />
+                          <span className="text-xs">{memoryUsed}KB</span>
+                        </div>
+                      )}
+                      {getExecutionMethodBadge()}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 p-3 sm:p-4 bg-[var(--color-bg-secondary)] min-h-[100px] lg:min-h-0">
+                  {error ? (
+                    <div className="text-red-500 font-mono text-xs sm:text-sm whitespace-pre-wrap">{error}</div>
+                  ) : output ? (
+                    <div className="text-[var(--color-text-primary)] font-mono text-xs sm:text-sm whitespace-pre-wrap">{output}</div>
+                  ) : (
+                    <div className="text-[var(--color-text-secondary)] text-xs sm:text-sm">Run your code to see output here...</div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col">
+              <div className="p-3 sm:p-4 border-b border-[var(--color-border)]">
+                <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">
+                  Sample Test Cases ({sampleCases.length})
+                </h3>
+                <p className="text-xs text-[var(--color-text-secondary)]">
+                  Test your code against sample inputs
+                </p>
+              </div>
+              
+              <div className="flex-1 p-3 sm:p-4 bg-[var(--color-bg-secondary)] overflow-y-auto">
+                {testResults.length > 0 ? (
+                  <div className="space-y-3">
+                    {testResults.map((result, index) => (
+                      <div key={index} className={`p-3 rounded-lg border-l-4 ${
+                        result.passed ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                      }`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          {result.passed ? (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <AlertTriangle className="w-4 h-4 text-red-500" />
+                          )}
+                          <span className="text-sm font-medium">Test Case {index + 1}</span>
+                        </div>
+                        
+                        <div className="text-xs space-y-1">
+                          <div>
+                            <span className="font-medium">Input:</span>
+                            <code className="ml-2 bg-gray-100 dark:bg-gray-800 px-1 rounded">{result.input}</code>
+                          </div>
+                          <div>
+                            <span className="font-medium">Expected:</span>
+                            <code className="ml-2 bg-gray-100 dark:bg-gray-800 px-1 rounded">{result.expected}</code>
+                          </div>
+                          <div>
+                            <span className="font-medium">Actual:</span>
+                            <code className="ml-2 bg-gray-100 dark:bg-gray-800 px-1 rounded">{result.actual}</code>
+                          </div>
+                          {result.error && (
+                            <div>
+                              <span className="font-medium text-red-500">Error:</span>
+                              <code className="ml-2 bg-red-100 dark:bg-red-900 px-1 rounded text-red-700 dark:text-red-300">{result.error}</code>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : sampleCases.length > 0 ? (
+                  <div className="space-y-3">
+                    {sampleCases.map((testCase, index) => (
+                      <div key={index} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+                        <div className="text-sm font-medium mb-2">Test Case {index + 1}</div>
+                        <div className="text-xs space-y-1">
+                          <div>
+                            <span className="font-medium">Input:</span>
+                            <code className="ml-2 bg-gray-100 dark:bg-gray-700 px-1 rounded">{testCase.input}</code>
+                          </div>
+                          <div>
+                            <span className="font-medium">Expected:</span>
+                            <code className="ml-2 bg-gray-100 dark:bg-gray-700 px-1 rounded">{testCase.expected}</code>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-[var(--color-text-secondary)] py-8">
+                    <TestTube className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No sample test cases available</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

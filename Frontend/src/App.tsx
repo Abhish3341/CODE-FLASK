@@ -12,6 +12,7 @@ import About from "./pages/About";
 import Problems from "./pages/Problems";
 import ProblemView from "./pages/ProblemView";
 import Submissions from "./pages/Submissions";
+import ScoreBoard from "./pages/ScoreBoard";
 import Learn from "./pages/Learn";
 import Settings from "./pages/Settings";
 import PrivateRoute from "./components/PrivateRoute";
@@ -51,6 +52,7 @@ function App() {
                   <Route path="problems" element={<Problems />} />
                   <Route path="problems/:id/solve" element={<ProblemView />} />
                   <Route path="submissions" element={<Submissions />} />
+                  <Route path="scoreboard" element={<ScoreBoard />} />
                   <Route path="learn" element={<Learn />} />
                   <Route path="settings" element={<Settings />} />
                 </Route>

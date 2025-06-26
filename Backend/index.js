@@ -23,6 +23,7 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/problems', require('./routes/problems'));
 app.use('/api/submissions', require('./routes/submissions'));
 app.use('/api/compiler', require('./routes/compiler'));
+app.use('/api/scores', require('./routes/scores')); // Add scores route
 
 // 404 handler - Changed to app.use to handle all HTTP methods
 app.use('*', (req, res) => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { Code2, Layout, Users, BookOpen, Settings as SettingsIcon, LogOut, Sun, Moon, Menu, X } from 'lucide-react';
+import { Code2, Layout, Users, BookOpen, Settings as SettingsIcon, LogOut, Sun, Moon, Menu, X, Trophy } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useState } from 'react';
@@ -22,33 +22,21 @@ const AppLayout = () => {
   const getNavItemClasses = (path: string, exact = false) => {
     const active = exact ? location.pathname === path : isActive(path);
     
-    if (isDarkMode) {
-      return `p-3 rounded-xl transition-all duration-200 ${
-        active 
-          ? 'bg-indigo-600 shadow-lg' 
-          : 'hover:bg-indigo-700/50 hover:shadow-md'
-      }`;
-    } else {
-      return `p-3 rounded-xl transition-all duration-200 ${
-        active 
-          ? 'bg-indigo-600 shadow-lg' 
-          : 'hover:bg-indigo-100 hover:shadow-md'
-      }`;
-    }
+    return `p-3 rounded-xl transition-all duration-200 group ${
+      active 
+        ? 'bg-indigo-600 shadow-lg' 
+        : 'hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:shadow-md'
+    }`;
   };
 
   const getIconClasses = (path: string, exact = false) => {
     const active = exact ? location.pathname === path : isActive(path);
     
-    if (isDarkMode) {
-      return `w-6 h-6 transition-colors duration-200 ${
-        active ? 'text-white' : 'text-gray-300 group-hover:text-white'
-      }`;
-    } else {
-      return `w-6 h-6 transition-colors duration-200 ${
-        active ? 'text-white' : 'text-indigo-600 group-hover:text-indigo-700'
-      }`;
-    }
+    return `w-6 h-6 transition-colors duration-200 ${
+      active 
+        ? 'text-white' 
+        : 'text-indigo-600 dark:text-gray-300 group-hover:text-indigo-700 dark:group-hover:text-white'
+    }`;
   };
 
   const getMobileNavItemClasses = (path: string, exact = false) => {
@@ -70,6 +58,7 @@ const AppLayout = () => {
     { path: '/app', icon: Layout, label: 'Dashboard', exact: true },
     { path: '/app/problems', icon: Code2, label: 'Problems' },
     { path: '/app/submissions', icon: Users, label: 'Submissions' },
+    { path: '/app/scoreboard', icon: Trophy, label: 'Scoreboard' },
     { path: '/app/learn', icon: BookOpen, label: 'Learn' },
     { path: '/app/settings', icon: SettingsIcon, label: 'Settings' },
   ];
@@ -95,7 +84,7 @@ const AppLayout = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={`${getNavItemClasses(item.path, item.exact)} tooltip-right group`}
+              className={`${getNavItemClasses(item.path, item.exact)} tooltip-right`}
               data-tooltip={item.label}
             >
               <item.icon className={getIconClasses(item.path, item.exact)} />
@@ -107,11 +96,7 @@ const AppLayout = () => {
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className={`p-3 rounded-xl transition-all duration-200 tooltip-right group ${
-              isDarkMode 
-                ? 'hover:bg-indigo-700/50 hover:shadow-md' 
-                : 'hover:bg-indigo-100 hover:shadow-md'
-            }`}
+            className="p-3 rounded-xl transition-all duration-200 tooltip-right group hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:shadow-md"
             data-tooltip="Toggle Theme"
           >
             {isDarkMode ? 
@@ -124,18 +109,10 @@ const AppLayout = () => {
           <button 
             onClick={handleLogout}
             disabled={loading}
-            className={`p-3 rounded-xl transition-all duration-200 tooltip-right group disabled:opacity-50 disabled:cursor-not-allowed ${
-              isDarkMode 
-                ? 'hover:bg-red-600/80 hover:shadow-md' 
-                : 'hover:bg-red-100 hover:shadow-md'
-            }`}
+            className="p-3 rounded-xl transition-all duration-200 tooltip-right group disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-100 dark:hover:bg-red-900/30 hover:shadow-md"
             data-tooltip="Logout"
           >
-            <LogOut className={`w-6 h-6 transition-colors duration-200 ${
-              isDarkMode 
-                ? 'text-gray-300 group-hover:text-white' 
-                : 'text-red-600 group-hover:text-red-700'
-            }`} />
+            <LogOut className="w-6 h-6 text-red-600 dark:text-gray-300 group-hover:text-red-700 dark:group-hover:text-white transition-colors duration-200" />
           </button>
         </div>
       </div>
