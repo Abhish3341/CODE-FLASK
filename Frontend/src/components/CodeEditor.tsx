@@ -74,12 +74,66 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
   const [showScoreTracker, setShowScoreTracker] = useState(true);
   const [isLoadingScore, setIsLoadingScore] = useState(false);
 
+  // Time tracking state
+  const [problemStartTime, setProblemStartTime] = useState<Date | null>(null);
+  const [hasStartedTracking, setHasStartedTracking] = useState(false);
+
   useEffect(() => {
     loadTemplate();
     checkCompilerHealth();
     fetchSampleCases();
     fetchScoreData();
+    startTimeTracking();
   }, [language, problemId]);
+
+  // Start time tracking when problem is opened
+  const startTimeTracking = async () => {
+    if (!hasStartedTracking && problemId) {
+      try {
+        // Get problem details for tracking
+        const problemResponse = await axiosInstance.get(`/api/problems/${problemId}`);
+        const problemTitle = problemResponse.data.title;
+
+        // Start time tracking
+        await axiosInstance.post('/api/time/problem/start', {
+          problemId,
+          problemTitle,
+          language
+        });
+
+        setProblemStartTime(new Date());
+        setHasStartedTracking(true);
+        console.log('⏱️ Started time tracking for problem');
+      } catch (error) {
+        console.error('Failed to start time tracking:', error);
+      }
+    }
+  };
+
+  // Record problem run for time tracking
+  const recordProblemRun = async () => {
+    try {
+      await axiosInstance.post('/api/time/problem/run', {
+        problemId
+      });
+      console.log('🏃 Recorded problem run');
+    } catch (error) {
+      console.error('Failed to record problem run:', error);
+    }
+  };
+
+  // Record problem submission for time tracking
+  const recordProblemSubmission = async (isCorrect: boolean) => {
+    try {
+      await axiosInstance.post('/api/time/problem/submit', {
+        problemId,
+        isCorrect
+      });
+      console.log('📤 Recorded problem submission, correct:', isCorrect);
+    } catch (error) {
+      console.error('Failed to record problem submission:', error);
+    }
+  };
 
   const fetchScoreData = async () => {
     setIsLoadingScore(true);
@@ -247,6 +301,9 @@ if __name__ == "__main__":
     try {
       console.log('🏃 Running code (test only - no submission tracking)');
       
+      // Record the run for time tracking
+      await recordProblemRun();
+      
       const response = await axiosInstance.post('/api/compiler/execute', {
         code,
         language,
@@ -381,6 +438,10 @@ if __name__ == "__main__":
                      output.includes('✓') ||
                      output.toLowerCase().includes('correct'));
 
+      // Calculate time spent (in minutes)
+      const timeSpent = problemStartTime ? 
+        Math.round((new Date().getTime() - problemStartTime.getTime()) / (1000 * 60)) : 5;
+
       // Submit to submissions endpoint
       const submitResponse = await axiosInstance.post('/api/submissions', {
         problemId,
@@ -389,15 +450,18 @@ if __name__ == "__main__":
         output: output || '',
         executionTime: executionTime || undefined,
         memoryUsed: memoryUsed || undefined,
-        timeSpent: 5
+        timeSpent
       });
+
+      // Record submission for time tracking
+      await recordProblemSubmission(passed);
 
       // Update score
       const scoreResponse = await axiosInstance.post(`/api/scores/submission/${problemId}`, {
         passed,
         language,
         submissionId: submitResponse.data.id,
-        timeSpent: 5
+        timeSpent
       });
 
       // Update local score data

@@ -5,8 +5,9 @@ const UserStats = require('../models/UserStats');
 const Activity = require('../models/Activity');
 const Problem = require('../models/Problems');
 const ActivityService = require('../services/ActivityService');
+const TimeTrackingService = require('../services/TimeTrackingService');
 
-// Get user dashboard data with enhanced progress overview
+// Get user dashboard data with enhanced progress overview and time tracking
 router.get('/', auth, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -65,7 +66,10 @@ router.get('/', auth, async (req, res) => {
     .select('title difficulty category') // Only select essential fields
     .lean();
 
-    // Calculate additional stats
+    // Get time tracking statistics
+    const timeStats = await TimeTrackingService.getDashboardTimeStats(userId);
+
+    // Calculate additional stats with time data
     const stats = {
       rank: userStats.rank || 0,
       problemsSolved: userStats.problemsSolved,
@@ -73,17 +77,24 @@ router.get('/', auth, async (req, res) => {
       totalSubmissions: userStats.totalSubmissions,
       timeSpent: Math.round(userStats.timeSpent / 60), // Convert to hours
       successRate: userStats.successRate,
-      averageTime: userStats.averageTime,
+      averageTime: timeStats.averageTimePerSolved, // Use time tracking data
       // Difficulty breakdown
       easyProblems: userStats.easyProblems,
       mediumProblems: userStats.mediumProblems,
       hardProblems: userStats.hardProblems,
       // Language breakdown
-      languageStats: userStats.languageStats
+      languageStats: userStats.languageStats,
+      // Time tracking stats
+      averageSessionTime: timeStats.averageSessionTime,
+      thisWeekTime: timeStats.thisWeekTime,
+      totalSessionTime: timeStats.totalSessionTime,
+      activeDays: timeStats.activeDays,
+      fastestSolve: timeStats.fastestSolve,
+      slowestSolve: timeStats.slowestSolve
     };
 
-    // Get progress overview data
-    const progressOverview = await getProgressOverview(userId);
+    // Get progress overview data with enhanced time tracking
+    const progressOverview = await getProgressOverview(userId, timeStats);
 
     // Format recommended problems with status information (clean format)
     const formattedRecommendations = recommendedProblems.map(problem => {
@@ -114,7 +125,8 @@ router.get('/', auth, async (req, res) => {
       stats,
       progressOverview,
       recommendedProblems: formattedRecommendations,
-      userLevel: recommendedDifficulty
+      userLevel: recommendedDifficulty,
+      timeStats // Include detailed time stats
     });
 
   } catch (error) {
@@ -123,8 +135,8 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// Helper function to get progress overview data
-async function getProgressOverview(userId) {
+// Helper function to get progress overview data with enhanced time tracking
+async function getProgressOverview(userId, timeStats) {
   try {
     // Get all user activities
     const activities = await Activity.find({ userId }).sort({ createdAt: -1 });
@@ -132,8 +144,8 @@ async function getProgressOverview(userId) {
     // Calculate current streak
     const currentStreak = calculateCurrentStreak(activities);
     
-    // Calculate this week's time
-    const thisWeekTime = calculateThisWeekTime(activities);
+    // Use time tracking data for more accurate time calculations
+    const thisWeekTime = timeStats.thisWeekTime || calculateThisWeekTime(activities);
     
     // Get difficulty completion rates
     const difficultyRates = await calculateDifficultyRates(userId);
@@ -154,8 +166,13 @@ async function getProgressOverview(userId) {
       languageDistribution,
       weeklyActivity,
       monthlyProgress,
-      totalActiveDays: calculateTotalActiveDays(activities),
-      averageSessionTime: calculateAverageSessionTime(activities)
+      totalActiveDays: timeStats.activeDays || calculateTotalActiveDays(activities),
+      averageSessionTime: timeStats.averageSessionTime || calculateAverageSessionTime(activities),
+      // Enhanced time metrics
+      averageTimePerProblem: timeStats.averageTimePerProblem || 0,
+      fastestSolve: timeStats.fastestSolve || 0,
+      slowestSolve: timeStats.slowestSolve || 0,
+      totalSessionTime: timeStats.totalSessionTime || 0
     };
   } catch (error) {
     console.error('Error calculating progress overview:', error);
@@ -167,7 +184,11 @@ async function getProgressOverview(userId) {
       weeklyActivity: [],
       monthlyProgress: { solved: 0, attempted: 0 },
       totalActiveDays: 0,
-      averageSessionTime: 0
+      averageSessionTime: 0,
+      averageTimePerProblem: 0,
+      fastestSolve: 0,
+      slowestSolve: 0,
+      totalSessionTime: 0
     };
   }
 }
@@ -329,7 +350,7 @@ function calculateAverageSessionTime(activities) {
   return activeDays > 0 ? Math.round(totalTime / activeDays) : 0;
 }
 
-// Get detailed user statistics
+// Get detailed user statistics with time tracking
 router.get('/stats/detailed', auth, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -359,9 +380,13 @@ router.get('/stats/detailed', auth, async (req, res) => {
       activityByDate[date][activity.type]++;
     });
 
+    // Get time tracking statistics
+    const timeStats = await TimeTrackingService.getDashboardTimeStats(userId);
+
     res.json({
       userStats,
       activityTimeline: activityByDate,
+      timeStats,
       totalUsers: await UserStats.countDocuments(),
       userRankPercentile: userStats.rank > 0 ? 
         Math.round((1 - (userStats.rank - 1) / await UserStats.countDocuments()) * 100) : 0

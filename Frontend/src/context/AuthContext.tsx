@@ -2,6 +2,7 @@ import { createContext, useContext, useState, ReactNode, useEffect } from "react
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import LoadingSkeleton from "../components/LoadingSkeleton";
+import axiosInstance from "../utils/axiosConfig";
 
 interface User {
   id: string;
@@ -51,6 +52,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             firstname: decoded.firstname,
             lastname: decoded.lastname
           });
+          
+          // Start session tracking for authenticated users
+          startSessionTracking(decoded.id);
         }
       } catch (error) {
         console.error('Token decode error:', error);
@@ -60,6 +64,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     setLoading(false);
   }, []);
+
+  // Session tracking functions
+  const startSessionTracking = async (userId: string) => {
+    try {
+      await axiosInstance.post('/api/time/session/start', {
+        sessionType: 'login'
+      });
+      console.log('📅 Session tracking started');
+      
+      // Set up periodic activity updates (every 5 minutes)
+      const activityInterval = setInterval(async () => {
+        try {
+          await axiosInstance.post('/api/time/session/activity');
+        } catch (error) {
+          console.error('Failed to update session activity:', error);
+        }
+      }, 5 * 60 * 1000); // 5 minutes
+
+      // Store interval ID for cleanup
+      window.sessionActivityInterval = activityInterval;
+    } catch (error) {
+      console.error('Failed to start session tracking:', error);
+    }
+  };
+
+  const endSessionTracking = async () => {
+    try {
+      await axiosInstance.post('/api/time/session/end');
+      console.log('📅 Session tracking ended');
+      
+      // Clear activity interval
+      if (window.sessionActivityInterval) {
+        clearInterval(window.sessionActivityInterval);
+        delete window.sessionActivityInterval;
+      }
+    } catch (error) {
+      console.error('Failed to end session tracking:', error);
+    }
+  };
 
   const login = async (userData: any) => {
     setLoading(true);
@@ -78,6 +121,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         authMethod: userData.authMethod || 'email',
         canEditEmail: userData.canEditEmail !== false // Default to true if not specified
       });
+      
+      // Start session tracking
+      await startSessionTracking(decoded.id);
+      
       navigate("/app");
     } catch (error) {
       console.error('Login error:', error);
@@ -89,10 +136,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     setLoading(true);
+    
+    // End session tracking
+    await endSessionTracking();
+    
     localStorage.removeItem('auth_token');
     setUser(null);
+    
     // Add a small delay to show loading state
     setTimeout(() => {
       navigate("/");
@@ -118,3 +170,10 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+// Extend Window interface for TypeScript
+declare global {
+  interface Window {
+    sessionActivityInterval?: NodeJS.Timeout;
+  }
+}
