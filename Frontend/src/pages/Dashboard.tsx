@@ -398,14 +398,21 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <Link to="/app/problems" className="card stats-card p-4 sm:p-6 cursor-pointer">
-            <Code className="w-6 h-6 sm:w-8 sm:h-8 text-[#4B96F8] mb-3 sm:mb-4 icon-transition" />
+          {/* Interactive Solved Tile - Replacing the basic solved tile */}
+          <Link 
+            to="/app/problems?status=solved" 
+            className="card stats-card p-4 sm:p-6 cursor-pointer group hover:shadow-xl transition-all duration-300"
+          >
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <Code className="w-6 h-6 sm:w-8 sm:h-8 text-[#4B96F8] icon-transition" />
+              <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-text-secondary)] group-hover:text-[#4B96F8] transition-colors" />
+            </div>
             <h3 className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] mb-1">Solved</h3>
             <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#4B96F8]">
               {stats.problemsSolved}/{stats.totalProblems}
             </p>
             <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mt-1">
-              Problems completed
+              View solved problems
             </p>
           </Link>
 
@@ -418,14 +425,18 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <div className="card stats-card p-4 sm:p-6">
-            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-[#A855F7] mb-3 sm:mb-4 icon-transition" />
-            <h3 className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] mb-1">Avg. Time</h3>
-            <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#A855F7]">{stats.averageTime}m</p>
+          {/* Scoreboard Tile - Replacing Avg. Time */}
+          <Link to="/app/scoreboard" className="card stats-card p-4 sm:p-6 cursor-pointer group hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-[#A855F7] icon-transition" />
+              <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-text-secondary)] group-hover:text-[#A855F7] transition-colors" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] mb-1">Scoreboard</h3>
+            <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#A855F7]">View</p>
             <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mt-1">
-              Per problem
+              Rankings & scores
             </p>
-          </div>
+          </Link>
         </div>
 
         {/* Progress Overview and Recommendations with responsive layout */}
