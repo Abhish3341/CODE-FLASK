@@ -20,6 +20,7 @@
     "intercom-client": "^6.2.0",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.344.0",
+    "openai": "^4.104.0",
     "prismjs": "^1.29.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -28,6 +29,7 @@
     "react-router-dom": "^6.30.0",
     "react-simple-code-editor": "^0.13.1",
     "socket.io-client": "^4.8.1",
+    
     "zustand": "^5.0.3"
   },
   "devDependencies": {

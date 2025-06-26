@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Square, RotateCcw, Settings, Clock, MemoryStick, AlertTriangle, CheckCircle, Shield, Zap, ChevronDown, ChevronUp, RefreshCw, TestTube, User, Lightbulb, Eye } from 'lucide-react';
+import { Play, Square, RotateCcw, Settings, Clock, MemoryStick, AlertTriangle, CheckCircle, Shield, Zap, ChevronDown, ChevronUp, RefreshCw, TestTube, User, Sparkles, Eye, X, MessageCircle, Lightbulb } from 'lucide-react';
 import axiosInstance from '../utils/axiosConfig';
 import ScoreTracker from './ScoreTracker';
 
@@ -28,6 +28,15 @@ interface ScoreData {
   wrongAttempts: number;
   passed: boolean;
   exists: boolean;
+}
+
+interface AIHintResponse {
+  hint: string;
+  problemTitle: string;
+  language: string;
+  timestamp: string;
+  isAIGenerated?: boolean;
+  fallbackHint?: string;
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
@@ -77,6 +86,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
   // Time tracking state
   const [problemStartTime, setProblemStartTime] = useState<Date | null>(null);
   const [hasStartedTracking, setHasStartedTracking] = useState(false);
+
+  // Enhanced AI Hint state (combining both AI and manual hint functionality)
+  const [aiHint, setAiHint] = useState<string>('');
+  const [isLoadingHint, setIsLoadingHint] = useState(false);
+  const [showAiHint, setShowAiHint] = useState(false);
+  const [hintError, setHintError] = useState<string>('');
+  const [hintType, setHintType] = useState<'ai' | 'manual' | null>(null);
 
   useEffect(() => {
     loadTemplate();
@@ -147,7 +163,54 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
     }
   };
 
-  const handleHintClick = async () => {
+  // Enhanced AI Hint functionality (combining AI and manual hints)
+  const handleAiHintClick = async () => {
+    setIsLoadingHint(true);
+    setHintError('');
+    setAiHint('');
+    setHintType(null);
+
+    try {
+      console.log('🤖 Requesting enhanced AI hint...');
+      
+      const response = await axiosInstance.post('/api/ai/hint', {
+        problemId,
+        code: code.trim(),
+        language
+      });
+
+      const hintData: AIHintResponse = response.data;
+      
+      // Set the hint (AI or manual fallback)
+      setAiHint(hintData.hint || hintData.fallbackHint || 'Unable to generate hint at this time.');
+      setHintType(hintData.isAIGenerated ? 'ai' : 'manual');
+      setShowAiHint(true);
+
+      // Record hint usage for scoring
+      await recordHintUsage();
+
+      console.log(`🤖 ${hintData.isAIGenerated ? 'AI' : 'Manual'} hint received successfully`);
+
+    } catch (error: any) {
+      console.error('Failed to get hint:', error);
+      
+      const errorData = error.response?.data;
+      if (errorData?.fallbackHint) {
+        setAiHint(errorData.fallbackHint);
+        setHintType('manual');
+        setShowAiHint(true);
+        // Still record hint usage even for fallback
+        await recordHintUsage();
+      } else {
+        setHintError(errorData?.error || 'Failed to get hint. Please try again.');
+      }
+    } finally {
+      setIsLoadingHint(false);
+    }
+  };
+
+  // Record hint usage for scoring
+  const recordHintUsage = async () => {
     try {
       const response = await axiosInstance.post(`/api/scores/hint/${problemId}`, {
         language
@@ -173,7 +236,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
     }
   };
 
-  const handleSolutionClick = async () => {
+  const handleSolutionClick = async () =>  {
     try {
       const response = await axiosInstance.post(`/api/scores/solution/${problemId}`, {
         language
@@ -197,6 +260,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ problemId, onSubmit }) => {
     } catch (error) {
       console.error('Failed to record solution viewing:', error);
     }
+  };
+
+  const closeAiHint = () => {
+    setShowAiHint(false);
+    setAiHint('');
+    setHintError('');
+    setHintType(null);
   };
 
   const fetchSampleCases = async () => {
@@ -509,32 +579,11 @@ if __name__ == "__main__":
     setSubmitSuccess(false);
     setSubmitMessage('');
     setTestResults([]);
-  };
-
-  const getSecurityIcon = () => {
-    if (!compilerHealth) return <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />;
-    
-    switch (compilerHealth.security) {
-      case 'high':
-        return <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />;
-      case 'medium':
-        return <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />;
-      default:
-        return <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />;
-    }
-  };
-
-  const getSecurityText = () => {
-    if (!compilerHealth) return 'Checking security...';
-    
-    switch (compilerHealth.security) {
-      case 'high':
-        return 'High Security (Docker Isolated)';
-      case 'medium':
-        return 'Medium Security (Native Execution)';
-      default:
-        return 'Low Security';
-    }
+    // Close AI hint when resetting
+    setShowAiHint(false);
+    setAiHint('');
+    setHintError('');
+    setHintType(null);
   };
 
   const getExecutionMethodBadge = () => {
@@ -583,34 +632,22 @@ if __name__ == "__main__":
             <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">Reset</span>
           </button>
-
-          <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-[var(--color-bg-secondary)] rounded-lg">
-            {getSecurityIcon()}
-            <span className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
-              <span className="hidden sm:inline">{getSecurityText()}</span>
-              <span className="sm:hidden">Security</span>
-            </span>
-            <button
-              onClick={refreshCompilerStatus}
-              disabled={isCheckingHealth}
-              className="ml-1 sm:ml-2 p-1 hover:bg-[var(--color-border)] rounded transition-colors"
-              title="Refresh Status"
-            >
-              <RefreshCw className={`w-2 h-2 sm:w-3 sm:h-3 ${isCheckingHealth ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Hint Button */}
+          {/* AI Hint Button (Enhanced with both AI and manual hint functionality) */}
           <button
-            onClick={handleHintClick}
-            disabled={scoreData.clickedHint || scoreData.clickedSolution}
-            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-            title={scoreData.clickedHint ? "Hint already used" : "Get a hint (-30 points)"}
+            onClick={handleAiHintClick}
+            disabled={isLoadingHint || scoreData.clickedSolution}
+            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+            title={scoreData.clickedSolution ? "Solution already viewed" : "Get AI-powered hint (-30 points)"}
           >
-            <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Hint</span>
+            {isLoadingHint ? (
+              <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+            ) : (
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+            )}
+            <span className="hidden sm:inline">{isLoadingHint ? 'Getting Hint...' : 'Hint'}</span>
           </button>
 
           {/* Solution Button */}
@@ -685,6 +722,64 @@ if __name__ == "__main__":
           <div className="flex items-center">
             <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-3" />
             <p className="text-green-700 dark:text-green-200 font-medium text-sm sm:text-base">{submitMessage}</p>
+          </div>
+        </div>
+      )}
+
+      {/* AI Hint Display */}
+      {showAiHint && aiHint && (
+        <div className={`${hintType === 'ai' ? 'bg-purple-50 dark:bg-purple-900/30 border-l-4 border-purple-500' : 'bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500'} p-3 sm:p-4`}>
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3 flex-1">
+              <div className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full flex-shrink-0 ${
+                hintType === 'ai' 
+                  ? 'bg-purple-100 dark:bg-purple-800' 
+                  : 'bg-yellow-100 dark:bg-yellow-800'
+              }`}>
+                {hintType === 'ai' 
+                  ? <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 dark:text-purple-300" />
+                  : <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-600 dark:text-yellow-300" />
+                }
+              </div>
+              <div className="flex-1">
+                <h3 className={`text-sm sm:text-base font-medium mb-2 flex items-center gap-2 ${
+                  hintType === 'ai'
+                    ? 'text-purple-800 dark:text-purple-200'
+                    : 'text-yellow-800 dark:text-yellow-200'
+                }`}>
+                  <MessageCircle className="w-4 h-4" />
+                  {hintType === 'ai' ? 'AI Hint' : 'Hint'}
+                </h3>
+                <p className={`text-sm sm:text-base leading-relaxed ${
+                  hintType === 'ai'
+                    ? 'text-purple-700 dark:text-purple-300'
+                    : 'text-yellow-700 dark:text-yellow-300'
+                }`}>
+                  {aiHint}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={closeAiHint}
+              className={`ml-3 p-1 rounded transition-colors ${
+                hintType === 'ai'
+                  ? 'hover:bg-purple-200 dark:hover:bg-purple-800 text-purple-600 dark:text-purple-300'
+                  : 'hover:bg-yellow-200 dark:hover:bg-yellow-800 text-yellow-600 dark:text-yellow-300'
+              }`}
+              title="Close hint"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Hint Error */}
+      {hintError && (
+        <div className="bg-red-100 dark:bg-red-900 border-l-4 border-red-500 p-3 sm:p-4">
+          <div className="flex items-center">
+            <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 mr-3" />
+            <p className="text-red-700 dark:text-red-200 font-medium text-sm sm:text-base">{hintError}</p>
           </div>
         </div>
       )}
