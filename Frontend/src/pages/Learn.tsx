@@ -24,6 +24,7 @@ import {
   Hash,
   Award
 } from 'lucide-react';
+import LearningContent from '../components/LearningContent';
 
 interface Course {
   id: number;
@@ -50,6 +51,11 @@ interface Course {
 const Learn = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'topics' | 'practice'>('overview');
+  const [learningMode, setLearningMode] = useState<{ active: boolean; courseId: number; courseTitle: string }>({
+    active: false,
+    courseId: 0,
+    courseTitle: ''
+  });
 
   const courses: Course[] = [
     {
@@ -67,7 +73,7 @@ const Learn = () => {
         'Brute Force Before Optimization',
         'Pattern Recognition (Two Pointers, Sliding Window)',
         'How to Break Problems Down',
-        'Reading Constraints and Examples Carefully',
+        'Reading Constraints Carefully',
         'Edge Cases and Test-Driven Thinking'
       ],
       keyConcepts: [
@@ -102,8 +108,7 @@ const Learn = () => {
         'Recursion & Backtracking',
         'Greedy Techniques',
         'Dynamic Programming (Intro level: 1D + 2D)',
-        'Stack-based Patterns (Monotonic Stack, Span Problems)',
-        'Bit Manipulation Basics'
+        'Stack-based Patterns (Monotonic Stack, Span Problems)'
       ],
       keyConcepts: [
         'Optimization often starts by avoiding repeated work (e.g., using prefix sums instead of recalculating sums)',
@@ -131,15 +136,15 @@ const Learn = () => {
       languages: ['Python', 'C', 'Java'],
       topics: [
         'Writing Your First Program (Hello World)',
-        'Input and Output (Reading from Console)',
-        'Data Types and Variables',
-        'Conditional Logic (if, else)',
+        'Variables and Data Types',
+        'Taking Input from the User',
+        'Conditionals (if, else)',
         'Loops (for, while)',
         'Functions',
         'Arrays / Lists',
         'Strings',
-        'Simple Math & Operators',
-        'Writing Your First Function-Based Problem (e.g., Reverse a String)'
+        'Operators',
+        'Simple Problems to Practice'
       ],
       keyConcepts: [
         'Code is just a set of instructions for the computer — it doesn\'t have to be complex to be useful',
@@ -158,6 +163,33 @@ const Learn = () => {
       takeaway: 'You don\'t need to master everything before solving problems. Learn just enough to write simple logic, and grow from there. Solving problems is how you actually learn.'
     }
   ];
+
+  const startLearning = (courseId: number, courseTitle: string) => {
+    setLearningMode({
+      active: true,
+      courseId,
+      courseTitle
+    });
+  };
+
+  const exitLearning = () => {
+    setLearningMode({
+      active: false,
+      courseId: 0,
+      courseTitle: ''
+    });
+  };
+
+  // If in learning mode, show the learning content
+  if (learningMode.active) {
+    return (
+      <LearningContent
+        courseId={learningMode.courseId}
+        courseTitle={learningMode.courseTitle}
+        onBack={exitLearning}
+      />
+    );
+  }
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -419,7 +451,13 @@ const Learn = () => {
 
         {/* Footer */}
         <div className="p-6 border-t border-[var(--color-border)]">
-          <button className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+          <button 
+            onClick={() => {
+              setSelectedCourse(null);
+              startLearning(course.id, course.title);
+            }}
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+          >
             <Play className="w-5 h-5" />
             Start Learning
           </button>
@@ -507,7 +545,10 @@ const Learn = () => {
                 <Eye className="w-5 h-5" />
                 View Details
               </button>
-              <button className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+              <button 
+                onClick={() => startLearning(featuredCourse.id, featuredCourse.title)}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              >
                 <Play className="w-5 h-5" />
                 Start Learning
               </button>
@@ -553,7 +594,10 @@ const Learn = () => {
                       <Eye className="w-4 h-4" />
                       Details
                     </button>
-                    <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm">
+                    <button 
+                      onClick={() => startLearning(course.id, course.title)}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                    >
                       <Play className="w-4 h-4" />
                       Start
                     </button>
