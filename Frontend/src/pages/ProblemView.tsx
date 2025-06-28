@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Users, CheckCircle, Code, BookOpen, Lightbulb, Code2, Menu, X } from 'lucide-react';
+import { ArrowLeft, Clock, Users, CheckCircle, Code, BookOpen, Lightbulb, Code2, Menu, X, Info, Shield, PanelRight, PanelLeft, Maximize, Minimize } from 'lucide-react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import axiosInstance from '../utils/axiosConfig';
 import CodeEditor from '../components/CodeEditor';
@@ -11,8 +11,6 @@ interface Problem {
   description: string;
   difficulty: string;
   category: string;
-  acceptance: number;
-  totalSubmissions: number;
   examples?: Array<{
     input: string;
     output: string;
@@ -28,8 +26,12 @@ const ProblemView = () => {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'description' | 'solutions' | 'discuss'>('description');
+  const [activeTab, setActiveTab] = useState<'description'>('description');
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
+  const [showSecurityInfo, setShowSecurityInfo] = useState(false);
+  const [executionMethod, setExecutionMethod] = useState<'docker' | 'native' | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [showRightPanel, setShowRightPanel] = useState(true);
 
   useEffect(() => {
     if (id) {
@@ -52,7 +54,10 @@ const ProblemView = () => {
 
   const handleSubmission = (result: any) => {
     console.log('Code submitted:', result);
-    // Handle successful submission (could show success message, update UI, etc.)
+    // Set execution method for security info
+    if (result.executionMethod) {
+      setExecutionMethod(result.executionMethod);
+    }
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -103,6 +108,18 @@ const ProblemView = () => {
         </p>
       );
     });
+  };
+
+  const toggleSecurityInfo = () => {
+    setShowSecurityInfo(!showSecurityInfo);
+  };
+
+  const toggleFullScreen = () => {
+    setIsFullScreen(!isFullScreen);
+  };
+
+  const toggleRightPanel = () => {
+    setShowRightPanel(!showRightPanel);
   };
 
   if (loading) {
@@ -177,13 +194,23 @@ const ProblemView = () => {
             <span className="text-sm sm:text-base">Back</span>
           </button>
           
-          <button
-            onClick={() => setIsMobilePanelOpen(!isMobilePanelOpen)}
-            className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm"
-          >
-            {isMobilePanelOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            {isMobilePanelOpen ? 'Close' : 'Code'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleSecurityInfo}
+              className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[var(--color-hover-light)] transition-colors"
+              title="Security Information"
+            >
+              <Info className="w-4 h-4 text-[var(--color-text-secondary)]" />
+            </button>
+            
+            <button
+              onClick={() => setIsMobilePanelOpen(!isMobilePanelOpen)}
+              className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm"
+            >
+              {isMobilePanelOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              {isMobilePanelOpen ? 'Close' : 'Code'}
+            </button>
+          </div>
         </div>
         
         <div className="mb-3">
@@ -200,12 +227,31 @@ const ProblemView = () => {
             <Code className="w-3 h-3" />
             {problem.category}
           </div>
-          <div className="flex items-center gap-1">
-            <CheckCircle className="w-3 h-3" />
-            {problem.acceptance}%
-          </div>
         </div>
       </div>
+
+      {/* Security Info Banner */}
+      {showSecurityInfo && (
+        <div className="bg-green-50 dark:bg-green-900/20 p-3 border-b border-green-200 dark:border-green-800">
+          <div className="flex items-start">
+            <Shield className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 mr-2" />
+            <div>
+              <p className="text-xs font-medium text-green-800 dark:text-green-200">
+                High Security Mode (Docker Isolated)
+              </p>
+              <p className="text-xs text-green-700 dark:text-green-300">
+                Your code runs in an isolated container with strict resource limits.
+              </p>
+            </div>
+            <button 
+              onClick={toggleSecurityInfo}
+              className="ml-auto p-1 text-green-600 dark:text-green-400"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Content */}
       {!isMobilePanelOpen ? (
@@ -257,144 +303,210 @@ const ProblemView = () => {
 
   // Desktop Layout
   const DesktopLayout = () => (
-    <PanelGroup direction="horizontal">
-      {/* Problem Description Panel */}
-      <Panel defaultSize={40} minSize={30}>
-        <div className="h-full flex flex-col">
-          {/* Header */}
-          <div className="p-6 border-b border-[var(--color-border)]">
-            <div className="flex items-center gap-4 mb-4">
-              <button
-                onClick={() => navigate('/app/problems')}
-                className="flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                Back to Problems
-              </button>
-            </div>
-            
-            <div className="flex items-center gap-3 mb-4">
-              <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-                {problem.title}
-              </h1>
-              <span className={`px-3 py-1 rounded-full text-sm ${getDifficultyColor(problem.difficulty)}`}>
-                {problem.difficulty}
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-6 text-sm text-[var(--color-text-secondary)]">
-              <div className="flex items-center gap-1">
-                <Code className="w-4 h-4" />
-                {problem.category}
+    <div className={`h-full ${isFullScreen ? 'fixed inset-0 z-50 bg-[var(--color-bg-primary)]' : ''}`}>
+      <PanelGroup direction="horizontal">
+        {/* Problem Description Panel */}
+        <Panel defaultSize={40} minSize={30}>
+          <div className="h-full flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b border-[var(--color-border)]">
+              <div className="flex items-center gap-4 mb-4">
+                <button
+                  onClick={() => navigate('/app/problems')}
+                  className="flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  Back to Problems
+                </button>
+                
+                {/* Layout Controls */}
+                <div className="flex items-center gap-2 ml-auto">
+                  <button
+                    onClick={toggleRightPanel}
+                    className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[var(--color-hover-light)] transition-colors"
+                    title={showRightPanel ? "Hide right panel" : "Show right panel"}
+                  >
+                    {showRightPanel ? 
+                      <PanelLeft className="w-4 h-4 text-[var(--color-text-secondary)]" /> : 
+                      <PanelRight className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                    }
+                  </button>
+                  <button
+                    onClick={toggleFullScreen}
+                    className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[var(--color-hover-light)] transition-colors"
+                    title={isFullScreen ? "Exit full screen" : "Full screen"}
+                  >
+                    {isFullScreen ? 
+                      <Minimize className="w-4 h-4 text-[var(--color-text-secondary)]" /> : 
+                      <Maximize className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                    }
+                  </button>
+                  
+                  {/* Security Info Button */}
+                  <button
+                    onClick={toggleSecurityInfo}
+                    className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[var(--color-hover-light)] transition-colors"
+                    title="Security Information"
+                  >
+                    <Info className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                  </button>
+                </div>
               </div>
-             
-              <div className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                {problem.totalSubmissions} submissions
+              
+              <div className="flex items-center gap-3 mb-4">
+                <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  {problem.title}
+                </h1>
+                <span className={`px-3 py-1 rounded-full text-sm ${getDifficultyColor(problem.difficulty)}`}>
+                  {problem.difficulty}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-6 text-sm text-[var(--color-text-secondary)]">
+                <div className="flex items-center gap-1">
+                  <Code className="w-4 h-4" />
+                  {problem.category}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Tabs */}
-          <div className="flex border-b border-[var(--color-border)]">
-            <button
-              onClick={() => setActiveTab('description')}
-              className={`px-6 py-3 text-sm font-medium transition-colors ${
-                activeTab === 'description'
-                  ? 'text-indigo-600 border-b-2 border-indigo-600'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4" />
-                Description
-              </div>
-            </button>
-            
-            
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {activeTab === 'description' && (
-              <div className="prose prose-sm max-w-none">
-                {formatDescription(problem.description)}
-                
-                {problem.examples && problem.examples.length > 0 && (
-                  <div className="mt-6">
-                    <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">Examples</h3>
-                    {problem.examples.map((example, index) => (
-                      <div key={index} className="bg-[var(--color-bg-secondary)] p-4 rounded-lg mb-4">
-                        <h4 className="font-medium text-[var(--color-text-primary)] mb-2">
-                          Example {index + 1}:
-                        </h4>
-                        <div className="space-y-2 text-sm">
-                          <div>
-                            <span className="font-medium text-[var(--color-text-primary)]">Input: </span>
-                            <code className="bg-[var(--color-bg-primary)] px-2 py-1 rounded text-[var(--color-text-primary)]">
-                              {example.input}
-                            </code>
-                          </div>
-                          <div>
-                            <span className="font-medium text-[var(--color-text-primary)]">Output: </span>
-                            <code className="bg-[var(--color-bg-primary)] px-2 py-1 rounded text-[var(--color-text-primary)]">
-                              {example.output}
-                            </code>
-                          </div>
-                          {example.explanation && (
-                            <div>
-                              <span className="font-medium text-[var(--color-text-primary)]">Explanation: </span>
-                              <span className="text-[var(--color-text-secondary)]">{example.explanation}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+            {/* Security Info Banner */}
+            {showSecurityInfo && (
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 border-b border-green-200 dark:border-green-800">
+                <div className="flex items-start">
+                  <Shield className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 mr-3" />
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-green-800 dark:text-green-200 mb-1">
+                      {executionMethod === 'docker' 
+                        ? 'High Security Mode (Docker Isolated)' 
+                        : executionMethod === 'native'
+                          ? 'Native Execution Mode'
+                          : 'Security Information'}
+                    </h3>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      {executionMethod === 'docker' 
+                        ? 'Your code runs in an isolated Docker container with strict resource limits and network isolation.' 
+                        : executionMethod === 'native'
+                          ? 'Your code runs in native mode with basic sandboxing. For maximum security, ensure Docker is running.'
+                          : 'Code execution security status will be shown after you run your code.'}
+                    </p>
                   </div>
-                )}
-                
-                {problem.constraints && (
-                  <div className="mt-6">
-                    <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">Constraints</h3>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                      <pre className="text-sm text-blue-700 dark:text-blue-300 whitespace-pre-wrap">
-                        {problem.constraints}
-                      </pre>
-                    </div>
-                  </div>
-                )}
-                
-                {problem.followUp && (
-                  <div className="mt-6">
-                    <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">Follow-up</h3>
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                        {problem.followUp}
-                      </p>
-                    </div>
-                  </div>
-                )}
+                  <button 
+                    onClick={toggleSecurityInfo}
+                    className="ml-3 p-1 text-green-600 dark:text-green-400"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             )}
-            
-            
-            
-            
+
+            {/* Tabs */}
+            <div className="flex border-b border-[var(--color-border)]">
+              <button
+                onClick={() => setActiveTab('description')}
+                className={`px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === 'description'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  Description
+                </div>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {activeTab === 'description' && (
+                <div className="prose prose-sm max-w-none">
+                  {formatDescription(problem.description)}
+                  
+                  {problem.examples && problem.examples.length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">Examples</h3>
+                      {problem.examples.map((example, index) => (
+                        <div key={index} className="bg-[var(--color-bg-secondary)] p-4 rounded-lg mb-4">
+                          <h4 className="font-medium text-[var(--color-text-primary)] mb-2">
+                            Example {index + 1}:
+                          </h4>
+                          <div className="space-y-2 text-sm">
+                            <div>
+                              <span className="font-medium text-[var(--color-text-primary)]">Input: </span>
+                              <code className="bg-[var(--color-bg-primary)] px-2 py-1 rounded text-[var(--color-text-primary)]">
+                                {example.input}
+                              </code>
+                            </div>
+                            <div>
+                              <span className="font-medium text-[var(--color-text-primary)]">Output: </span>
+                              <code className="bg-[var(--color-bg-primary)] px-2 py-1 rounded text-[var(--color-text-primary)]">
+                                {example.output}
+                              </code>
+                            </div>
+                            {example.explanation && (
+                              <div>
+                                <span className="font-medium text-[var(--color-text-primary)]">Explanation: </span>
+                                <span className="text-[var(--color-text-secondary)]">{example.explanation}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {problem.constraints && (
+                    <div className="mt-6">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">Constraints</h3>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                        <pre className="text-sm text-blue-700 dark:text-blue-300 whitespace-pre-wrap">
+                          {problem.constraints}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {problem.followUp && (
+                    <div className="mt-6">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">Follow-up</h3>
+                      <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                          {problem.followUp}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </Panel>
+        </Panel>
 
-      <PanelResizeHandle className="w-2 bg-[var(--color-border)] hover:bg-indigo-500 transition-colors" />
+        <PanelResizeHandle className="w-2 bg-[var(--color-border)] hover:bg-indigo-500 transition-colors" />
 
-      {/* Code Editor Panel */}
-      <Panel defaultSize={60} minSize={40}>
-        <CodeEditor problemId={problem._id} onSubmit={handleSubmission} />
-      </Panel>
-    </PanelGroup>
+        {/* Code Editor Panel */}
+        <Panel defaultSize={60} minSize={40}>
+          <CodeEditor problemId={problem._id} onSubmit={handleSubmission} />
+        </Panel>
+      </PanelGroup>
+
+      {/* Full Screen Exit Button */}
+      {isFullScreen && (
+        <button
+          onClick={toggleFullScreen}
+          className="fixed top-4 right-4 p-2 bg-[var(--color-bg-secondary)] rounded-full shadow-lg hover:bg-[var(--color-hover-light)] transition-colors z-50"
+          title="Exit full screen"
+        >
+          <Minimize className="w-5 h-5 text-[var(--color-text-primary)]" />
+        </button>
+      )}
+    </div>
   );
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)] flex flex-col">
+    <div className={`min-h-screen bg-[var(--color-bg-primary)] flex flex-col ${isFullScreen ? 'fixed inset-0 z-50' : ''}`}>
       <div className="flex-1">
         {/* Show mobile layout on small screens, desktop layout on large screens */}
         <div className="block lg:hidden h-full">
@@ -405,20 +517,22 @@ const ProblemView = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="py-6 sm:py-8 border-t border-[var(--color-border)]">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
-              <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
-            </div>
-            <div className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
-              © 2025 CodeFlask. All rights reserved.
+      {/* Footer - Hide in fullscreen mode */}
+      {!isFullScreen && (
+        <footer className="py-6 sm:py-8 border-t border-[var(--color-border)]">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
+                <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
+              </div>
+              <div className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
+                © 2025 CodeFlask. All rights reserved.
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 };

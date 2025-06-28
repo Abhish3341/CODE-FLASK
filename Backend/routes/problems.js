@@ -70,7 +70,7 @@ router.get('/', authMiddleware, async (req, res) => {
 // Get specific problem details and record attempt
 router.get('/:id', authMiddleware, async (req, res) => {
     try {
-        const problem = await Problem.findById(req.params.id);
+        const problem = await Problem.findById(req.params.id).select('-acceptance -totalSubmissions');
         if (!problem) {
             return res.status(404).json({ error: 'Problem not found' });
         }

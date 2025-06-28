@@ -34,8 +34,6 @@ Constraints:
 • Only one valid answer exists.`,
     difficulty: "Easy",
     category: "Arrays",
-    acceptance: 49,
-    totalSubmissions: 1000000,
     version: "multi-language"
   },
   {
@@ -91,8 +89,6 @@ Constraints:
 • s consists of English letters, digits, symbols and spaces.`,
     difficulty: "Medium",
     category: "Strings",
-    acceptance: 33,
-    totalSubmissions: 900000,
     version: "multi-language"
   },
   {
@@ -120,8 +116,6 @@ Constraints:
 • -10^6 <= nums1[i], nums2[i] <= 10^6`,
     difficulty: "Hard",
     category: "Arrays",
-    acceptance: 35,
-    totalSubmissions: 600000,
     version: "multi-language"
   },
   {
@@ -142,8 +136,6 @@ Constraints:
 • s consist of only digits and English letters.`,
     difficulty: "Medium",
     category: "Strings",
-    acceptance: 32,
-    totalSubmissions: 750000,
     version: "multi-language"
   },
   {
@@ -176,8 +168,6 @@ Constraints:
 • 1 <= numRows <= 1000`,
     difficulty: "Medium",
     category: "Strings",
-    acceptance: 42,
-    totalSubmissions: 500000,
     version: "multi-language"
   },
   {
@@ -202,8 +192,6 @@ Constraints:
 • -2^31 <= x <= 2^31 - 1`,
     difficulty: "Medium",
     category: "Math",
-    acceptance: 26,
-    totalSubmissions: 850000,
     version: "multi-language"
   },
   {
@@ -240,8 +228,6 @@ Constraints:
 • s consists of English letters (lower-case and upper-case), digits (0-9), ' ', '+', '-', and '.'.`,
     difficulty: "Medium",
     category: "Strings",
-    acceptance: 16,
-    totalSubmissions: 1200000,
     version: "multi-language"
   },
   {
@@ -273,8 +259,6 @@ Constraints:
 Follow up: Could you solve it without converting the integer to a string?`,
     difficulty: "Easy",
     category: "Math",
-    acceptance: 52,
-    totalSubmissions: 900000,
     version: "multi-language"
   },
   {
@@ -309,8 +293,6 @@ Constraints:
 • It is guaranteed for each appearance of the character '*', there will be a previous valid character to match.`,
     difficulty: "Hard",
     category: "Dynamic Programming",
-    acceptance: 27,
-    totalSubmissions: 700000,
     version: "multi-language"
   },
   {
@@ -338,8 +320,6 @@ Constraints:
 • 0 <= height[i] <= 10^4`,
     difficulty: "Medium",
     category: "Two Pointers",
-    acceptance: 54,
-    totalSubmissions: 800000,
     version: "multi-language"
   },
   {
@@ -384,8 +364,6 @@ Constraints:
 • 1 <= num <= 3999`,
     difficulty: "Medium",
     category: "Math",
-    acceptance: 59,
-    totalSubmissions: 600000,
     version: "multi-language"
   },
   {
@@ -432,8 +410,6 @@ Constraints:
 • It is guaranteed that s is a valid roman numeral in the range [1, 3999].`,
     difficulty: "Easy",
     category: "Math",
-    acceptance: 58,
-    totalSubmissions: 700000,
     version: "multi-language"
   },
   {
@@ -457,8 +433,6 @@ Constraints:
 • strs[i] consists of only lowercase English letters.`,
     difficulty: "Easy",
     category: "Strings",
-    acceptance: 40,
-    totalSubmissions: 850000,
     version: "multi-language"
   },
   {
@@ -492,8 +466,6 @@ Constraints:
 • -10^5 <= nums[i] <= 10^5`,
     difficulty: "Medium",
     category: "Two Pointers",
-    acceptance: 32,
-    totalSubmissions: 950000,
     version: "multi-language"
   },
   {
@@ -520,8 +492,6 @@ Constraints:
 • -10^4 <= target <= 10^4`,
     difficulty: "Medium",
     category: "Two Pointers",
-    acceptance: 46,
-    totalSubmissions: 600000,
     version: "multi-language"
   },
   {
@@ -556,8 +526,6 @@ Constraints:
 • digits[i] is a digit in the range ['2', '9'].`,
     difficulty: "Medium",
     category: "Backtracking",
-    acceptance: 55,
-    totalSubmissions: 700000,
     version: "multi-language"
   },
   {
@@ -584,8 +552,6 @@ Constraints:
 • -10^9 <= target <= 10^9`,
     difficulty: "Medium",
     category: "Two Pointers",
-    acceptance: 36,
-    totalSubmissions: 550000,
     version: "multi-language"
   },
   {
@@ -613,8 +579,6 @@ Constraints:
 Follow up: Could you do this in one pass?`,
     difficulty: "Medium",
     category: "Linked Lists",
-    acceptance: 39,
-    totalSubmissions: 800000,
     version: "multi-language"
   },
   {
@@ -644,8 +608,6 @@ Constraints:
 • s consists of parentheses only '()[]{}'.`,
     difficulty: "Easy",
     category: "Stack",
-    acceptance: 40,
-    totalSubmissions: 1100000,
     version: "multi-language"
   },
   {
@@ -674,8 +636,6 @@ Constraints:
 • Both list1 and list2 are sorted in non-decreasing order.`,
     difficulty: "Easy",
     category: "Linked Lists",
-    acceptance: 61,
-    totalSubmissions: 900000,
     version: "multi-language"
   },
   {
@@ -694,8 +654,6 @@ Constraints:
 • 1 <= n <= 8`,
     difficulty: "Medium",
     category: "Backtracking",
-    acceptance: 71,
-    totalSubmissions: 650000,
     version: "multi-language"
   },
   {
@@ -733,8 +691,6 @@ Constraints:
 • The sum of lists[i].length will not exceed 10^4.`,
     difficulty: "Hard",
     category: "Linked Lists",
-    acceptance: 47,
-    totalSubmissions: 750000,
     version: "multi-language"
   },
   {
@@ -760,8 +716,6 @@ Constraints:
 Follow up: Can you solve the problem in O(1) extra memory space?`,
     difficulty: "Medium",
     category: "Linked Lists",
-    acceptance: 58,
-    totalSubmissions: 600000,
     version: "multi-language"
   },
   {
@@ -788,8 +742,6 @@ Constraints:
 Follow-up: Can you solve the problem in O(1) extra memory space?`,
     difficulty: "Hard",
     category: "Linked Lists",
-    acceptance: 53,
-    totalSubmissions: 500000,
     version: "multi-language"
   },
   {
@@ -820,8 +772,6 @@ Constraints:
 • nums is sorted in non-decreasing order.`,
     difficulty: "Easy",
     category: "Arrays",
-    acceptance: 50,
-    totalSubmissions: 1000000,
     version: "multi-language"
   },
   {
@@ -852,8 +802,6 @@ Constraints:
 • 0 <= val <= 100`,
     difficulty: "Easy",
     category: "Arrays",
-    acceptance: 53,
-    totalSubmissions: 800000,
     version: "multi-language"
   },
   {
@@ -876,8 +824,6 @@ Constraints:
 • haystack and needle consist of only lowercase English characters.`,
     difficulty: "Easy",
     category: "Strings",
-    acceptance: 37,
-    totalSubmissions: 900000,
     version: "multi-language"
   },
   {
@@ -905,8 +851,6 @@ Constraints:
 • divisor != 0`,
     difficulty: "Medium",
     category: "Math",
-    acceptance: 17,
-    totalSubmissions: 850000,
     version: "multi-language"
   },
   {
@@ -945,8 +889,6 @@ Constraints:
 • s and words[i] consist of lowercase English letters.`,
     difficulty: "Hard",
     category: "Sliding Window",
-    acceptance: 30,
-    totalSubmissions: 400000,
     version: "multi-language"
   },
   {
@@ -984,8 +926,6 @@ Constraints:
 • 0 <= nums[i] <= 100`,
     difficulty: "Medium",
     category: "Arrays",
-    acceptance: 37,
-    totalSubmissions: 700000,
     version: "multi-language"
   },
   {
@@ -1011,8 +951,6 @@ Constraints:
 • s[i] is '(', or ')'.`,
     difficulty: "Hard",
     category: "Dynamic Programming",
-    acceptance: 32,
-    totalSubmissions: 600000,
     version: "multi-language"
   },
   {
@@ -1045,8 +983,6 @@ Constraints:
 • -10^4 <= target <= 10^4`,
     difficulty: "Medium",
     category: "Binary Search",
-    acceptance: 38,
-    totalSubmissions: 850000,
     version: "multi-language"
   },
   {
@@ -1076,8 +1012,6 @@ Constraints:
 • -10^9 <= target <= 10^9`,
     difficulty: "Medium",
     category: "Binary Search",
-    acceptance: 42,
-    totalSubmissions: 750000,
     version: "multi-language"
   },
   {
@@ -1105,8 +1039,6 @@ Constraints:
 • -10^4 <= target <= 10^4`,
     difficulty: "Easy",
     category: "Binary Search",
-    acceptance: 42,
-    totalSubmissions: 900000,
     version: "multi-language"
   },
   {
@@ -1154,8 +1086,6 @@ Constraints:
 • board[i][j] is a digit 1-9 or '.'.`,
     difficulty: "Medium",
     category: "Hash Table",
-    acceptance: 56,
-    totalSubmissions: 650000,
     version: "multi-language"
   },
   {
@@ -1182,8 +1112,6 @@ Constraints:
 • It is guaranteed that the input board has only one solution.`,
     difficulty: "Hard",
     category: "Backtracking",
-    acceptance: 59,
-    totalSubmissions: 400000,
     version: "multi-language"
   },
   {
@@ -1215,8 +1143,6 @@ Constraints:
 • 1 <= n <= 30`,
     difficulty: "Medium",
     category: "Strings",
-    acceptance: 50,
-    totalSubmissions: 600000,
     version: "multi-language"
   },
   {
@@ -1250,8 +1176,6 @@ Constraints:
 • 1 <= target <= 40`,
     difficulty: "Medium",
     category: "Backtracking",
-    acceptance: 68,
-    totalSubmissions: 700000,
     version: "multi-language"
   },
   {
@@ -1286,8 +1210,6 @@ Constraints:
 • 1 <= target <= 30`,
     difficulty: "Medium",
     category: "Backtracking",
-    acceptance: 52,
-    totalSubmissions: 550000,
     version: "multi-language"
   },
   {
@@ -1316,8 +1238,6 @@ Constraints:
 • -2^31 <= nums[i] <= 2^31 - 1`,
     difficulty: "Hard",
     category: "Arrays",
-    acceptance: 36,
-    totalSubmissions: 650000,
     version: "multi-language"
   },
   {
@@ -1339,8 +1259,6 @@ Constraints:
 • 0 <= height[i] <= 3 * 10^4`,
     difficulty: "Hard",
     category: "Two Pointers",
-    acceptance: 58,
-    totalSubmissions: 800000,
     version: "multi-language"
   },
   {
@@ -1363,8 +1281,6 @@ Constraints:
 • Both num1 and num2 do not contain any leading zero, except the number 0 itself.`,
     difficulty: "Medium",
     category: "Math",
-    acceptance: 38,
-    totalSubmissions: 600000,
     version: "multi-language"
   },
   {
@@ -1397,8 +1313,6 @@ Constraints:
 • p contains only lowercase English letters, '?' or '*'.`,
     difficulty: "Hard",
     category: "Dynamic Programming",
-    acceptance: 26,
-    totalSubmissions: 500000,
     version: "multi-language"
   },
   {
@@ -1429,8 +1343,6 @@ Constraints:
 • It's guaranteed that you can reach nums[n - 1].`,
     difficulty: "Medium",
     category: "Greedy",
-    acceptance: 38,
-    totalSubmissions: 650000,
     version: "multi-language"
   },
   {
@@ -1455,8 +1367,6 @@ Constraints:
 • All the integers of nums are unique.`,
     difficulty: "Medium",
     category: "Backtracking",
-    acceptance: 74,
-    totalSubmissions: 800000,
     version: "multi-language"
   },
   {
@@ -1491,8 +1401,6 @@ Constraints:
 • -10 <= nums[i] <= 10`,
     difficulty: "Medium",
     category: "Backtracking",
-    acceptance: 57,
-    totalSubmissions: 600000,
     version: "multi-language"
   },
   {
@@ -1515,8 +1423,6 @@ Constraints:
 • -1000 <= matrix[i][j] <= 1000`,
     difficulty: "Medium",
     category: "Arrays",
-    acceptance: 70,
-    totalSubmissions: 750000,
     version: "multi-language"
   },
   {
@@ -1543,8 +1449,6 @@ Constraints:
 • strs[i] consists of lowercase English letters only.`,
     difficulty: "Medium",
     category: "Hash Table",
-    acceptance: 67,
-    totalSubmissions: 900000,
     version: "multi-language"
   },
   {
@@ -1572,8 +1476,6 @@ Constraints:
 • -10^4 <= x^n <= 10^4`,
     difficulty: "Medium",
     category: "Math",
-    acceptance: 33,
-    totalSubmissions: 850000,
     version: "multi-language"
   }
 ];
