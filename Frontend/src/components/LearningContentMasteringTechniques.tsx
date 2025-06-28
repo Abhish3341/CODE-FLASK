@@ -42,6 +42,12 @@ const LearningContentMasteringTechniques: React.FC<LearningContentProps> = ({ co
     if (currentSectionIndex < sections.length - 1) {
       markSectionComplete(currentSectionIndex);
       setCurrentSectionIndex(currentSectionIndex + 1);
+    } else if (currentSectionIndex === sections.length - 1) {
+      // Mark the last section as complete when clicking "Complete" on the last page
+      markSectionComplete(currentSectionIndex);
+      // You could also add some completion logic here, like showing a completion modal
+      // or redirecting back to the courses page
+      onBack(); // Return to courses page when completed
     }
   };
 
@@ -821,8 +827,7 @@ return low; // Minimum achievable`}
 
               <button
                 onClick={goToNextSection}
-                disabled={currentSectionIndex === sections.length - 1}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled: opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
               >
                 {currentSectionIndex === sections.length - 1 ? 'Complete' : 'Next'}
                 <ChevronRight className="w-4 h-4" />

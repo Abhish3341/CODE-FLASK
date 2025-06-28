@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, CheckCircle, Circle, Terminal, Code, ChevronRight, ChevronLeft, GraduationCap, Type, FileText, GitBranch, Repeat, List, RotateCcw, Calculator } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Circle, ChevronRight, ChevronLeft, Terminal, Code, FileText, GitBranch, Repeat, List, Type, Calculator, GraduationCap } from 'lucide-react';
 
 interface LearningContentProps {
   courseId: number;
@@ -42,6 +42,12 @@ const LearningContentProgramming101: React.FC<LearningContentProps> = ({ courseI
     if (currentSectionIndex < sections.length - 1) {
       markSectionComplete(currentSectionIndex);
       setCurrentSectionIndex(currentSectionIndex + 1);
+    } else if (currentSectionIndex === sections.length - 1) {
+      // Mark the last section as complete when clicking "Complete" on the last page
+      markSectionComplete(currentSectionIndex);
+      // You could also add some completion logic here, like showing a completion modal
+      // or redirecting back to the courses page
+      onBack(); // Return to courses page when completed
     }
   };
 
@@ -91,18 +97,9 @@ const LearningContentProgramming101: React.FC<LearningContentProps> = ({ courseI
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-4 h-4 text-green-500 mt-1 flex-shrink-0" />
-                  You want to learn multiple programming languages
+                  You want to learn multiple languages (Python, Java, C)
                 </li>
               </ul>
-            </div>
-
-            <div className="mt-4 bg-emerald-100 dark:bg-emerald-800/50 p-4 rounded-lg">
-              <h3 className="font-semibold text-emerald-800 dark:text-emerald-200 mb-2">Languages Covered:</h3>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1 bg-emerald-200 dark:bg-emerald-700 text-emerald-800 dark:text-emerald-200 rounded-full text-sm">Python</span>
-                <span className="px-3 py-1 bg-emerald-200 dark:bg-emerald-700 text-emerald-800 dark:text-emerald-200 rounded-full text-sm">Java</span>
-                <span className="px-3 py-1 bg-emerald-200 dark:bg-emerald-700 text-emerald-800 dark:text-emerald-200 rounded-full text-sm">C</span>
-              </div>
             </div>
           </div>
         </div>
@@ -117,31 +114,31 @@ const LearningContentProgramming101: React.FC<LearningContentProps> = ({ courseI
           <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-lg">
             <h2 className="text-xl font-bold text-emerald-800 dark:text-emerald-200 mb-4 flex items-center gap-2">
               <Terminal className="w-6 h-6" />
-              Writing Your First Program
+              Hello, World!
             </h2>
             
             <div className="space-y-4">
               <div className="bg-white dark:bg-emerald-800/30 p-4 rounded-lg">
                 <h3 className="font-semibold text-emerald-800 dark:text-emerald-200 mb-2">📝 Task: Print "Hello, World!"</h3>
                 <p className="text-emerald-700 dark:text-emerald-300 text-sm mb-4">
-                  The traditional first program in any language is to display the text "Hello, World!" on the screen. Let's see how to do this in different languages:
+                  The traditional first program in any language is to display the text "Hello, World!" on the screen. Let's see how to do this in three different languages.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                   <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Python:</h3>
-                  <pre className="text-blue-700 dark:text-blue-300 text-sm bg-white dark:bg-blue-800/20 p-3 rounded">
+                  <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
 {`print("Hello, World!")`}
                   </pre>
                   <p className="text-blue-700 dark:text-blue-300 text-xs mt-2">
-                    <strong>Explanation:</strong> Python uses the print() function to display text on the screen. Text is enclosed in quotes.
+                    <strong>Explanation:</strong> Python uses the print() function to display text on the screen. The text is enclosed in quotes.
                   </p>
                 </div>
 
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
                   <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">Java:</h3>
-                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-3 rounded">
+                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-2 rounded">
 {`public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
@@ -155,7 +152,7 @@ const LearningContentProgramming101: React.FC<LearningContentProps> = ({ courseI
 
                 <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">C:</h3>
-                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-3 rounded">
+                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-2 rounded">
 {`#include <stdio.h>
 
 int main() {
@@ -164,7 +161,7 @@ int main() {
 }`}
                   </pre>
                   <p className="text-gray-700 dark:text-gray-300 text-xs mt-2">
-                    <strong>Explanation:</strong> C uses printf() function from stdio.h library. The \n creates a new line.
+                    <strong>Explanation:</strong> C uses the printf() function from the stdio.h library. The \n creates a new line.
                   </p>
                 </div>
               </div>
@@ -172,10 +169,9 @@ int main() {
               <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
                 <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 Key Concepts:</h3>
                 <ul className="space-y-1 text-yellow-700 dark:text-yellow-300 text-sm">
-                  <li>• <strong>Output:</strong> Each language has a way to display text (print, System.out.println, printf)</li>
-                  <li>• <strong>Strings:</strong> Text is enclosed in quotes</li>
-                  <li>• <strong>Structure:</strong> Languages have different requirements for program structure</li>
+                  <li>• <strong>Output:</strong> All programming languages have ways to display text</li>
                   <li>• <strong>Syntax:</strong> Each language has its own rules for writing code</li>
+                  <li>• <strong>Structure:</strong> Some languages (like Java and C) require more structure than others</li>
                 </ul>
               </div>
             </div>
@@ -184,7 +180,7 @@ int main() {
       )
     },
     {
-      id: 'variables-data-types',
+      id: 'variables',
       title: 'Variables & Data Types',
       completed: false,
       content: (
@@ -199,78 +195,60 @@ int main() {
               <div className="bg-white dark:bg-purple-800/30 p-4 rounded-lg">
                 <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">📝 Task: Store an integer and a string</h3>
                 <p className="text-purple-700 dark:text-purple-300 text-sm mb-4">
-                  Variables are containers for storing data values. Each variable has a data type that determines what kind of value it can hold.
+                  Variables are like containers that store data. Different types of data (numbers, text, etc.) are stored in different types of variables.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                   <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Python:</h3>
-                  <pre className="text-blue-700 dark:text-blue-300 text-sm bg-white dark:bg-blue-800/20 p-3 rounded">
+                  <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
 {`age = 20
-name = "Alice"
-
-print(age)      # 20
-print(name)     # Alice
-print(type(age))   # <class 'int'>
-print(type(name))  # <class 'str'>`}
+name = "Alice"`}
                   </pre>
                   <p className="text-blue-700 dark:text-blue-300 text-xs mt-2">
-                    <strong>Note:</strong> Python is dynamically typed - you don't need to declare types.
+                    <strong>Note:</strong> Python is dynamically typed, so you don't need to declare the type.
                   </p>
                 </div>
 
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
                   <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">Java:</h3>
-                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-3 rounded">
+                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-2 rounded">
 {`int age = 20;
-String name = "Alice";
-
-System.out.println(age);   // 20
-System.out.println(name);  // Alice`}
+String name = "Alice";`}
                   </pre>
                   <p className="text-orange-700 dark:text-orange-300 text-xs mt-2">
-                    <strong>Note:</strong> Java is statically typed - you must declare variable types.
+                    <strong>Note:</strong> Java is statically typed, so you must declare the type of each variable.
                   </p>
                 </div>
 
                 <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">C:</h3>
-                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-3 rounded">
-{`#include <stdio.h>
-
-int main() {
-    int age = 20;
-    char name[] = "Alice";
-    
-    printf("%d\\n", age);  // 20
-    printf("%s\\n", name);  // Alice
-    return 0;
-}`}
+                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-2 rounded">
+{`int age = 20;
+char name[] = "Alice";`}
                   </pre>
                   <p className="text-gray-700 dark:text-gray-300 text-xs mt-2">
-                    <strong>Note:</strong> C is statically typed and strings are character arrays.
+                    <strong>Note:</strong> In C, strings are arrays of characters.
                   </p>
                 </div>
               </div>
 
               <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">🧠 Common Data Types:</h3>
+                <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">🔍 Common Data Types:</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-green-700 dark:text-green-300 text-sm">
                   <div>
                     <ul className="space-y-1">
-                      <li>• <strong>Integer:</strong> Whole numbers (int)</li>
-                      <li>• <strong>Float/Double:</strong> Decimal numbers</li>
-                      <li>• <strong>String:</strong> Text</li>
+                      <li>• <strong>Integer:</strong> Whole numbers (e.g., 42)</li>
+                      <li>• <strong>Float/Double:</strong> Decimal numbers (e.g., 3.14)</li>
                       <li>• <strong>Boolean:</strong> True/False values</li>
                     </ul>
                   </div>
                   <div>
                     <ul className="space-y-1">
-                      <li>• <strong>Character:</strong> Single letters/symbols</li>
-                      <li>• <strong>Array/List:</strong> Collections of items</li>
-                      <li>• <strong>Object/Dictionary:</strong> Key-value pairs</li>
-                      <li>• <strong>Null/None:</strong> Absence of value</li>
+                      <li>• <strong>String:</strong> Text (e.g., "Hello")</li>
+                      <li>• <strong>Character:</strong> Single character (e.g., 'A')</li>
+                      <li>• <strong>Array/List:</strong> Collection of items</li>
                     </ul>
                   </div>
                 </div>
@@ -281,21 +259,21 @@ int main() {
       )
     },
     {
-      id: 'user-input',
+      id: 'input',
       title: 'Taking Input from the User',
       completed: false,
       content: (
         <div className="space-y-6">
-          <div className="bg-teal-50 dark:bg-teal-900/20 p-6 rounded-lg">
-            <h2 className="text-xl font-bold text-teal-800 dark:text-teal-200 mb-4 flex items-center gap-2">
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+            <h2 className="text-xl font-bold text-blue-800 dark:text-blue-200 mb-4 flex items-center gap-2">
               <Type className="w-6 h-6" />
               Taking Input from the User
             </h2>
             
             <div className="space-y-4">
-              <div className="bg-white dark:bg-teal-800/30 p-4 rounded-lg">
-                <h3 className="font-semibold text-teal-800 dark:text-teal-200 mb-2">📝 Task: Read two integers and print their sum</h3>
-                <p className="text-teal-700 dark:text-teal-300 text-sm mb-4">
+              <div className="bg-white dark:bg-blue-800/30 p-4 rounded-lg">
+                <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">📝 Task: Read two integers and print their sum</h3>
+                <p className="text-blue-700 dark:text-blue-300 text-sm mb-4">
                   Programs often need to get input from users. Let's see how to read input and process it in different languages.
                 </p>
               </div>
@@ -303,19 +281,19 @@ int main() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                   <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Python:</h3>
-                  <pre className="text-blue-700 dark:text-blue-300 text-sm bg-white dark:bg-blue-800/20 p-3 rounded">
+                  <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
 {`a = int(input("Enter first number: "))
 b = int(input("Enter second number: "))
 print("Sum is:", a + b)`}
                   </pre>
                   <p className="text-blue-700 dark:text-blue-300 text-xs mt-2">
-                    <strong>Note:</strong> input() returns a string, so we convert to int.
+                    <strong>Note:</strong> input() returns a string, so we convert it to an integer using int().
                   </p>
                 </div>
 
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
                   <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">Java:</h3>
-                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-3 rounded">
+                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-2 rounded">
 {`import java.util.Scanner;
 
 public class Main {
@@ -328,36 +306,34 @@ public class Main {
 }`}
                   </pre>
                   <p className="text-orange-700 dark:text-orange-300 text-xs mt-2">
-                    <strong>Note:</strong> Scanner class is used for input in Java.
+                    <strong>Note:</strong> Java uses the Scanner class to read input.
                   </p>
                 </div>
 
                 <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">C:</h3>
-                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-3 rounded">
+                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-2 rounded">
 {`#include <stdio.h>
 
 int main() {
     int a, b;
-    printf("Enter two numbers: ");
     scanf("%d %d", &a, &b);
     printf("Sum is: %d\\n", a + b);
     return 0;
 }`}
                   </pre>
                   <p className="text-gray-700 dark:text-gray-300 text-xs mt-2">
-                    <strong>Note:</strong> scanf() reads formatted input, &a means "address of a".
+                    <strong>Note:</strong> C uses scanf() to read input and printf() to display output.
                   </p>
                 </div>
               </div>
 
               <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 Input Tips:</h3>
+                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 Key Points:</h3>
                 <ul className="space-y-1 text-yellow-700 dark:text-yellow-300 text-sm">
-                  <li>• Always validate user input when possible</li>
-                  <li>• Convert input to the appropriate data type</li>
-                  <li>• Handle potential errors (e.g., if user enters text when expecting a number)</li>
-                  <li>• Provide clear prompts so users know what to enter</li>
+                  <li>• Input is often received as text (strings) and needs to be converted to the appropriate type</li>
+                  <li>• Different languages have different ways of handling input</li>
+                  <li>• Always validate user input to ensure it's in the expected format</li>
                 </ul>
               </div>
             </div>
@@ -371,24 +347,24 @@ int main() {
       completed: false,
       content: (
         <div className="space-y-6">
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
-            <h2 className="text-xl font-bold text-blue-800 dark:text-blue-200 mb-4 flex items-center gap-2">
+          <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg">
+            <h2 className="text-xl font-bold text-red-800 dark:text-red-200 mb-4 flex items-center gap-2">
               <GitBranch className="w-6 h-6" />
               Conditionals (if, else)
             </h2>
             
             <div className="space-y-4">
-              <div className="bg-white dark:bg-blue-800/30 p-4 rounded-lg">
-                <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">📝 Task: Check if a number is even or odd</h3>
-                <p className="text-blue-700 dark:text-blue-300 text-sm mb-4">
-                  Conditional statements allow your program to make decisions based on conditions. They execute different code blocks depending on whether a condition is true or false.
+              <div className="bg-white dark:bg-red-800/30 p-4 rounded-lg">
+                <h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">📝 Task: Check if a number is even or odd</h3>
+                <p className="text-red-700 dark:text-red-300 text-sm mb-4">
+                  Conditionals allow your program to make decisions based on certain conditions. Let's see how to check if a number is even or odd.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                   <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Python:</h3>
-                  <pre className="text-blue-700 dark:text-blue-300 text-sm bg-white dark:bg-blue-800/20 p-3 rounded">
+                  <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
 {`num = int(input())
 if num % 2 == 0:
     print("Even")
@@ -402,7 +378,7 @@ else:
 
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
                   <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">Java:</h3>
-                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-3 rounded">
+                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-2 rounded">
 {`if (num % 2 == 0) {
     System.out.println("Even");
 } else {
@@ -416,7 +392,7 @@ else:
 
                 <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">C:</h3>
-                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-3 rounded">
+                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-2 rounded">
 {`if (num % 2 == 0) {
     printf("Even\\n");
 } else {
@@ -430,7 +406,7 @@ else:
               </div>
 
               <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">🧠 Conditional Operators:</h3>
+                <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">🔍 Conditional Operators:</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-green-700 dark:text-green-300 text-sm">
                   <div>
                     <ul className="space-y-1">
@@ -450,25 +426,6 @@ else:
                   </div>
                 </div>
               </div>
-
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
-                <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">💡 Advanced Conditionals:</h3>
-                <pre className="text-purple-700 dark:text-purple-300 text-xs bg-white dark:bg-purple-800/20 p-3 rounded mb-2">
-{`// Multiple conditions with else if
-if (score >= 90) {
-    grade = "A";
-} else if (score >= 80) {
-    grade = "B";
-} else if (score >= 70) {
-    grade = "C";
-} else {
-    grade = "F";
-}`}
-                </pre>
-                <p className="text-purple-700 dark:text-purple-300 text-xs">
-                  <strong>Tip:</strong> You can chain multiple conditions using else if statements.
-                </p>
-              </div>
             </div>
           </div>
         </div>
@@ -480,101 +437,86 @@ if (score >= 90) {
       completed: false,
       content: (
         <div className="space-y-6">
-          <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-lg">
-            <h2 className="text-xl font-bold text-amber-800 dark:text-amber-200 mb-4 flex items-center gap-2">
+          <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-lg">
+            <h2 className="text-xl font-bold text-indigo-800 dark:text-indigo-200 mb-4 flex items-center gap-2">
               <Repeat className="w-6 h-6" />
               Loops (for, while)
             </h2>
             
             <div className="space-y-4">
-              <div className="bg-white dark:bg-amber-800/30 p-4 rounded-lg">
-                <h3 className="font-semibold text-amber-800 dark:text-amber-200 mb-2">📝 Task: Print numbers from 1 to 5</h3>
-                <p className="text-amber-700 dark:text-amber-300 text-sm mb-4">
-                  Loops allow you to repeat a block of code multiple times. This is useful when you want to perform the same action on multiple items or a specific number of times.
+              <div className="bg-white dark:bg-indigo-800/30 p-4 rounded-lg">
+                <h3 className="font-semibold text-indigo-800 dark:text-indigo-200 mb-2">📝 Task: Print numbers from 1 to 5</h3>
+                <p className="text-indigo-700 dark:text-indigo-300 text-sm mb-4">
+                  Loops allow you to repeat a block of code multiple times. Let's see how to print numbers from 1 to 5 using loops.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">For Loops:</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-blue-800 dark:text-blue-200 text-xs font-medium mb-1">Python:</p>
-                      <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
-{`for i in range(1, 6):
-    print(i)`}
-                      </pre>
-                    </div>
-                    <div>
-                      <p className="text-blue-800 dark:text-blue-200 text-xs font-medium mb-1">Java:</p>
-                      <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
-{`for (int i = 1; i <= 5; i++) {
-    System.out.println(i);
-}`}
-                      </pre>
-                    </div>
-                    <div>
-                      <p className="text-blue-800 dark:text-blue-200 text-xs font-medium mb-1">C:</p>
-                      <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
-{`for (int i = 1; i <= 5; i++) {
-    printf("%d\\n", i);
-}`}
-                      </pre>
-                    </div>
-                  </div>
-                </div>
+                  <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Python:</h3>
+                  <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
+{`# For loop
+for i in range(1, 6):
+    print(i)
 
-                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                  <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">While Loops:</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-green-800 dark:text-green-200 text-xs font-medium mb-1">Python:</p>
-                      <pre className="text-green-700 dark:text-green-300 text-xs bg-white dark:bg-green-800/20 p-2 rounded">
-{`i = 1
+# While loop
+i = 1
 while i <= 5:
     print(i)
     i += 1`}
-                      </pre>
-                    </div>
-                    <div>
-                      <p className="text-green-800 dark:text-green-200 text-xs font-medium mb-1">Java:</p>
-                      <pre className="text-green-700 dark:text-green-300 text-xs bg-white dark:bg-green-800/20 p-2 rounded">
-{`int i = 1;
+                  </pre>
+                  <p className="text-blue-700 dark:text-blue-300 text-xs mt-2">
+                    <strong>Note:</strong> range(1, 6) generates numbers from 1 to 5.
+                  </p>
+                </div>
+
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+                  <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">Java:</h3>
+                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-2 rounded">
+{`// For loop
+for (int i = 1; i <= 5; i++) {
+    System.out.println(i);
+}
+
+// While loop
+int i = 1;
 while (i <= 5) {
     System.out.println(i);
     i++;
 }`}
-                      </pre>
-                    </div>
-                    <div>
-                      <p className="text-green-800 dark:text-green-200 text-xs font-medium mb-1">C:</p>
-                      <pre className="text-green-700 dark:text-green-300 text-xs bg-white dark:bg-green-800/20 p-2 rounded">
-{`int i = 1;
+                  </pre>
+                  <p className="text-orange-700 dark:text-orange-300 text-xs mt-2">
+                    <strong>Note:</strong> i++ increments the value of i by 1.
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">C:</h3>
+                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-2 rounded">
+{`// For loop
+for (int i = 1; i <= 5; i++) {
+    printf("%d\\n", i);
+}
+
+// While loop
+int i = 1;
 while (i <= 5) {
     printf("%d\\n", i);
     i++;
 }`}
-                      </pre>
-                    </div>
-                  </div>
+                  </pre>
+                  <p className="text-gray-700 dark:text-gray-300 text-xs mt-2">
+                    <strong>Note:</strong> %d is a placeholder for an integer in printf().
+                  </p>
                 </div>
               </div>
 
               <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 When to Use Each Loop Type:</h3>
+                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 Loop Types:</h3>
                 <ul className="space-y-1 text-yellow-700 dark:text-yellow-300 text-sm">
-                  <li>• <strong>For loop:</strong> When you know exactly how many times you want to loop</li>
-                  <li>• <strong>While loop:</strong> When you want to continue until a condition is no longer true</li>
-                  <li>• <strong>Do-while loop:</strong> When you want to execute the loop at least once</li>
-                </ul>
-              </div>
-
-              <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
-                <h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">⚠️ Common Loop Pitfalls:</h3>
-                <ul className="space-y-1 text-red-700 dark:text-red-300 text-sm">
-                  <li>• <strong>Infinite loops:</strong> Forgetting to update the loop variable</li>
-                  <li>• <strong>Off-by-one errors:</strong> Looping one too many or too few times</li>
-                  <li>• <strong>Array bounds:</strong> Accessing array elements outside valid indices</li>
+                  <li>• <strong>For Loop:</strong> Used when you know how many times you want to repeat a block of code</li>
+                  <li>• <strong>While Loop:</strong> Used when you want to repeat a block of code as long as a condition is true</li>
+                  <li>• <strong>Do-While Loop:</strong> Similar to while loop, but the condition is checked after the block of code is executed (not shown in examples)</li>
                 </ul>
               </div>
             </div>
@@ -588,82 +530,76 @@ while (i <= 5) {
       completed: false,
       content: (
         <div className="space-y-6">
-          <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-lg">
-            <h2 className="text-xl font-bold text-indigo-800 dark:text-indigo-200 mb-4 flex items-center gap-2">
+          <div className="bg-teal-50 dark:bg-teal-900/20 p-6 rounded-lg">
+            <h2 className="text-xl font-bold text-teal-800 dark:text-teal-200 mb-4 flex items-center gap-2">
               <Code className="w-6 h-6" />
               Functions
             </h2>
             
             <div className="space-y-4">
-              <div className="bg-white dark:bg-indigo-800/30 p-4 rounded-lg">
-                <h3 className="font-semibold text-indigo-800 dark:text-indigo-200 mb-2">📝 Task: Write a function to return the square of a number</h3>
-                <p className="text-indigo-700 dark:text-indigo-300 text-sm mb-4">
-                  Functions are reusable blocks of code that perform a specific task. They help organize code, reduce repetition, and make programs more modular.
+              <div className="bg-white dark:bg-teal-800/30 p-4 rounded-lg">
+                <h3 className="font-semibold text-teal-800 dark:text-teal-200 mb-2">📝 Task: Write a function to return the square of a number</h3>
+                <p className="text-teal-700 dark:text-teal-300 text-sm mb-4">
+                  Functions are reusable blocks of code that perform a specific task. They help organize code and make it more modular.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                   <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Python:</h3>
-                  <pre className="text-blue-700 dark:text-blue-300 text-sm bg-white dark:bg-blue-800/20 p-3 rounded">
+                  <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
 {`def square(x):
     return x * x
 
-print(square(4))  # 16`}
+# Call the function
+result = square(4)
+print(result)  # Output: 16`}
                   </pre>
                   <p className="text-blue-700 dark:text-blue-300 text-xs mt-2">
-                    <strong>Note:</strong> Python uses def to define functions.
+                    <strong>Note:</strong> Python uses the def keyword to define functions.
                   </p>
                 </div>
 
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
                   <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">Java:</h3>
-                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-3 rounded">
+                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-2 rounded">
 {`public static int square(int x) {
     return x * x;
 }
 
-// Call it like this:
-int result = square(4);  // 16`}
+// Call the function
+int result = square(4);
+System.out.println(result);  // Output: 16`}
                   </pre>
                   <p className="text-orange-700 dark:text-orange-300 text-xs mt-2">
-                    <strong>Note:</strong> Java requires return type declaration.
+                    <strong>Note:</strong> Java functions must specify return type and parameter types.
                   </p>
                 </div>
 
                 <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">C:</h3>
-                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-3 rounded">
+                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-2 rounded">
 {`int square(int x) {
     return x * x;
 }
 
-// Call it like this:
-int result = square(4);  // 16`}
+// Call the function
+int result = square(4);
+printf("%d\\n", result);  // Output: 16`}
                   </pre>
                   <p className="text-gray-700 dark:text-gray-300 text-xs mt-2">
-                    <strong>Note:</strong> C also requires return type declaration.
+                    <strong>Note:</strong> C functions must be declared before they are used.
                   </p>
                 </div>
               </div>
 
               <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">🧠 Function Components:</h3>
+                <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">🔍 Function Components:</h3>
                 <ul className="space-y-1 text-green-700 dark:text-green-300 text-sm">
-                  <li>• <strong>Name:</strong> What you call the function (e.g., square)</li>
+                  <li>• <strong>Name:</strong> What the function is called (e.g., square)</li>
                   <li>• <strong>Parameters:</strong> Input values the function accepts (e.g., x)</li>
+                  <li>• <strong>Return Type:</strong> The type of value the function returns (e.g., int)</li>
                   <li>• <strong>Body:</strong> The code that runs when the function is called</li>
-                  <li>• <strong>Return value:</strong> The output of the function</li>
-                </ul>
-              </div>
-
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
-                <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">💡 Why Use Functions?</h3>
-                <ul className="space-y-1 text-purple-700 dark:text-purple-300 text-sm">
-                  <li>• <strong>Reusability:</strong> Write code once, use it many times</li>
-                  <li>• <strong>Modularity:</strong> Break complex problems into smaller parts</li>
-                  <li>• <strong>Readability:</strong> Makes code easier to understand</li>
-                  <li>• <strong>Maintainability:</strong> Easier to fix bugs and make changes</li>
                 </ul>
               </div>
             </div>
@@ -672,7 +608,7 @@ int result = square(4);  // 16`}
       )
     },
     {
-      id: 'arrays-lists',
+      id: 'arrays',
       title: 'Arrays / Lists',
       completed: false,
       content: (
@@ -687,93 +623,76 @@ int result = square(4);  // 16`}
               <div className="bg-white dark:bg-pink-800/30 p-4 rounded-lg">
                 <h3 className="font-semibold text-pink-800 dark:text-pink-200 mb-2">📝 Task: Store 5 numbers and print them</h3>
                 <p className="text-pink-700 dark:text-pink-300 text-sm mb-4">
-                  Arrays and lists are collections that store multiple values in a single variable. They are used to store related data of the same type.
+                  Arrays and lists are used to store multiple values in a single variable. They are useful for working with collections of data.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                   <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Python:</h3>
-                  <pre className="text-blue-700 dark:text-blue-300 text-sm bg-white dark:bg-blue-800/20 p-3 rounded">
-{`# Creating a list
+                  <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
+{`# Create a list
 arr = [1, 2, 3, 4, 5]
 
-# Accessing elements
-print(arr[0])  # 1 (first element)
-
-# Iterating through the list
+# Print each element
 for num in arr:
-    print(num)`}
+    print(num)
+
+# Access by index
+print(arr[0])  # Output: 1`}
                   </pre>
                   <p className="text-blue-700 dark:text-blue-300 text-xs mt-2">
-                    <strong>Note:</strong> Python lists are dynamic and can hold different types.
+                    <strong>Note:</strong> Python uses lists, which are more flexible than arrays.
                   </p>
                 </div>
 
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
                   <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">Java:</h3>
-                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-3 rounded">
-{`// Creating an array
+                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-2 rounded">
+{`// Create an array
 int[] arr = {1, 2, 3, 4, 5};
 
-// Accessing elements
-System.out.println(arr[0]);  // 1
-
-// Iterating through the array
+// Print each element
 for (int num : arr) {
     System.out.println(num);
-}`}
+}
+
+// Access by index
+System.out.println(arr[0]);  // Output: 1`}
                   </pre>
                   <p className="text-orange-700 dark:text-orange-300 text-xs mt-2">
-                    <strong>Note:</strong> Java arrays have fixed size and type.
+                    <strong>Note:</strong> Java arrays have a fixed size once created.
                   </p>
                 </div>
 
                 <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">C:</h3>
-                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-3 rounded">
-{`#include <stdio.h>
+                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-2 rounded">
+{`// Create an array
+int arr[] = {1, 2, 3, 4, 5};
 
-int main() {
-    // Creating an array
-    int arr[] = {1, 2, 3, 4, 5};
-    
-    // Accessing elements
-    printf("%d\\n", arr[0]);  // 1
-    
-    // Iterating through the array
-    for (int i = 0; i < 5; i++) {
-        printf("%d\\n", arr[i]);
-    }
-    return 0;
-}`}
+// Print each element
+for (int i = 0; i < 5; i++) {
+    printf("%d\\n", arr[i]);
+}
+
+// Access by index
+printf("%d\\n", arr[0]);  // Output: 1`}
                   </pre>
                   <p className="text-gray-700 dark:text-gray-300 text-xs mt-2">
-                    <strong>Note:</strong> C arrays have fixed size and type.
+                    <strong>Note:</strong> C arrays have a fixed size and no built-in methods.
                   </p>
                 </div>
               </div>
 
-              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">🧠 Common Array Operations:</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-green-700 dark:text-green-300 text-sm">
-                  <div>
-                    <ul className="space-y-1">
-                      <li>• <strong>Accessing:</strong> arr[index]</li>
-                      <li>• <strong>Updating:</strong> arr[index] = value</li>
-                      <li>• <strong>Length:</strong> len(arr) or arr.length</li>
-                      <li>• <strong>Adding:</strong> arr.append(value) (Python)</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <ul className="space-y-1">
-                      <li>• <strong>Slicing:</strong> arr[start:end] (Python)</li>
-                      <li>• <strong>Sorting:</strong> sort(arr) or arr.sort()</li>
-                      <li>• <strong>Searching:</strong> arr.index(value) (Python)</li>
-                      <li>• <strong>Removing:</strong> arr.remove(value) (Python)</li>
-                    </ul>
-                  </div>
-                </div>
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 Key Operations:</h3>
+                <ul className="space-y-1 text-yellow-700 dark:text-yellow-300 text-sm">
+                  <li>• <strong>Accessing:</strong> Get an element by its index (position)</li>
+                  <li>• <strong>Modifying:</strong> Change the value of an element</li>
+                  <li>• <strong>Iterating:</strong> Go through all elements one by one</li>
+                  <li>• <strong>Length:</strong> Get the number of elements in the array</li>
+                </ul>
               </div>
             </div>
           </div>
@@ -786,105 +705,202 @@ int main() {
       completed: false,
       content: (
         <div className="space-y-6">
-          <div className="bg-cyan-50 dark:bg-cyan-900/20 p-6 rounded-lg">
-            <h2 className="text-xl font-bold text-cyan-800 dark:text-cyan-200 mb-4 flex items-center gap-2">
+          <div className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-lg">
+            <h2 className="text-xl font-bold text-orange-800 dark:text-orange-200 mb-4 flex items-center gap-2">
               <Type className="w-6 h-6" />
               Strings
             </h2>
             
             <div className="space-y-4">
-              <div className="bg-white dark:bg-cyan-800/30 p-4 rounded-lg">
-                <h3 className="font-semibold text-cyan-800 dark:text-cyan-200 mb-2">📝 Task: Reverse a string</h3>
-                <p className="text-cyan-700 dark:text-cyan-300 text-sm mb-4">
-                  Strings are sequences of characters. They are used to store and manipulate text data. Let's see how to work with strings in different languages.
+              <div className="bg-white dark:bg-orange-800/30 p-4 rounded-lg">
+                <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">📝 Task: Reverse a string</h3>
+                <p className="text-orange-700 dark:text-orange-300 text-sm mb-4">
+                  Strings are sequences of characters. They are used to store and manipulate text.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                   <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Python:</h3>
-                  <pre className="text-blue-700 dark:text-blue-300 text-sm bg-white dark:bg-blue-800/20 p-3 rounded">
-{`# String reversal
-s = "hello"
-reversed_s = s[::-1]  # Using slicing
-print(reversed_s)  # "olleh"
+                  <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
+{`s = "hello"
+reversed = s[::-1]
+print(reversed)  # Output: "olleh"
 
-# String operations
-print(len(s))         # 5 (length)
-print(s.upper())      # "HELLO"
-print(s + " world")   # "hello world"
-print("e" in s)       # True`}
+# Alternative method
+reversed = ""
+for char in s:
+    reversed = char + reversed
+print(reversed)  # Output: "olleh"`}
                   </pre>
                   <p className="text-blue-700 dark:text-blue-300 text-xs mt-2">
-                    <strong>Note:</strong> Python has powerful string slicing and built-in methods.
+                    <strong>Note:</strong> s[::-1] is a slice that steps backwards through the string.
                   </p>
                 </div>
 
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
                   <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">Java:</h3>
-                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-3 rounded">
-{`// String reversal
-String s = "hello";
+                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-2 rounded">
+{`String s = "hello";
 String reversed = new StringBuilder(s)
     .reverse().toString();
-System.out.println(reversed);  // "olleh"
+System.out.println(reversed);  // Output: "olleh"
 
-// String operations
-System.out.println(s.length());  // 5
-System.out.println(s.toUpperCase());  // "HELLO"
-System.out.println(s + " world");  // "hello world"
-System.out.println(s.contains("e"));  // true`}
+// Alternative method
+String reversed2 = "";
+for (int i = s.length() - 1; i >= 0; i--) {
+    reversed2 += s.charAt(i);
+}
+System.out.println(reversed2);  // Output: "olleh"`}
                   </pre>
                   <p className="text-orange-700 dark:text-orange-300 text-xs mt-2">
-                    <strong>Note:</strong> Java has StringBuilder for efficient string manipulation.
+                    <strong>Note:</strong> StringBuilder is more efficient for string manipulation.
                   </p>
                 </div>
 
                 <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">C:</h3>
-                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-3 rounded">
+                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-2 rounded">
 {`#include <string.h>
-#include <stdio.h>
 
-int main() {
-    // String reversal
-    char s[] = "hello";
-    int len = strlen(s);
-    
-    // Print in reverse
-    for (int i = len - 1; i >= 0; i--) {
-        printf("%c", s[i]);
-    }
-    printf("\\n");  // "olleh"
-    
-    // String operations
-    printf("%d\\n", len);  // 5 (length)
-    return 0;
-}`}
+char s[] = "hello";
+int len = strlen(s);
+char reversed[len + 1];
+
+for (int i = 0; i < len; i++) {
+    reversed[i] = s[len - 1 - i];
+}
+reversed[len] = '\\0';  // Null terminator
+
+printf("%s\\n", reversed);  // Output: "olleh"`}
                   </pre>
                   <p className="text-gray-700 dark:text-gray-300 text-xs mt-2">
-                    <strong>Note:</strong> C strings are character arrays terminated by '\0'.
+                    <strong>Note:</strong> In C, strings must end with a null terminator '\0'.
                   </p>
                 </div>
               </div>
 
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">🔍 Common String Operations:</h3>
+                <ul className="space-y-1 text-green-700 dark:text-green-300 text-sm">
+                  <li>• <strong>Length:</strong> Get the number of characters in a string</li>
+                  <li>• <strong>Concatenation:</strong> Combine two or more strings</li>
+                  <li>• <strong>Substring:</strong> Get a portion of a string</li>
+                  <li>• <strong>Searching:</strong> Find a character or substring within a string</li>
+                  <li>• <strong>Replacing:</strong> Replace characters or substrings</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'operators',
+      title: 'Operators',
+      completed: false,
+      content: (
+        <div className="space-y-6">
+          <div className="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg">
+            <h2 className="text-xl font-bold text-purple-800 dark:text-purple-200 mb-4 flex items-center gap-2">
+              <Calculator className="w-6 h-6" />
+              Operators
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="bg-white dark:bg-purple-800/30 p-4 rounded-lg">
+                <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">📝 Task: Check if two numbers are equal</h3>
+                <p className="text-purple-700 dark:text-purple-300 text-sm mb-4">
+                  Operators are symbols that perform operations on variables and values. Let's explore different types of operators.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Python:</h3>
+                  <pre className="text-blue-700 dark:text-blue-300 text-xs bg-white dark:bg-blue-800/20 p-2 rounded">
+{`a = 5
+b = 5
+
+if a == b:
+    print("Equal")
+else:
+    print("Not equal")
+
+# Arithmetic operators
+print(a + b)  # Addition: 10
+print(a - b)  # Subtraction: 0
+print(a * b)  # Multiplication: 25
+print(a / b)  # Division: 1.0
+print(a % b)  # Modulus: 0`}
+                  </pre>
+                </div>
+
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+                  <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">Java:</h3>
+                  <pre className="text-orange-700 dark:text-orange-300 text-xs bg-white dark:bg-orange-800/20 p-2 rounded">
+{`int a = 5;
+int b = 5;
+
+if (a == b) {
+    System.out.println("Equal");
+} else {
+    System.out.println("Not equal");
+}
+
+// Arithmetic operators
+System.out.println(a + b);  // Addition: 10
+System.out.println(a - b);  // Subtraction: 0
+System.out.println(a * b);  // Multiplication: 25
+System.out.println(a / b);  // Division: 1
+System.out.println(a % b);  // Modulus: 0`}
+                  </pre>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">C:</h3>
+                  <pre className="text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800/20 p-2 rounded">
+{`int a = 5;
+int b = 5;
+
+if (a == b) {
+    printf("Equal\\n");
+} else {
+    printf("Not equal\\n");
+}
+
+// Arithmetic operators
+printf("%d\\n", a + b);  // Addition: 10
+printf("%d\\n", a - b);  // Subtraction: 0
+printf("%d\\n", a * b);  // Multiplication: 25
+printf("%d\\n", a / b);  // Division: 1
+printf("%d\\n", a % b);  // Modulus: 0`}
+                  </pre>
+                </div>
+              </div>
+
               <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 Common String Operations:</h3>
+                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 Types of Operators:</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-yellow-700 dark:text-yellow-300 text-sm">
                   <div>
-                    <ul className="space-y-1">
-                      <li>• <strong>Length:</strong> Finding string length</li>
-                      <li>• <strong>Concatenation:</strong> Joining strings</li>
-                      <li>• <strong>Substring:</strong> Getting part of a string</li>
-                      <li>• <strong>Search:</strong> Finding characters/substrings</li>
+                    <p className="font-medium mb-1">Arithmetic Operators:</p>
+                    <ul className="space-y-1 ml-4">
+                      <li>• <strong>+</strong> Addition</li>
+                      <li>• <strong>-</strong> Subtraction</li>
+                      <li>• <strong>*</strong> Multiplication</li>
+                      <li>• <strong>/</strong> Division</li>
+                      <li>• <strong>%</strong> Modulus (remainder)</li>
                     </ul>
                   </div>
                   <div>
-                    <ul className="space-y-1">
-                      <li>• <strong>Case conversion:</strong> upper/lower</li>
-                      <li>• <strong>Trim:</strong> Removing whitespace</li>
-                      <li>• <strong>Replace:</strong> Substituting characters</li>
-                      <li>• <strong>Split:</strong> Breaking into parts</li>
+                    <p className="font-medium mb-1">Comparison Operators:</p>
+                    <ul className="space-y-1 ml-4">
+                      <li>• <strong>==</strong> Equal to</li>
+                      <li>• <strong>!=</strong> Not equal to</li>
+                      <li>• <strong>&gt;</strong> Greater than</li>
+                      <li>• <strong>&lt;</strong> Less than</li>
+                      <li>• <strong>&gt;=</strong> Greater than or equal to</li>
+                      <li>• <strong>&lt;=</strong> Less than or equal to</li>
                     </ul>
                   </div>
                 </div>
@@ -896,108 +912,94 @@ int main() {
     },
     {
       id: 'practice-problems',
-      title: 'Simple Problems to Practice',
+      title: 'Simple Practice Problems',
       completed: false,
       content: (
         <div className="space-y-6">
-          <div className="bg-violet-50 dark:bg-violet-900/20 p-6 rounded-lg">
-            <h2 className="text-xl font-bold text-violet-800 dark:text-violet-200 mb-4 flex items-center gap-2">
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+            <h2 className="text-xl font-bold text-blue-800 dark:text-blue-200 mb-4 flex items-center gap-2">
               <Code className="w-6 h-6" />
-              Simple Problems to Practice
+              Simple Practice Problems
             </h2>
             
             <div className="space-y-4">
-              <div className="bg-white dark:bg-violet-800/30 p-4 rounded-lg">
-                <h3 className="font-semibold text-violet-800 dark:text-violet-200 mb-2">🎯 Practice Makes Perfect</h3>
-                <p className="text-violet-700 dark:text-violet-300 text-sm mb-4">
+              <div className="bg-white dark:bg-blue-800/30 p-4 rounded-lg">
+                <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">🎯 Practice Makes Perfect</h3>
+                <p className="text-blue-700 dark:text-blue-300 text-sm mb-4">
                   Now that you've learned the basics, it's time to practice with some simple problems. Try solving these in all three languages to build your skills.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Problem 1: Reverse a String</h3>
-                  <p className="text-blue-700 dark:text-blue-300 text-sm mb-2">
-                    Write a function that takes a string as input and returns the string reversed.
-                  </p>
-                  <div className="bg-white dark:bg-blue-800/20 p-2 rounded">
-                    <p className="text-blue-700 dark:text-blue-300 text-xs">
-                      <strong>Example:</strong> Input: "hello" → Output: "olleh"
-                    </p>
-                  </div>
-                </div>
-
+              <div className="space-y-4">
                 <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                  <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">Problem 2: Find the Maximum</h3>
-                  <p className="text-green-700 dark:text-green-300 text-sm mb-2">
-                    Write a function that finds the maximum value in an array/list of numbers.
+                  <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">Problem 1: Reverse a string</h3>
+                  <p className="text-green-700 dark:text-green-300 text-sm">
+                    Write a function that takes a string as input and returns the reverse of that string.
                   </p>
-                  <div className="bg-white dark:bg-green-800/20 p-2 rounded">
-                    <p className="text-green-700 dark:text-green-300 text-xs">
-                      <strong>Example:</strong> Input: [3, 7, 2, 9, 1] → Output: 9
-                    </p>
+                  <div className="mt-2 text-green-700 dark:text-green-300 text-xs">
+                    <p><strong>Example:</strong></p>
+                    <p>Input: "hello"</p>
+                    <p>Output: "olleh"</p>
                   </div>
                 </div>
 
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                  <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Problem 3: Print Even Numbers</h3>
-                  <p className="text-yellow-700 dark:text-yellow-300 text-sm mb-2">
-                    Write a program that prints all even numbers from 1 to N.
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                  <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">Problem 2: Find the maximum of two numbers</h3>
+                  <p className="text-purple-700 dark:text-purple-300 text-sm">
+                    Write a function that takes two numbers as input and returns the larger of the two.
                   </p>
-                  <div className="bg-white dark:bg-yellow-800/20 p-2 rounded">
-                    <p className="text-yellow-700 dark:text-yellow-300 text-xs">
-                      <strong>Example:</strong> Input: 10 → Output: 2, 4, 6, 8, 10
-                    </p>
+                  <div className="mt-2 text-purple-700 dark:text-purple-300 text-xs">
+                    <p><strong>Example:</strong></p>
+                    <p>Input: 5, 10</p>
+                    <p>Output: 10</p>
+                  </div>
+                </div>
+
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+                  <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">Problem 3: Print all even numbers up to N</h3>
+                  <p className="text-orange-700 dark:text-orange-300 text-sm">
+                    Write a function that takes a number N as input and prints all even numbers from 1 to N.
+                  </p>
+                  <div className="mt-2 text-orange-700 dark:text-orange-300 text-xs">
+                    <p><strong>Example:</strong></p>
+                    <p>Input: 10</p>
+                    <p>Output: 2 4 6 8 10</p>
                   </div>
                 </div>
 
                 <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
-                  <h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">Problem 4: Sum of Array</h3>
-                  <p className="text-red-700 dark:text-red-300 text-sm mb-2">
-                    Write a function that calculates the sum of all elements in an array/list.
+                  <h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">Problem 4: Sum all numbers in an array</h3>
+                  <p className="text-red-700 dark:text-red-300 text-sm">
+                    Write a function that takes an array of numbers as input and returns the sum of all the numbers.
                   </p>
-                  <div className="bg-white dark:bg-red-800/20 p-2 rounded">
-                    <p className="text-red-700 dark:text-red-300 text-xs">
-                      <strong>Example:</strong> Input: [1, 2, 3, 4, 5] → Output: 15
-                    </p>
+                  <div className="mt-2 text-red-700 dark:text-red-300 text-xs">
+                    <p><strong>Example:</strong></p>
+                    <p>Input: [1, 2, 3, 4, 5]</p>
+                    <p>Output: 15</p>
+                  </div>
+                </div>
+
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                  <h3 className="font-semibold text-indigo-800 dark:text-indigo-200 mb-2">Problem 5: Count vowels in a string</h3>
+                  <p className="text-indigo-700 dark:text-indigo-300 text-sm">
+                    Write a function that takes a string as input and returns the number of vowels (a, e, i, o, u) in the string.
+                  </p>
+                  <div className="mt-2 text-indigo-700 dark:text-indigo-300 text-xs">
+                    <p><strong>Example:</strong></p>
+                    <p>Input: "hello world"</p>
+                    <p>Output: 3 (e, o, o)</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
-                <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">Problem 5: Count Vowels</h3>
-                <p className="text-purple-700 dark:text-purple-300 text-sm mb-2">
-                  Write a function that counts the number of vowels (a, e, i, o, u) in a string.
-                </p>
-                <div className="bg-white dark:bg-purple-800/20 p-2 rounded mb-3">
-                  <p className="text-purple-700 dark:text-purple-300 text-xs">
-                    <strong>Example:</strong> Input: "hello world" → Output: 3
-                  </p>
-                </div>
-                <div className="bg-purple-100 dark:bg-purple-800/50 p-3 rounded">
-                  <p className="text-purple-800 dark:text-purple-200 text-xs font-medium">Python Solution:</p>
-                  <pre className="text-purple-700 dark:text-purple-300 text-xs bg-white dark:bg-purple-800/20 p-2 rounded mt-1">
-{`def count_vowels(s):
-    vowels = "aeiouAEIOU"
-    count = 0
-    for char in s:
-        if char in vowels:
-            count += 1
-    return count
-
-print(count_vowels("hello world"))  # 3`}
-                  </pre>
-                </div>
-              </div>
-
-              <div className="bg-teal-50 dark:bg-teal-900/20 p-4 rounded-lg border border-teal-200 dark:border-teal-800">
-                <h3 className="font-semibold text-teal-800 dark:text-teal-200 mb-2">💡 Practice Tips:</h3>
-                <ul className="space-y-1 text-teal-700 dark:text-teal-300 text-sm">
-                  <li>• Try to solve each problem in all three languages</li>
-                  <li>• Start by writing pseudocode before actual code</li>
-                  <li>• Test your solutions with different inputs</li>
-                  <li>• Don't worry about efficiency at first - focus on correctness</li>
-                  <li>• If you get stuck, break the problem into smaller steps</li>
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 Tips for Practice:</h3>
+                <ul className="space-y-1 text-yellow-700 dark:text-yellow-300 text-sm">
+                  <li>• Start by solving the problem in one language, then try the others</li>
+                  <li>• Break down each problem into smaller steps</li>
+                  <li>• Test your solution with different inputs</li>
+                  <li>• Don't worry about efficiency at first—focus on correctness</li>
+                  <li>• If you get stuck, try to solve a simpler version of the problem first</li>
                 </ul>
               </div>
             </div>
@@ -1014,12 +1016,12 @@ print(count_vowels("hello world"))  # 3`}
           <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-6 rounded-lg border border-emerald-200 dark:border-emerald-800">
             <div className="flex items-center gap-3 mb-4">
               <GraduationCap className="w-8 h-8 text-emerald-600" />
-              <h2 className="text-2xl font-bold text-emerald-800 dark:text-emerald-200">Programming 101 - Final Notes</h2>
+              <h2 className="text-2xl font-bold text-emerald-800 dark:text-emerald-200">Programming Fundamentals</h2>
             </div>
             
             <div className="bg-white dark:bg-emerald-800/30 p-6 rounded-lg mb-6">
               <blockquote className="text-lg text-emerald-800 dark:text-emerald-200 font-medium italic text-center">
-                "Mistakes are expected — debugging is part of learning. Always test with sample inputs. Once comfortable with this foundation, head to Problem Solving Foundations."
+                "You don't need to master everything before solving problems. Learn just enough to write simple logic, and grow from there. Solving problems is how you actually learn."
               </blockquote>
             </div>
 
@@ -1031,26 +1033,25 @@ print(count_vowels("hello world"))  # 3`}
                 </h3>
                 <ul className="space-y-1 text-green-700 dark:text-green-300 text-sm">
                   <li>• How to write basic programs in Python, Java, and C</li>
-                  <li>• Working with variables and different data types</li>
-                  <li>• Reading input and producing output</li>
-                  <li>• Using conditionals to make decisions</li>
-                  <li>• Creating loops to repeat actions</li>
-                  <li>• Writing functions to organize code</li>
+                  <li>• Working with variables and data types</li>
+                  <li>• Reading input and displaying output</li>
+                  <li>• Using conditionals and loops for control flow</li>
+                  <li>• Creating and using functions</li>
                   <li>• Working with arrays/lists and strings</li>
                 </ul>
               </div>
 
               <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                 <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
-                  <RotateCcw className="w-5 h-5" />
-                  Programming Cycle
+                  <Code className="w-5 h-5" />
+                  Next Steps
                 </h3>
                 <ul className="space-y-1 text-blue-700 dark:text-blue-300 text-sm">
-                  <li>1. <strong>Understand the problem</strong> - What are you trying to solve?</li>
-                  <li>2. <strong>Plan your solution</strong> - How will you approach it?</li>
-                  <li>3. <strong>Write the code</strong> - Implement your solution</li>
-                  <li>4. <strong>Test and debug</strong> - Find and fix errors</li>
-                  <li>5. <strong>Refine and optimize</strong> - Make your code better</li>
+                  <li>• Practice with the example problems in all three languages</li>
+                  <li>• Try solving simple problems on your own</li>
+                  <li>• Experiment with different approaches</li>
+                  <li>• Move on to "Problem Solving Foundations" when ready</li>
+                  <li>• Join coding communities for support and learning</li>
                 </ul>
               </div>
             </div>
@@ -1058,28 +1059,18 @@ print(count_vowels("hello world"))  # 3`}
             <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800 mb-4">
               <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 Remember:</h3>
               <p className="text-yellow-700 dark:text-yellow-300 text-sm">
-                You don't need to master everything before solving problems. Learn just enough to write simple logic, and grow from there. Solving problems is how you actually learn.
+                Mistakes are expected — debugging is part of learning. Always test with sample inputs and don't be afraid to experiment. Programming is a skill that improves with practice, so keep coding!
               </p>
             </div>
 
             <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800">
-              <h3 className="font-semibold text-indigo-800 dark:text-indigo-200 mb-2">🚀 Next Steps:</h3>
+              <h3 className="font-semibold text-indigo-800 dark:text-indigo-200 mb-2">🚀 Language Comparison:</h3>
               <ul className="space-y-1 text-indigo-700 dark:text-indigo-300 text-sm">
-                <li>• Practice the example problems in all three languages</li>
-                <li>• Try solving simple problems on coding platforms</li>
-                <li>• Read and understand code written by others</li>
-                <li>• Move on to the Problem Solving Foundations course</li>
-                <li>• Join programming communities to ask questions and share knowledge</li>
+                <li>• <strong>Python:</strong> Easiest to learn, great for beginners, very readable</li>
+                <li>• <strong>Java:</strong> More verbose, strongly typed, widely used in industry</li>
+                <li>• <strong>C:</strong> Lower-level, gives more control, but requires more attention to detail</li>
+                <li>• Learning multiple languages helps you understand programming concepts better</li>
               </ul>
-            </div>
-
-            <div className="mt-6 p-4 bg-emerald-100 dark:bg-emerald-800/50 rounded-lg text-center">
-              <p className="text-emerald-800 dark:text-emerald-200 font-medium">
-                Congratulations on completing Programming 101!
-              </p>
-              <p className="text-emerald-700 dark:text-emerald-300 text-sm mt-1">
-                You now have the foundation to start your programming journey.
-              </p>
             </div>
           </div>
         </div>
@@ -1192,8 +1183,7 @@ print(count_vowels("hello world"))  # 3`}
 
               <button
                 onClick={goToNextSection}
-                disabled={currentSectionIndex === sections.length - 1}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
               >
                 {currentSectionIndex === sections.length - 1 ? 'Complete' : 'Next'}
                 <ChevronRight className="w-4 h-4" />
