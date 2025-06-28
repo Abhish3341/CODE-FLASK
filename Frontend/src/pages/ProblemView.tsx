@@ -321,26 +321,7 @@ const ProblemView = () => {
                 
                 {/* Layout Controls */}
                 <div className="flex items-center gap-2 ml-auto">
-                  <button
-                    onClick={toggleRightPanel}
-                    className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[var(--color-hover-light)] transition-colors"
-                    title={showRightPanel ? "Hide right panel" : "Show right panel"}
-                  >
-                    {showRightPanel ? 
-                      <PanelLeft className="w-4 h-4 text-[var(--color-text-secondary)]" /> : 
-                      <PanelRight className="w-4 h-4 text-[var(--color-text-secondary)]" />
-                    }
-                  </button>
-                  <button
-                    onClick={toggleFullScreen}
-                    className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[var(--color-hover-light)] transition-colors"
-                    title={isFullScreen ? "Exit full screen" : "Full screen"}
-                  >
-                    {isFullScreen ? 
-                      <Minimize className="w-4 h-4 text-[var(--color-text-secondary)]" /> : 
-                      <Maximize className="w-4 h-4 text-[var(--color-text-secondary)]" />
-                    }
-                  </button>
+                  
                   
                   {/* Security Info Button */}
                   <button
