@@ -156,7 +156,19 @@ function generateManualHint(problem, language, code) {
     return "Use two pointers - one at the start and one at the end. Compare characters and move pointers inward until they meet.";
   }
 
-  if (title.includes('binary search') || category.includes('search')) {
+  if (title.includes('roman to integer')) {
+    return "Roman numerals have a special rule: when a smaller value comes before a larger one, it represents subtraction. Otherwise, it's addition. Process the string from right to left to handle this elegantly.";
+  }
+
+  if (title.includes('valid parentheses')) {
+    return "Consider using a stack data structure. Push opening brackets onto the stack, and when you encounter a closing bracket, check if it matches the most recent opening bracket.";
+  }
+
+  if (title.includes('merge two sorted')) {
+    return "Since both lists are already sorted, you can compare the current nodes from each list and always pick the smaller one to add to your result list.";
+  }
+
+  if (title.includes('binary search') || category.includes('binary search')) {
     return "Remember the binary search pattern: compare with middle element, then search left or right half. Keep track of your bounds carefully.";
   }
 
@@ -220,7 +232,7 @@ function analyzeCode(code, language) {
 
   return {
     hasNestedLoops: /for.*for|while.*while|for.*while|while.*for/.test(codeText),
-  hasStringReversal: /reverse/.test(codeText) || codeText.includes('[::-1]'),
+    hasStringReversal: /reverse/.test(codeText) || codeText.includes('[::-1]'),
     hasArrayAccess: /\[\d+\]|\[.*\]/.test(codeText),
     hasStringConcatenation: /\+.*["']|["'].*\+/.test(codeText),
     hasSyntaxIssues: checkSyntaxIssues(code, language),

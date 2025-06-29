@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Users, CheckCircle, Code, BookOpen, Lightbulb, Code2, Menu, X, Info, Shield, PanelRight, PanelLeft, Maximize, Minimize } from 'lucide-react';
+import { ArrowLeft, Clock, Users, CheckCircle, Code, BookOpen, Lightbulb, Code2, Menu, X, Info, Shield, PanelRight, PanelLeft, Maximize, Minimize, ExternalLink, Target, Zap, Award } from 'lucide-react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import axiosInstance from '../utils/axiosConfig';
 import CodeEditor from '../components/CodeEditor';
+import ScoreDisplay from '../components/ScoreDisplay';
 
 interface Problem {
   _id: string;
@@ -20,10 +21,21 @@ interface Problem {
   followUp?: string;
 }
 
+interface Score {
+  score: number;
+  clickedHint: boolean;
+  clickedSolution: boolean;
+  wrongAttempts: number;
+  passed: boolean;
+  timeSpent?: number;
+  language?: string;
+}
+
 const ProblemView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [problem, setProblem] = useState<Problem | null>(null);
+  const [score, setScore] = useState<Score | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'description'>('description');
@@ -32,10 +44,13 @@ const ProblemView = () => {
   const [executionMethod, setExecutionMethod] = useState<'docker' | 'native' | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showRightPanel, setShowRightPanel] = useState(true);
+  const [input, setInput] = useState('');
+  const [output, setOutput] = useState('');
 
   useEffect(() => {
     if (id) {
       fetchProblem(id);
+      fetchScore(id);
     }
   }, [id]);
 
@@ -52,11 +67,35 @@ const ProblemView = () => {
     }
   };
 
+  const fetchScore = async (problemId: string) => {
+    try {
+      const response = await axiosInstance.get(`/api/scores/problem/${problemId}`);
+      if (response.data.exists) {
+        setScore({
+          score: response.data.finalScore,
+          clickedHint: response.data.clickedHint,
+          clickedSolution: response.data.clickedSolution,
+          wrongAttempts: response.data.wrongAttempts,
+          passed: response.data.passed,
+          timeSpent: response.data.timeSpent,
+          language: response.data.language
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching score:', error);
+    }
+  };
+
   const handleSubmission = (result: any) => {
     console.log('Code submitted:', result);
     // Set execution method for security info
     if (result.executionMethod) {
       setExecutionMethod(result.executionMethod);
+    }
+    
+    // Refresh score after submission
+    if (id) {
+      fetchScore(id);
     }
   };
 
@@ -70,6 +109,19 @@ const ProblemView = () => {
         return 'text-red-500 bg-red-500/10';
       default:
         return 'text-gray-500 bg-gray-500/10';
+    }
+  };
+
+  const getDifficultyIcon = (difficulty: string) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy':
+        return <Target className="w-4 h-4" />;
+      case 'medium':
+        return <Zap className="w-4 h-4" />;
+      case 'hard':
+        return <Award className="w-4 h-4" />;
+      default:
+        return <Code className="w-4 h-4" />;
     }
   };
 
@@ -217,17 +269,30 @@ const ProblemView = () => {
           <h1 className="text-lg sm:text-xl font-bold text-[var(--color-text-primary)] mb-2">
             {problem.title}
           </h1>
-          <span className={`px-2 py-1 rounded-full text-xs ${getDifficultyColor(problem.difficulty)}`}>
-            {problem.difficulty}
-          </span>
-        </div>
-        
-        <div className="flex items-center gap-4 text-xs text-[var(--color-text-secondary)]">
-          <div className="flex items-center gap-1">
-            <Code className="w-3 h-3" />
-            {problem.category}
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-1 rounded-full text-xs flex items-center gap-1 ${getDifficultyColor(problem.difficulty)}`}>
+              {getDifficultyIcon(problem.difficulty)}
+              {problem.difficulty}
+            </span>
+            <span className="text-xs text-[var(--color-text-secondary)]">
+              {problem.category}
+            </span>
           </div>
         </div>
+        
+        {score && (
+          <div className="mb-3">
+            <ScoreDisplay 
+              score={score.score}
+              clickedHint={score.clickedHint}
+              clickedSolution={score.clickedSolution}
+              wrongAttempts={score.wrongAttempts}
+              passed={score.passed}
+              size="small"
+              showDetails={false}
+            />
+          </div>
+        )}
       </div>
 
       {/* Security Info Banner */}
@@ -291,6 +356,28 @@ const ProblemView = () => {
                 ))}
               </div>
             )}
+            
+            {problem.constraints && (
+              <div className="mt-6">
+                <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-4">Constraints</h3>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <pre className="text-sm text-blue-700 dark:text-blue-300 whitespace-pre-wrap">
+                    {problem.constraints}
+                  </pre>
+                </div>
+              </div>
+            )}
+            
+            {problem.followUp && (
+              <div className="mt-6">
+                <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-4">Follow-up</h3>
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                    {problem.followUp}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -321,8 +408,17 @@ const ProblemView = () => {
                 
                 {/* Layout Controls */}
                 <div className="flex items-center gap-2 ml-auto">
-                  
-                  
+                  <button
+                    onClick={toggleFullScreen}
+                    className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-[var(--color-hover-light)] transition-colors"
+                    title={isFullScreen ? "Exit Full Screen" : "Full Screen"}
+                  >
+                    {isFullScreen ? 
+                      <Minimize className="w-4 h-4 text-[var(--color-text-secondary)]" /> : 
+                      <Maximize className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                    }
+                  </button>
+                   
                   {/* Security Info Button */}
                   <button
                     onClick={toggleSecurityInfo}
@@ -338,7 +434,8 @@ const ProblemView = () => {
                 <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
                   {problem.title}
                 </h1>
-                <span className={`px-3 py-1 rounded-full text-sm ${getDifficultyColor(problem.difficulty)}`}>
+                <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${getDifficultyColor(problem.difficulty)}`}>
+                  {getDifficultyIcon(problem.difficulty)}
                   {problem.difficulty}
                 </span>
               </div>
@@ -349,6 +446,23 @@ const ProblemView = () => {
                   {problem.category}
                 </div>
               </div>
+              
+              {/* Score Display */}
+              {score && (
+                <div className="mt-4">
+                  <ScoreDisplay 
+                    score={score.score}
+                    maxScore={100}
+                    clickedHint={score.clickedHint}
+                    clickedSolution={score.clickedSolution}
+                    wrongAttempts={score.wrongAttempts}
+                    passed={score.passed}
+                    timeSpent={score.timeSpent}
+                    language={score.language}
+                    size="small"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Security Info Banner */}

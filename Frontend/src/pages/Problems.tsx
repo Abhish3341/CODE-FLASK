@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, Code, CheckCircle, Clock, Trophy, Target, Zap, Award, ExternalLink, Play, FileText, AlertCircle, Code2 } from 'lucide-react';
+import { Search, Filter, Code, CheckCircle, Clock, Trophy, Target, Zap, Award, ExternalLink, Play, FileText, AlertCircle, Code2, BookOpen, Hash, Layers, Tag } from 'lucide-react';
 import axiosInstance from '../utils/axiosConfig';
 
 interface Problem {
@@ -21,20 +21,28 @@ const Problems = () => {
   const [difficultyFilter, setDifficultyFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<'title' | 'difficulty' | 'category' | 'status'>('title');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     fetchProblems();
   }, []);
 
   useEffect(() => {
-    filterProblems();
-  }, [problems, searchTerm, difficultyFilter, categoryFilter, statusFilter]);
+    filterAndSortProblems();
+  }, [problems, searchTerm, difficultyFilter, categoryFilter, statusFilter, sortBy, sortOrder]);
 
   const fetchProblems = async () => {
     try {
       setError(null);
       const response = await axiosInstance.get('/api/problems');
-      setProblems(response.data || []);
+      const problemsData = response.data || [];
+      setProblems(problemsData);
+      
+      // Extract unique categories
+      const uniqueCategories = [...new Set(problemsData.map((p: Problem) => p.category))];
+      setCategories(uniqueCategories.filter(c => c));
     } catch (err: any) {
       console.error('Error fetching problems:', err);
       setError(err.response?.data?.error || 'Failed to load problems');
@@ -44,9 +52,10 @@ const Problems = () => {
     }
   };
 
-  const filterProblems = () => {
+  const filterAndSortProblems = () => {
     let filtered = problems;
 
+    // Apply filters
     if (searchTerm) {
       filtered = filtered.filter(problem => 
         problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -76,7 +85,42 @@ const Problems = () => {
       filtered = filtered.filter(problem => problem.status === 'not-attempted');
     }
 
+    // Apply sorting
+    filtered = [...filtered].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'title':
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case 'difficulty':
+          const difficultyOrder = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+          comparison = difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
+          break;
+        case 'category':
+          comparison = a.category.localeCompare(b.category);
+          break;
+        case 'status':
+          const statusOrder = { 'solved': 1, 'submitted': 2, 'attempted': 3, 'not-attempted': 4 };
+          comparison = statusOrder[a.status] - statusOrder[b.status];
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
     setFilteredProblems(filtered);
+  };
+
+  const handleSortChange = (newSortBy: 'title' | 'difficulty' | 'category' | 'status') => {
+    if (sortBy === newSortBy) {
+      // Toggle sort order if clicking the same column
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new sort column and default to ascending
+      setSortBy(newSortBy);
+      setSortOrder('asc');
+    }
   };
 
   const handleSolveProblem = (problemId: string) => {
@@ -175,9 +219,34 @@ const Problems = () => {
     }
   };
 
-  const getUniqueCategories = () => {
-    const categories = [...new Set(problems.map(problem => problem.category))];
-    return categories.filter(category => category);
+  const getCategoryIcon = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'arrays':
+        return <Layers className="w-4 h-4" />;
+      case 'strings':
+        return <Hash className="w-4 h-4" />;
+      case 'math':
+        return <Hash className="w-4 h-4" />;
+      case 'binary tree':
+      case 'binary search tree':
+        return <BookOpen className="w-4 h-4" />;
+      case 'linked lists':
+        return <Code className="w-4 h-4" />;
+      case 'stack':
+        return <Layers className="w-4 h-4" />;
+      case 'two pointers':
+        return <Code className="w-4 h-4" />;
+      case 'bit manipulation':
+        return <Code className="w-4 h-4" />;
+      case 'hash table':
+        return <Hash className="w-4 h-4" />;
+      case 'dynamic programming':
+        return <Layers className="w-4 h-4" />;
+      case 'binary search':
+        return <Search className="w-4 h-4" />;
+      default:
+        return <Tag className="w-4 h-4" />;
+    }
   };
 
   const getStats = () => {
@@ -320,45 +389,65 @@ const Problems = () => {
           </div>
         </div>
 
-        {/* Status Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-          <div className="card p-3 sm:p-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-              <div>
-                <p className="font-medium text-green-500 text-sm sm:text-base">{stats.solved}</p>
-                <p className="text-xs text-[var(--color-text-secondary)]">Solved</p>
+        {/* Difficulty Stats */}
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+          <div className="card p-4 sm:p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 sm:p-2 bg-green-500/10 rounded-lg">
+                <Target className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
               </div>
+              <div>
+                <p className="text-[var(--color-text-secondary)] text-xs">Easy</p>
+                <p className="text-lg sm:text-xl font-bold text-green-500">
+                  {stats.easy.solved}/{stats.easy.total}
+                </p>
+              </div>
+            </div>
+            <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
+              <div 
+                className="bg-green-500 h-2 rounded-full"
+                style={{ width: `${stats.easy.total > 0 ? (stats.easy.solved / stats.easy.total) * 100 : 0}%` }}
+              ></div>
             </div>
           </div>
 
-          <div className="card p-3 sm:p-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-              <div>
-                <p className="font-medium text-blue-500 text-sm sm:text-base">{stats.submitted}</p>
-                <p className="text-xs text-[var(--color-text-secondary)]">Submitted</p>
+          <div className="card p-4 sm:p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 sm:p-2 bg-yellow-500/10 rounded-lg">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
               </div>
+              <div>
+                <p className="text-[var(--color-text-secondary)] text-xs">Medium</p>
+                <p className="text-lg sm:text-xl font-bold text-yellow-500">
+                  {stats.medium.solved}/{stats.medium.total}
+                </p>
+              </div>
+            </div>
+            <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
+              <div 
+                className="bg-yellow-500 h-2 rounded-full"
+                style={{ width: `${stats.medium.total > 0 ? (stats.medium.solved / stats.medium.total) * 100 : 0}%` }}
+              ></div>
             </div>
           </div>
 
-          <div className="card p-3 sm:p-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Play className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+          <div className="card p-4 sm:p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 sm:p-2 bg-red-500/10 rounded-lg">
+                <Award className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+              </div>
               <div>
-                <p className="font-medium text-yellow-500 text-sm sm:text-base">{stats.attempted}</p>
-                <p className="text-xs text-[var(--color-text-secondary)]">Attempted</p>
+                <p className="text-[var(--color-text-secondary)] text-xs">Hard</p>
+                <p className="text-lg sm:text-xl font-bold text-red-500">
+                  {stats.hard.solved}/{stats.hard.total}
+                </p>
               </div>
             </div>
-          </div>
-
-          <div className="card p-3 sm:p-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
-              <div>
-                <p className="font-medium text-gray-500 text-sm sm:text-base">{stats.notAttempted}</p>
-                <p className="text-xs text-[var(--color-text-secondary)]">Not Attempted</p>
-              </div>
+            <div className="w-full bg-[var(--color-bg-primary)] rounded-full h-2">
+              <div 
+                className="bg-red-500 h-2 rounded-full"
+                style={{ width: `${stats.hard.total > 0 ? (stats.hard.solved / stats.hard.total) * 100 : 0}%` }}
+              ></div>
             </div>
           </div>
         </div>
@@ -393,7 +482,7 @@ const Problems = () => {
             className="px-3 sm:px-4 py-2 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
           >
             <option value="all">All Categories</option>
-            {getUniqueCategories().map(category => (
+            {categories.map(category => (
               <option key={category} value={category}>{category}</option>
             ))}
           </select>
@@ -411,8 +500,106 @@ const Problems = () => {
           </select>
         </div>
 
-        {/* Problems List - Responsive */}
-        <div className="space-y-3 sm:space-y-4">
+        {/* Desktop Table View */}
+        <div className="hidden lg:block card overflow-hidden mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)]">
+                <th className="px-6 py-3 text-left">
+                  <button 
+                    className="flex items-center gap-1 text-[var(--color-text-primary)] font-semibold text-sm"
+                    onClick={() => handleSortChange('status')}
+                  >
+                    Status
+                    {sortBy === 'status' && (
+                      <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </button>
+                </th>
+                <th className="px-6 py-3 text-left">
+                  <button 
+                    className="flex items-center gap-1 text-[var(--color-text-primary)] font-semibold text-sm"
+                    onClick={() => handleSortChange('title')}
+                  >
+                    Title
+                    {sortBy === 'title' && (
+                      <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </button>
+                </th>
+                <th className="px-6 py-3 text-left">
+                  <button 
+                    className="flex items-center gap-1 text-[var(--color-text-primary)] font-semibold text-sm"
+                    onClick={() => handleSortChange('difficulty')}
+                  >
+                    Difficulty
+                    {sortBy === 'difficulty' && (
+                      <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </button>
+                </th>
+                <th className="px-6 py-3 text-left">
+                  <button 
+                    className="flex items-center gap-1 text-[var(--color-text-primary)] font-semibold text-sm"
+                    onClick={() => handleSortChange('category')}
+                  >
+                    Category
+                    {sortBy === 'category' && (
+                      <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </button>
+                </th>
+                <th className="px-6 py-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProblems.map((problem) => (
+                <tr key={problem.id} className="border-b border-[var(--color-border)] hover:bg-[var(--color-bg-secondary)] transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(problem.status)}
+                      <span className="text-sm text-[var(--color-text-secondary)]">
+                        {getStatusText(problem.status)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <Link 
+                      to={`/app/problems/${problem.id}/solve`}
+                      className="text-[var(--color-text-primary)] hover:text-indigo-500 font-medium transition-colors"
+                    >
+                      {problem.title}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-xs flex items-center gap-1 ${getDifficultyColor(problem.difficulty)}`}>
+                      {getDifficultyIcon(problem.difficulty)}
+                      {problem.difficulty}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-[var(--color-text-secondary)] text-sm">
+                      {getCategoryIcon(problem.category)}
+                      {problem.category}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      onClick={() => handleSolveProblem(problem.id)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium text-sm ${getSolveButtonStyle(problem.status)}`}
+                    >
+                      {getSolveButtonText(problem.status)}
+                      <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden space-y-3 sm:space-y-4">
           {filteredProblems.map((problem) => (
             <div key={problem.id} className={`card p-4 sm:p-6 hover:shadow-lg transition-all ${getStatusColor(problem.status)}`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
@@ -444,7 +631,7 @@ const Problems = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 text-xs sm:text-sm text-[var(--color-text-secondary)]">
-                      <Code className="w-3 h-3 sm:w-4 sm:h-4" />
+                      {getCategoryIcon(problem.category)}
                       <span className="truncate">{problem.category}</span>
                     </div>
                   </div>
