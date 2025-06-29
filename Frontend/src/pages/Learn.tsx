@@ -556,47 +556,87 @@ const Learn = () => {
           </div>
         </div>
 
-        {/* All Courses */}
+        {/* All Courses - IMPROVED UI */}
         <div>
           <h2 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6">All Courses</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {courses.map((course) => (
-              <div key={course.id} className="card course-card">
-                <div className="p-4 sm:p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 rounded-lg ${course.bgColor}`}>
-                      <course.icon className={`w-6 h-6 sm:w-8 sm:h-8 ${course.color}`} />
+              <div 
+                key={course.id} 
+                className="relative overflow-hidden bg-[var(--color-bg-secondary)] rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px] border border-[var(--color-border)]"
+              >
+                {/* Course Header with Gradient Background */}
+                <div className={`p-6 ${
+                  course.id === 1 
+                    ? 'bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/30 dark:to-indigo-900/30'
+                    : course.id === 2
+                      ? 'bg-gradient-to-r from-purple-50/80 to-indigo-50/80 dark:from-purple-900/30 dark:to-indigo-900/30'
+                      : 'bg-gradient-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-900/30 dark:to-teal-900/30'
+                }`}>
+                  <div className="flex justify-between items-start mb-4">
+                    <div className={`p-3 rounded-lg ${course.bgColor} shadow-md`}>
+                      <course.icon className={`w-6 h-6 ${course.color}`} />
                     </div>
-                    <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm ${getLevelColor(course.level)}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getLevelColor(course.level)} shadow-sm`}>
                       {course.level}
                     </span>
                   </div>
                   
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-[var(--color-text-primary)]">{course.title}</h3>
-                  <p className="text-sm sm:text-base text-[var(--color-text-secondary)] mb-4 line-clamp-3">{course.description}</p>
+                  <h3 className="text-xl font-bold mb-2 text-[var(--color-text-primary)]">{course.title}</h3>
                   
+                  <p className="text-sm text-[var(--color-text-secondary)] mb-4 line-clamp-3">
+                    {course.description}
+                  </p>
+                </div>
+                
+                {/* Course Details */}
+                <div className="p-6 border-t border-[var(--color-border)]">
                   {/* Language badges for Programming 101 */}
                   {course.languages && (
                     <div className="flex flex-wrap gap-1 mb-4">
                       {course.languages.map((lang) => (
-                        <span key={lang} className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded text-xs">
+                        <span key={lang} className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-md text-xs font-medium shadow-sm">
                           {lang}
                         </span>
                       ))}
                     </div>
                   )}
                   
+                  {/* Topics Preview */}
+                  <div className="mb-4">
+                    <h4 className="text-xs uppercase tracking-wider text-[var(--color-text-secondary)] mb-2">Topics include:</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {course.topics.slice(0, 3).map((topic, idx) => (
+                        <span key={idx} className="text-xs px-2 py-1 bg-[var(--color-bg-primary)] rounded-md text-[var(--color-text-secondary)]">
+                          {topic.split(' ').slice(0, 2).join(' ')}...
+                        </span>
+                      ))}
+                      {course.topics.length > 3 && (
+                        <span className="text-xs px-2 py-1 bg-[var(--color-bg-primary)] rounded-md text-[var(--color-text-secondary)]">
+                          +{course.topics.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
                   <div className="flex gap-2">
                     <button
                       onClick={() => setSelectedCourse(course)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-border)] transition-colors text-sm"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-border)] transition-colors text-sm font-medium border border-[var(--color-border)]"
                     >
                       <Eye className="w-4 h-4" />
                       Details
                     </button>
                     <button 
                       onClick={() => startLearning(course.id, course.title)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-lg transition-colors text-sm font-medium ${
+                        course.id === 1 
+                          ? 'bg-blue-600 hover:bg-blue-700'
+                          : course.id === 2
+                            ? 'bg-purple-600 hover:bg-purple-700'
+                            : 'bg-emerald-600 hover:bg-emerald-700'
+                      }`}
                     >
                       <Play className="w-4 h-4" />
                       Start
