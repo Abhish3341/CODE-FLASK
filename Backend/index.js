@@ -1,40 +1,56 @@
 require('dotenv').config();
 const express = require('express');
-const connectDB = require('./database/db');
 const cors = require('cors');
+const morgan = require('morgan');
+const connectDB = require('./database/db');
+const authRoutes = require('./routes/auth');
+const problemsRoutes = require('./routes/problems');
+const submissionRoutes = require('./routes/submission');
+const compilerRoutes = require('./routes/compiler');
+const scoresRoutes = require('./routes/scores');
+const dashboardRoutes = require('./routes/dashboard');
+const timeTrackingRoutes = require('./routes/timeTracking');
+const aiHintRoutes = require('./routes/aiHint');
 
+// Initialize Express app
 const app = express();
-
-// Connect to MongoDB first
-connectDB().then(() => {
-    console.log('Database connected successfully');
-}).catch(err => {
-    console.error('Database connection error:', err);
-    process.exit(1);
-});
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/dashboard', require('./routes/dashboard'));
-app.use('/api/problems', require('./routes/problems'));
-app.use('/api/submissions', require('./routes/submissions'));
-app.use('/api/compiler', require('./routes/compiler'));
-app.use('/api/scores', require('./routes/scores'));
-app.use('/api/time', require('./routes/timeTracking'));
-app.use('/api/ai', require('./routes/aiHint')); // Add AI hint routes
-
-// 404 handler - Changed to app.use to handle all HTTP methods
-app.use('*', (req, res) => {
-    console.log('404 for path:', req.path);
-    res.status(404).json({ error: `Route ${req.path} not found` });
-});
-
 const PORT = process.env.PORT || 8000;
 
+// Connect to MongoDB
+connectDB();
+
+// Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
+}));
+app.use(express.json());
+app.use(morgan('dev'));
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'CodeFlask API is running' });
+});
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/problems', problemsRoutes);
+app.use('/api/submissions', submissionRoutes);
+app.use('/api/compiler', compilerRoutes);
+app.use('/api/scores', scoresRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/time', timeTrackingRoutes);
+app.use('/api/ai', aiHintRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// Start server
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 MongoDB: ${process.env.MONGODB_URI ? 'Connected' : 'Not connected'}`);
 });
