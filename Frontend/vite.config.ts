@@ -16,4 +16,18 @@ export default defineConfig({
       deny: ['.env', '.git', 'node_modules', 'package-lock.json', 'yarn.lock'],
     },
   },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    minify: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          editor: ['@monaco-editor/react'],
+          ui: ['lucide-react', '@shadcn/ui']
+        }
+      }
+    }
+  }
 });
