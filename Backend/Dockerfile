@@ -32,5 +32,9 @@ RUN mkdir -p temp
 # Expose port
 EXPOSE 8000
 
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=8000
+
 # Start the app
 CMD ["node", "index.js"]
