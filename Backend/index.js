@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const connectDB = require('./database/db');
 const authRoutes = require('./routes/auth');
 const problemsRoutes = require('./routes/problems');
-const submissionRoutes = require('./routes/submissions');
+const submissionRoutes = require('./routes/submission');
 const compilerRoutes = require('./routes/compiler');
 const scoresRoutes = require('./routes/scores');
 const dashboardRoutes = require('./routes/dashboard');
@@ -21,7 +21,25 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || 'http://localhost:5173',
+      'https://codeflask.live',
+      'https://www.codeflask.live',
+      'http://localhost',
+      'http://localhost:3000'
+    ];
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    
+    return callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json());

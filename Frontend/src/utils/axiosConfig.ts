@@ -3,7 +3,7 @@ import axios from 'axios';
 // Create axios instance with base URL
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
-  timeout: 10000,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   }
@@ -38,6 +38,7 @@ axiosInstance.interceptors.response.use(
     
     if (error.message === 'Network Error') {
       console.error('Network error - API server may be down or unreachable');
+      console.error(`API URL: ${import.meta.env.VITE_API_URL}`);
     }
     
     if (error.response) {

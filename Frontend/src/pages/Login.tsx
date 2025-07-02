@@ -7,8 +7,6 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import axiosInstance from '../utils/axiosConfig';
 
-const CodeFlaskLogo = "/codeflask.svg";
-
 const Login = () => {
   const { login } = useAuth();
   const { theme, toggleTheme, isDarkMode } = useTheme();
