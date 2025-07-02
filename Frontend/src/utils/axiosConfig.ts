@@ -16,9 +16,14 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Log the request URL for debugging
+    console.log(`🔄 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+    
     return config;
   },
   (error) => {
+    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -29,11 +34,22 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      localStorage.removeItem('auth_token');
-      window.location.href = '/login';
+    console.error('API Error:', error);
+    
+    if (error.message === 'Network Error') {
+      console.error('Network error - API server may be down or unreachable');
     }
+    
+    if (error.response) {
+      console.error('Error response:', error.response.status, error.response.data);
+      
+      if (error.response.status === 401) {
+        // Unauthorized - clear token and redirect to login
+        localStorage.removeItem('auth_token');
+        window.location.href = '/login';
+      }
+    }
+    
     return Promise.reject(error);
   }
 );

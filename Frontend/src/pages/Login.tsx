@@ -41,6 +41,8 @@ const Login = () => {
         ? { email, password, firstname: firstName, lastname: lastName }
         : { email, password };
       
+      console.log(`📤 Submitting ${isSignUp ? 'registration' : 'login'} request to ${import.meta.env.VITE_API_URL}${endpoint}`);
+      
       const response = await axiosInstance.post(endpoint, data);
       
       if (response.data.user && response.data.token) {
@@ -102,6 +104,9 @@ const Login = () => {
         sub: decoded.sub
       };
 
+      console.log('📤 Submitting Google OAuth data to API:', googleData.email);
+      console.log(`API URL: ${import.meta.env.VITE_API_URL}/api/auth/google`);
+      
       const response = await axiosInstance.post('/api/auth/google', googleData);
       
       if (response.data.user && response.data.token) {
@@ -249,7 +254,13 @@ const Login = () => {
               <span className="text-xl font-bold text-[var(--color-text-primary)]">CodeFlask</span>
             </Link>
             
-            
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors"
+              aria-label="Toggle theme"
+            >
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
           </div>
         </nav>
       </header>
@@ -263,6 +274,13 @@ const Login = () => {
             </h2>
             <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
               {isSignUp ? 'Sign up to start coding' : 'Sign in to continue coding'}
+            </p>
+          </div>
+
+          {/* API URL Debug Info */}
+          <div className="mb-4 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-xs">
+            <p className="text-blue-700 dark:text-blue-300">
+              API URL: {import.meta.env.VITE_API_URL || 'Not set'}
             </p>
           </div>
 
