@@ -16,6 +16,12 @@ services:
       - mongodb_data:/data/db
     networks:
       - codeflask-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # Backend API with Compiler Service
   backend:
@@ -28,21 +34,27 @@ services:
       NODE_ENV: production
       PORT: 8000
       MONGODB_URI: mongodb://admin:password123@mongodb:27017/codeflask?authSource=admin
-      SECRET_KEY: ${SECRET_KEY}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      FRONTEND_URL: ${FRONTEND_URL}
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-your-openai-key-here}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-your-github-client-id}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-your-github-client-secret}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-your-google-client-id}
     ports:
       - "8000:8000"
     depends_on:
       - mongodb
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock  # For Docker-in-Docker
       - ./backend/temp:/usr/src/app/temp
     networks:
       - codeflask-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # Frontend
   frontend:
@@ -57,6 +69,10 @@ services:
       - backend
     networks:
       - codeflask-network
+    environment:
+      - VITE_API_URL=http://backend:8000
+      - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-your-google-client-id}
+      - VITE_GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-your-github-client-id}
 
 volumes:
   mongodb_data:

@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const connectDB = require('./database/db');
 const authRoutes = require('./routes/auth');
 const problemsRoutes = require('./routes/problems');
-const submissionRoutes = require('./routes/submission');
+const submissionsRoutes = require('./routes/submissions');
 const compilerRoutes = require('./routes/compiler');
 const scoresRoutes = require('./routes/scores');
 const dashboardRoutes = require('./routes/dashboard');
@@ -27,7 +27,10 @@ app.use(cors({
       'https://codeflask.live',
       'https://www.codeflask.live',
       'http://localhost',
-      'http://localhost:3000'
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://codeflask-frontend.vercel.app',
+      'https://codeflask.vercel.app'
     ];
     
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -53,12 +56,22 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/problems', problemsRoutes);
-app.use('/api/submissions', submissionRoutes);
+app.use('/api/submissions', submissionsRoutes);
 app.use('/api/compiler', compilerRoutes);
 app.use('/api/scores', scoresRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/time', timeTrackingRoutes);
 app.use('/api/ai', aiHintRoutes);
+
+// Root route
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'CodeFlask API is running',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -66,9 +79,21 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// Global error handler for uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  // Keep the process running instead of crashing
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Keep the process running instead of crashing
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 MongoDB: ${process.env.MONGODB_URI ? 'Connected' : 'Not connected'}`);
+  console.log(`🌐 CORS allowed origins: ${process.env.FRONTEND_URL || 'http://localhost:5173'}, https://codeflask.live, etc.`);
 });
