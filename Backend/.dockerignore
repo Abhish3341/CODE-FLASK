@@ -9,3 +9,4 @@ Dockerfile
 docker-compose*
 README.md
 temp
+dist

@@ -18,13 +18,14 @@ CodeFlask is an online judge platform that helps users practice coding problems,
 - **Database**: MongoDB
 - **Code Execution**: Docker containerization
 - **Authentication**: JWT, OAuth (Google, GitHub)
+- **Deployment**: Render (Backend), Vercel (Frontend)
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js (v18+)
-- Docker and Docker Compose
+- Docker and Docker Compose (for local development with containerized code execution)
 - MongoDB (or use the provided Docker container)
 
 ### Installation
@@ -73,9 +74,14 @@ CodeFlask is an online judge platform that helps users practice coding problems,
 
 ## Deployment
 
-### Northflank Deployment
+### Render Deployment
 
-The backend is configured for deployment on Northflank using the `northflank.yaml` configuration file.
+The backend is configured for deployment on Render using the `render.yaml` configuration file.
+
+To deploy:
+1. Connect your GitHub repository to Render
+2. Use the Blueprint feature with the render.yaml file
+3. Set up the required environment variables in Render dashboard
 
 ### Vercel Deployment
 
@@ -85,6 +91,3 @@ The frontend can be deployed to Vercel:
 2. Set the environment variables in Vercel dashboard
 3. Deploy the frontend
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.

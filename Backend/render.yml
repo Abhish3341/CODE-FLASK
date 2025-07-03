@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: codeflask-api
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: node index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        fromService:
+          type: web
+          name: codeflask-api
+          envVarKey: PORT
+      - key: MONGODB_URI
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        value: https://codeflask.vercel.app
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+    disk:
+      name: temp-storage
+      mountPath: /usr/src/app/temp
+      sizeGB: 1
+
+databases:
+  - name: codeflask-mongodb
+    plan: starter
+    databaseName: codeflask
+    user: admin
