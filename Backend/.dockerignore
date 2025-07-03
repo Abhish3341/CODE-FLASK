@@ -5,7 +5,6 @@ npm-debug.log
 .env
 .env.example
 .dockerignore
-Dockerfile
 docker-compose*
 README.md
 temp

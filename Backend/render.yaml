@@ -1,19 +1,14 @@
 services:
   - type: web
     name: codeflask-api
-    env: node
+    env: docker
     plan: starter
-    buildCommand: npm install
-    startCommand: node index.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        fromService:
-          type: web
-          name: codeflask-api
-          envVarKey: PORT
+        value: 8000
       - key: MONGODB_URI
         sync: false
       - key: SECRET_KEY
