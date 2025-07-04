@@ -17,14 +17,14 @@ RUN apt-get update && apt-get install -y \
 # Create app directory
 WORKDIR /usr/src/app
 
-# Copy package files
-COPY package*.json ./
+# Copy backend package files
+COPY backend/package*.json ./
 
 # Install dependencies
 RUN npm install --production
 
-# Copy app source
-COPY . .
+# Copy backend app source
+COPY backend/ .
 
 # Create temp directory for code execution
 RUN mkdir -p temp
