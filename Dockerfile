@@ -1,6 +1,6 @@
 FROM node:18-slim
 
-# Install Docker CLI
+# Install Docker CLI and other utilities
 RUN apt-get update && apt-get install -y \
     apt-transport-https \
     ca-certificates \
