@@ -1,11 +1,10 @@
 services:
   - type: web
     name: codeflask-api
-    runtime: node
-    env: node
+    env: docker
     plan: starter
-    buildCommand: cd backend && npm ci --omit=dev
-    startCommand: cd backend && node index.js
+    dockerfilePath: backend/Dockerfile
+    buildContext: backend
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -28,7 +27,7 @@ services:
         sync: false
     disk:
       name: temp-storage
-      mountPath: /backend/temp
+      mountPath: /usr/src/app/temp
       sizeGB: 1
 
 databases:
