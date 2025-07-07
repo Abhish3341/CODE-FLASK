@@ -276,11 +276,7 @@ const Login = () => {
           </div>
 
           {/* API URL Debug Info */}
-          <div className="mb-4 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-xs opacity-50 hover:opacity-100 transition-opacity">
-            <p className="text-blue-700 dark:text-blue-300 text-xs">
-              API URL: {import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000'}
-            </p>
-          </div>
+          {/* API URL debug info removed */}
 
           {/* Minimal Email Conflict Warning - Only show when there's an actual conflict */}
           {conflictInfo && (
@@ -469,11 +465,6 @@ const Login = () => {
             >
               {isSignUp ? 'Sign in' : 'Sign up'}
             </button>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 mt-2">
-              API URL: {import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000'}
-            </div>
           </div>
         </div>
       </div>

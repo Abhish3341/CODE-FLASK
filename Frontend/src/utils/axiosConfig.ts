@@ -17,13 +17,18 @@ const getApiUrl = () => {
   return `https://${apiUrl}`;
 };
 
+// Log the API URL being used
+console.log(`🔌 API URL configured as: ${import.meta.env.VITE_API_URL || 'http://localhost:8000'}`);
+console.log(`🔌 Resolved API URL: ${getApiUrl()}`);
+
 // Create axios instance with base URL
 const axiosInstance = axios.create({
   baseURL: getApiUrl(),
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
+  withCredentials: false
 });
 
 // Add request interceptor to add auth token
@@ -35,7 +40,7 @@ axiosInstance.interceptors.request.use(
     }
     
     // Log the request URL for debugging
-    console.log(`🔄 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+    console.log(`🔄 API Request: ${config.method?.toUpperCase()} ${getApiUrl()}${config.url}`);
     
     return config;
   },
@@ -56,7 +61,13 @@ axiosInstance.interceptors.response.use(
     if (error.message === 'Network Error') {
       console.error('Network error - API server may be down or unreachable');
       console.error(`API URL: ${import.meta.env.VITE_API_URL}`);
-      console.error(`Resolved API URL used for requests: ${getApiUrl()}`);
+      console.log(`Resolved API URL used for requests: ${getApiUrl()}`);
+      
+      // Provide more helpful error information
+      if (getApiUrl().includes('codeflask.live')) {
+        console.error('The API domain may not be properly configured or DNS is not resolving.');
+        console.error('Try using the deployed API URL or check your network connection.');
+      }
     }
     
     if (error.response) {

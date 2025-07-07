@@ -22,6 +22,12 @@ connectDB();
 // Middleware
 app.use(cors({
   origin: function(origin, callback) {
+    // Allow all origins in development
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    
+    // In production, check against allowed origins
     const allowedOrigins = [
       process.env.FRONTEND_URL || 'http://localhost:5173',
       'https://codeflask.live',
@@ -37,8 +43,8 @@ app.use(cors({
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+      console.warn(`CORS warning: Origin ${origin} not in allowed list, but allowing anyway`);
+      return callback(null, true); // Allow all origins temporarily for debugging
     }
     
     return callback(null, true);
