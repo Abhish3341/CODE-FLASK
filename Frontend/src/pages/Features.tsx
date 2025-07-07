@@ -48,8 +48,8 @@ const Features = () => {
     <div className="min-h-screen bg-[var(--color-bg-primary)]">
       {/* Header */}
       <header className="border-b border-[var(--color-border)]">
-        <nav className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+        <nav className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
             <div className="flex items-center gap-2">
               <Link to="/" onClick={handleRedirect} className="flex items-center gap-2">
                 <Code2 className="w-8 h-8 text-indigo-500" />
@@ -75,26 +75,26 @@ const Features = () => {
       </header>
 
       {/* Hero Section */}
-      <div className="container mx-auto px-6 py-20">
-        <h1 className="text-4xl md:text-5xl font-bold text-center text-[var(--color-text-primary)] mb-6">
+      <div className="container mx-auto px-4 sm:px-6 py-12 md:py-20">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[var(--color-text-primary)] mb-4 sm:mb-6">
           Features that Empower Your Coding Journey
         </h1>
-        <p className="text-xl text-center text-[var(--color-text-secondary)] max-w-3xl mx-auto">
+        <p className="text-base sm:text-xl text-center text-[var(--color-text-secondary)] max-w-3xl mx-auto">
           CodeFlask provides all the tools you need to write, test, and deploy your code efficiently.
           Discover our powerful features designed for modern development.
         </p>
       </div>
 
       {/* Features Grid */}
-      <div className="container mx-auto px-6 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="container mx-auto px-4 sm:px-6 pb-12 md:pb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {features.map((feature, index) => (
-            <div key={index} className="card p-6 hover:shadow-lg transition-shadow">
-              <feature.icon className="w-12 h-12 text-indigo-500 mb-4" />
-              <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-3">
+            <div key={index} className="card p-4 sm:p-6 hover:shadow-lg transition-shadow rounded-lg bg-[var(--color-bg-primary)]">
+              <feature.icon className="w-10 h-10 sm:w-12 sm:h-12 text-indigo-500 mb-3 sm:mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold text-[var(--color-text-primary)] mb-2 sm:mb-3">
                 {feature.title}
               </h3>
-              <p className="text-[var(--color-text-secondary)]">
+              <p className="text-[var(--color-text-secondary)] text-sm sm:text-base">
                 {feature.description}
               </p>
             </div>

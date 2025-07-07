@@ -14,8 +14,8 @@ const Landing = () => {
     <div className={`min-h-screen bg-[var(--color-bg-primary)]`}>
       {/* Header */}
       <header className="border-b border-[var(--color-border)]">
-        <nav className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+        <nav className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
             <div className="flex items-center gap-2">
               <Link to="/" onClick={handleRedirect} className="flex items-center gap-2">
                 <Code2 className="w-8 h-8 text-indigo-500" />
@@ -41,13 +41,13 @@ const Landing = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 text-center">
-        <div className="container mx-auto px-6">
-          <h1 className="text-5xl font-bold text-[var(--color-text-primary)] mb-6">
+      <section className="py-12 md:py-20 text-center">
+        <div className="container mx-auto px-4 sm:px-6">
+          <h1 className="text-3xl sm:text-5xl font-bold text-[var(--color-text-primary)] mb-4 sm:mb-6">
             Code, Compile, and Learn with
             <span className="text-indigo-500"> CodeFlask</span>
           </h1>
-          <p className="text-xl text-[var(--color-text-secondary)] mb-8 max-w-2xl mx-auto">
+          <p className="text-base sm:text-xl text-[var(--color-text-secondary)] mb-6 sm:mb-8 max-w-2xl mx-auto">
             A powerful online IDE that helps you write, compile, and execute code in multiple languages.
             Perfect for learning, practicing, and mastering programming.
           </p>
@@ -62,12 +62,12 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-[var(--color-bg-secondary)]">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-[var(--color-text-primary)] text-center mb-12">
+      <section id="features" className="py-12 md:py-20 bg-[var(--color-bg-secondary)]">
+        <div className="container mx-auto px-4 sm:px-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] text-center mb-8 sm:mb-12">
             Powerful Features for Modern Development
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             <div className="card p-6">
               <Terminal className="w-12 h-12 text-indigo-500 mb-4" />
               <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">

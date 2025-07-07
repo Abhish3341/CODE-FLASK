@@ -50,8 +50,8 @@ const About = () => {
     <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
       {/* Header */}
       <header className="border-b border-[var(--color-border)]">
-        <nav className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+        <nav className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
             <div className="flex items-center gap-2">
               <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <Code2 className="w-8 h-8 text-indigo-500" />
@@ -76,26 +76,24 @@ const About = () => {
         </nav>
       </header>
 
-     
-
       {/* Hero Section */}
-      <div className="container mx-auto px-6 py-20 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold mb-6">
+      <div className="container mx-auto px-4 sm:px-6 py-12 md:py-20 text-center">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
           Our Mission is to Make Coding Intuitive, Engaging, and Accessible to All.
         </h1>
-        <p className="text-xl text-[var(--color-text-secondary)] max-w-3xl mx-auto">
+        <p className="text-base sm:text-xl text-[var(--color-text-secondary)] max-w-3xl mx-auto">
           At CodeFlask, we’re building a modern online judge platform that empowers every developer — from beginners to pros — with intuitive design, structured learning, and a collaborative coding experience.
         </p>
       </div>
 
       {/* Values Section */}
-      <div className="bg-[var(--color-bg-secondary)] py-20">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4">Our Core Values</h2>
-          <p className="text-center text-[var(--color-text-secondary)] text-x1 mb-12 max-w-2xl mx-auto">
+      <div className="bg-[var(--color-bg-secondary)] py-12 md:py-20">
+        <div className="container mx-auto px-4 sm:px-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-4">Our Core Values</h2>
+          <p className="text-center text-[var(--color-text-secondary)] text-base sm:text-xl mb-8 sm:mb-12 max-w-2xl mx-auto">
             These principles guide everything we do and shape the way we build products for the developer community.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 justify-items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8 justify-items-center">
             {values.map((value, index) => (
               <div
                 key={index}
@@ -143,9 +141,9 @@ const About = () => {
 
 
       {/* Founder Section */}
-      <div className="py-20 flex flex-col items-center bg-[var(--color-bg-secondary)]">
-        <h2 className="text-3xl font-bold text-center mb-12">Meet Our Founder</h2>
-        <div className="card p-6 text-center hover:shadow-lg transition-shadow bg-[var(--color-bg-primary)] rounded-lg border border-[var(--color-border)]">
+      <div className="py-12 md:py-20 flex flex-col items-center bg-[var(--color-bg-secondary)]">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Meet Our Founder</h2>
+        <div className="card p-4 sm:p-6 text-center hover:shadow-lg transition-shadow bg-[var(--color-bg-primary)] rounded-lg border border-[var(--color-border)] w-full max-w-xs">
           {/* Clickable Image */}
           <a
             href={team[0].github}
