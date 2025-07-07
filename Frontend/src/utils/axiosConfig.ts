@@ -1,8 +1,21 @@
 import axios from 'axios';
 
+// Ensure the API URL has a protocol
+const getApiUrl = () => {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  
+  // Check if URL already has a protocol
+  if (apiUrl.startsWith('http://') || apiUrl.startsWith('https://')) {
+    return apiUrl;
+  }
+  
+  // Add http:// protocol if missing (for localhost development)
+  return `http://${apiUrl}`;
+};
+
 // Create axios instance with base URL
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: getApiUrl(),
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
@@ -39,6 +52,7 @@ axiosInstance.interceptors.response.use(
     if (error.message === 'Network Error') {
       console.error('Network error - API server may be down or unreachable');
       console.error(`API URL: ${import.meta.env.VITE_API_URL}`);
+      console.error(`Resolved API URL: ${getApiUrl()}`);
     }
     
     if (error.response) {
