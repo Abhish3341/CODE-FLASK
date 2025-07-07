@@ -1,11 +1,18 @@
 FROM node:18-slim
 
-RUN npm install --omit=dev
-RUN apt-get update && apt-get install -y \
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --omit=dev
+
 # Copy app source
-    curl \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+COPY . .
+
+# Create temp directory for code execution
 RUN mkdir -p temp
 
 # Expose port

@@ -9,8 +9,12 @@ const getApiUrl = () => {
     return apiUrl;
   }
 
-  // Add http:// protocol if missing (for localhost development)
-  return `http://${apiUrl}`;
+  // Add https:// protocol by default (more secure), or http:// for localhost
+  if (apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1')) {
+    return `http://${apiUrl}`;
+  }
+  
+  return `https://${apiUrl}`;
 };
 
 // Create axios instance with base URL
