@@ -25,11 +25,6 @@ const About = () => {
       description: "Making powerful development tools accessible to everyone, regardless of their background"
     },
     {
-      icon: <Lightbulb className="w-8 h-8 text-yellow-500" />,
-      title: "Innovation",
-      description: "Constantly pushing boundaries to create better tools and experiences for developers"
-    },
-    {
       icon: <Award className="w-8 h-8 text-purple-500" />,
       title: "Excellence",
       description: "Committed to delivering high-quality, reliable tools that developers can depend on"
@@ -117,7 +112,7 @@ const About = () => {
       <h2 className="text-3xl font-bold mb-8">Our Story</h2>
       <div className="prose prose-lg mx-auto text-[var(--color-text-secondary)]">
         <p className="mb-6">
-          CodeFlask was born from a clear purpose: to rethink how developers experience online coding platforms.
+          CodeFlask was born from a clear purpose: to rethink how developers <strong>experience online judge platforms</strong>.
         </p>
         <p className="mb-6">
           While many online judge platforms offer great features, they often fall short in one key area — <strong>user engagement </strong>

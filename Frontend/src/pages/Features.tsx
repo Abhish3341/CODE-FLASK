@@ -14,7 +14,7 @@ const Features = () => {
     {
       icon: Terminal,
       title: 'Multiple Language Support',
-      description: 'Write code in Python, JavaScript, Java, C++, and more. Full syntax highlighting and intelligent code completion support for all major programming languages.'
+      description: 'Write code in Python, Java, C, and C++. Full code template support for all major programming languages.'
     },
     {
       icon: Zap,
@@ -26,22 +26,7 @@ const Features = () => {
       title: 'Secure Environment',
       description: 'Your code runs in isolated containers ensuring maximum security. Each execution environment is fresh and separate from others.'
     },
-    {
-      icon: Cloud,
-      title: 'Cloud Storage',
-      description: 'All your code is automatically saved and synced to the cloud. Access your projects from anywhere, anytime.'
-    },
-    {
-      icon: Clock,
-      title: 'Version Control',
-      description: 'Built-in version control helps you track changes and maintain different versions of your code. Never lose your work again.'
-    },
     
-    {
-      icon: Code2,
-      title: 'Debugging Tools',
-      description: 'Powerful debugging capabilities with breakpoints, variable inspection, and step-through execution to find and fix bugs quickly.'
-    }
   ];
 
   return (
