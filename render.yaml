@@ -1,9 +1,10 @@
 services:
   - type: web
     name: codeflask-api
+    runtime: node
     env: node
     plan: starter
-    buildCommand: npm install
+    buildCommand: cd backend && npm install
     startCommand: node index.js
     healthCheckPath: /health
     envVars:
@@ -29,7 +30,7 @@ services:
       name: temp-storage
       mountPath: /usr/src/app/temp
       sizeGB: 1
-    rootDir: backend
+    rootDir: backend  # This specifies that the backend directory is the root
 
 databases:
   - name: codeflask-mongodb

@@ -275,7 +275,6 @@ const Login = () => {
             </p>
           </div>
 
-          {/* API URL Debug Info */}
           
 
           {/* Minimal Email Conflict Warning - Only show when there's an actual conflict */}
@@ -466,7 +465,7 @@ const Login = () => {
               {isSignUp ? 'Sign in' : 'Sign up'}
             </button>
           </div>
-         
+          
         </div>
       </div>
 
