@@ -164,15 +164,15 @@ const About = () => {
 
       {/* Footer */}
       <footer className="py-8 border-t border-[var(--color-border)]">
-        <div className="container mx-auto px-6">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Link to="/" className="flex items-center gap-2">
                 <Code2 className="w-6 h-6 text-indigo-500" />
                 <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
               </Link>
             </div>
-            <div className="text-[var(--color-text-secondary)]">
+            <div className="text-[var(--color-text-secondary)] text-center sm:text-right text-sm">
               © 2025 CodeFlask. All rights reserved.
             </div>
           </div>
