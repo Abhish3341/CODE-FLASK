@@ -614,8 +614,8 @@ const Dashboard = () => {
               ) : (
                 <div className="text-center text-[var(--color-text-secondary)] py-8 sm:py-12 flex-1 flex flex-col justify-center">
                   <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 opacity-50" />
-                  <h4 className="text-base sm:text-lg font-medium mb-2">Great job!</h4>
-                  <p className="text-sm sm:text-base">You've solved all recommended problems.</p>
+                  <h4 className="text-base sm:text-lg font-medium mb-2">Welcome!</h4>
+                  <p className="text-sm sm:text-base">Please visit our Problems page to start solving problems.</p>
                 </div>
               )}
 
