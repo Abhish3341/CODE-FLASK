@@ -242,19 +242,37 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-bg-primary)]">
-      {/* Header (Landing page style) */}
-      <header className="border-b border-[var(--color-border)]">
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${
+      isDarkMode 
+        ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900' 
+        : 'bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50'
+    }`}>
+      {/* Header */}
+      <header className={`border-b transition-colors duration-300 ${
+        isDarkMode 
+          ? 'border-slate-700 bg-slate-900/50 backdrop-blur-lg' 
+          : 'border-slate-200 bg-white/50 backdrop-blur-lg'
+      }`}>
         <nav className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" onClick={handleRedirect} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Code2 className="w-8 h-8 text-indigo-500" />
-              <span className="text-xl font-bold text-[var(--color-text-primary)]">CodeFlask</span>
+            <Link to="/" onClick={handleRedirect} className="flex items-center gap-2 cursor-pointer group">
+              <div className="p-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:from-indigo-600 group-hover:to-purple-700 transition-all duration-300">
+                <Code2 className="w-6 h-6 text-white" />
+              </div>
+              <span className={`text-xl font-bold transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-slate-900'
+              }`}>
+                CodeFlask
+              </span>
             </Link>
             
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors"
+              className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${
+                isDarkMode 
+                  ? 'hover:bg-slate-800 text-slate-300' 
+                  : 'hover:bg-slate-100 text-slate-600'
+              }`}
               aria-label="Toggle theme"
             >
               {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -265,221 +283,284 @@ const Login = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
-        <div className="card p-6 sm:p-8 w-full max-w-md">
-          <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-[var(--color-text-primary)]">
-              {isSignUp ? 'Create Account' : 'Welcome Back'}
-            </h2>
-            <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
-              {isSignUp ? 'Sign up to start coding' : 'Sign in to continue coding'}
-            </p>
-          </div>
-
-          {/* API URL Debug Info */}
-          {/* API URL debug info removed */}
-
-          {/* Minimal Email Conflict Warning - Only show when there's an actual conflict */}
-          {conflictInfo && (
-            <div className={`border rounded-lg p-3 mb-4 ${getConflictColor(conflictInfo.authMethod)}`}>
-              <div className="flex items-center gap-2">
-                <div className={`${getConflictTextColor(conflictInfo.authMethod)}`}>
-                  {getConflictIcon(conflictInfo.authMethod)}
-                </div>
-                <p className={`text-xs sm:text-sm ${getConflictTextColor(conflictInfo.authMethod)}`}>
-                  {conflictInfo.message}
-                </p>
-              </div>
+        <div className={`group p-6 sm:p-8 w-full max-w-md rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${
+          isDarkMode 
+            ? 'bg-slate-800/60 backdrop-blur-lg border border-slate-700 hover:border-indigo-500/50' 
+            : 'bg-white/80 backdrop-blur-lg border border-slate-200 hover:border-indigo-300 shadow-lg'
+        }`}>
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
+          <div className="relative z-10">
+            <div className="text-center mb-6 sm:mb-8">
+              <h2 className={`text-2xl sm:text-3xl font-bold mb-2 transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-slate-900'
+              }`}>
+                {isSignUp ? 'Create Account' : 'Welcome Back'}
+              </h2>
+              <p className={`text-sm sm:text-base transition-colors duration-300 ${
+                isDarkMode ? 'text-slate-300' : 'text-slate-600'
+              }`}>
+                {isSignUp ? 'Sign up to start coding' : 'Sign in to continue coding'}
+              </p>
             </div>
-          )}
 
-          {/* Generic Error Message */}
-          {error && !conflictInfo && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-              <span className="block sm:inline text-sm sm:text-base">{error}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleEmailSubmit} className="space-y-4 mb-6">
-            {isSignUp && (
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => {
-                      setFirstName(e.target.value);
-                      clearConflictAndError();
-                    }}
-                    className="w-full px-3 sm:px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] text-sm sm:text-base"
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => {
-                      setLastName(e.target.value);
-                      clearConflictAndError();
-                    }}
-                    className="w-full px-3 sm:px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] text-sm sm:text-base"
-                    required
-                    disabled={isLoading}
-                  />
+            {/* Minimal Email Conflict Warning - Only show when there's an actual conflict */}
+            {conflictInfo && (
+              <div className={`border rounded-lg p-3 mb-4 ${getConflictColor(conflictInfo.authMethod)}`}>
+                <div className="flex items-center gap-2">
+                  <div className={`${getConflictTextColor(conflictInfo.authMethod)}`}>
+                    {getConflictIcon(conflictInfo.authMethod)}
+                  </div>
+                  <p className={`text-xs sm:text-sm ${getConflictTextColor(conflictInfo.authMethod)}`}>
+                    {conflictInfo.message}
+                  </p>
                 </div>
               </div>
             )}
-            
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  clearConflictAndError();
-                }}
-                className="w-full px-3 sm:px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] text-sm sm:text-base"
-                required
-                disabled={isLoading}
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                Password
-              </label>
-              <div className="relative">
+
+            {/* Generic Error Message */}
+            {error && !conflictInfo && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span className="block sm:inline text-sm sm:text-base">{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleEmailSubmit} className="space-y-4 mb-6">
+              {isSignUp && (
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                    }`}>
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => {
+                        setFirstName(e.target.value);
+                        clearConflictAndError();
+                      }}
+                      className={`w-full px-3 sm:px-4 py-2 rounded-lg border text-sm sm:text-base transition-all duration-300 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 ${
+                        isDarkMode 
+                          ? 'bg-slate-700/50 text-white border-slate-600 focus:bg-slate-700' 
+                          : 'bg-white/70 text-slate-900 border-slate-300 focus:bg-white'
+                      }`}
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                      isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                    }`}>
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => {
+                        setLastName(e.target.value);
+                        clearConflictAndError();
+                      }}
+                      className={`w-full px-3 sm:px-4 py-2 rounded-lg border text-sm sm:text-base transition-all duration-300 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 ${
+                        isDarkMode 
+                          ? 'bg-slate-700/50 text-white border-slate-600 focus:bg-slate-700' 
+                          : 'bg-white/70 text-slate-900 border-slate-300 focus:bg-white'
+                      }`}
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              <div>
+                <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                  isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                }`}>
+                  Email
+                </label>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
+                  type="email"
+                  value={email}
                   onChange={(e) => {
-                    setPassword(e.target.value);
+                    setEmail(e.target.value);
                     clearConflictAndError();
                   }}
-                  className="w-full px-3 sm:px-4 py-2 rounded-lg bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] pr-10 sm:pr-12 text-sm sm:text-base"
+                  className={`w-full px-3 sm:px-4 py-2 rounded-lg border text-sm sm:text-base transition-all duration-300 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 ${
+                    isDarkMode 
+                      ? 'bg-slate-700/50 text-white border-slate-600 focus:bg-slate-700' 
+                      : 'bg-white/70 text-slate-900 border-slate-300 focus:bg-white'
+                  }`}
                   required
                   disabled={isLoading}
-                  minLength={6}
                 />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
-                </button>
+              </div>
+              
+              <div>
+                <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                  isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                }`}>
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      clearConflictAndError();
+                    }}
+                    className={`w-full px-3 sm:px-4 py-2 rounded-lg border pr-10 sm:pr-12 text-sm sm:text-base transition-all duration-300 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 ${
+                      isDarkMode 
+                        ? 'bg-slate-700/50 text-white border-slate-600 focus:bg-slate-700' 
+                        : 'bg-white/70 text-slate-900 border-slate-300 focus:bg-white'
+                    }`}
+                    required
+                    disabled={isLoading}
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 transition-all duration-300 hover:scale-110 ${
+                      isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 sm:py-3 px-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
+              </button>
+            </form>
+
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className={`w-full border-t transition-colors duration-300 ${
+                  isDarkMode ? 'border-slate-600' : 'border-slate-300'
+                }`}></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className={`px-2 transition-colors duration-300 ${
+                  isDarkMode 
+                    ? 'bg-slate-800/60 text-slate-400' 
+                    : 'bg-white/80 text-slate-500'
+                }`}>
+                  Or continue with
+                </span>
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-2.5 sm:py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
-            </button>
-          </form>
-
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[var(--color-border)]"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[var(--color-bg-card)] text-[var(--color-text-secondary)]">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-3 sm:space-y-4">
-            <div>
+            <div className="space-y-3 sm:space-y-4">
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearConflictAndError();
+                    const googleLoginButton = document.querySelector('[role="button"]');
+                    if (googleLoginButton instanceof HTMLElement) {
+                      googleLoginButton.click();
+                    }
+                  }}
+                  className={`w-full py-2.5 sm:py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base shadow-lg hover:shadow-xl ${
+                    isDarkMode 
+                      ? 'bg-slate-700/50 hover:bg-slate-700 text-white border border-slate-600 hover:border-slate-500' 
+                      : 'bg-white/70 hover:bg-white text-slate-900 border border-slate-300 hover:border-slate-400'
+                  }`}
+                  disabled={isLoading}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 48 48">
+                    <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                    <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                    <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                    <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                  </svg>
+                  Continue with Google
+                </button>
+              </div>
+              <div style={{ display: 'none' }}>
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setError('Google authentication failed')}
+                  theme={theme === 'dark' ? 'filled_black' : 'outline'}
+                  size="large"
+                  width="320"
+                  useOneTap={false}
+                  auto_select={false}
+                  disabled={isLoading}
+                />
+              </div>
               <button
                 type="button"
                 onClick={() => {
                   clearConflictAndError();
-                  const googleLoginButton = document.querySelector('[role="button"]');
-                  if (googleLoginButton instanceof HTMLElement) {
-                    googleLoginButton.click();
-                  }
+                  handleGithubLogin();
                 }}
-                className="w-full py-2.5 sm:py-3 px-4 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-border)] rounded-lg transition-colors font-medium flex items-center justify-center gap-2 text-[var(--color-text-primary)] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                className={`w-full py-2.5 sm:py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base shadow-lg hover:shadow-xl ${
+                  isDarkMode 
+                    ? 'bg-slate-700/50 hover:bg-slate-700 text-white border border-slate-600 hover:border-slate-500' 
+                    : 'bg-white/70 hover:bg-white text-slate-900 border border-slate-300 hover:border-slate-400'
+                }`}
                 disabled={isLoading}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 48 48">
-                  <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
-                  <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
-                  <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
-                  <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
-                </svg>
-                Continue with Google
+                <Github className="w-4 h-4 sm:w-5 sm:h-5" />
+                Continue with GitHub
               </button>
             </div>
-            <div style={{ display: 'none' }}>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setError('Google authentication failed')}
-                theme={theme === 'dark' ? 'filled_black' : 'outline'}
-                size="large"
-                width="320"
-                useOneTap={false}
-                auto_select={false}
-                disabled={isLoading}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                clearConflictAndError();
-                handleGithubLogin();
-              }}
-              className="w-full py-2.5 sm:py-3 px-4 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-border)] rounded-lg transition-colors font-medium flex items-center justify-center gap-2 text-[var(--color-text-primary)] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-              disabled={isLoading}
-            >
-              <Github className="w-4 h-4 sm:w-5 sm:h-5" />
-              Continue with GitHub
-            </button>
-          </div>
 
-          <div className="mt-6 text-center text-sm">
-            <span className="text-[var(--color-text-secondary)]">
-              {isSignUp ? 'Already have an account?' : "Don't have an account?"}
-            </span>
-            <button
-              onClick={() => {
-                setIsSignUp(!isSignUp);
-                clearConflictAndError();
-              }}
-              className="ml-2 text-indigo-600 hover:text-indigo-500 font-medium disabled:opacity-50"
-              disabled={isLoading}
-              type="button"
-            >
-              {isSignUp ? 'Sign in' : 'Sign up'}
-            </button>
+            <div className="mt-6 text-center text-sm">
+              <span className={`transition-colors duration-300 ${
+                isDarkMode ? 'text-slate-400' : 'text-slate-500'
+              }`}>
+                {isSignUp ? 'Already have an account?' : "Don't have an account?"}
+              </span>
+              <button
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  clearConflictAndError();
+                }}
+                className="ml-2 text-indigo-500 hover:text-indigo-400 font-medium disabled:opacity-50 transition-colors duration-300"
+                disabled={isLoading}
+                type="button"
+              >
+                {isSignUp ? 'Sign in' : 'Sign up'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Footer - Responsive */}
-      <footer className="py-6 sm:py-8 border-t border-[var(--color-border)]">
+      {/* Footer */}
+      <footer className={`py-6 sm:py-8 border-t transition-colors duration-300 ${
+        isDarkMode 
+          ? 'border-slate-700 bg-slate-900/50' 
+          : 'border-slate-200 bg-white/50'
+      }`}>
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Link to="/" onClick={handleRedirect} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
-                <span className="text-[var(--color-text-primary)] font-semibold">CodeFlask</span>
+              <Link to="/" onClick={handleRedirect} className="flex items-center gap-2 cursor-pointer group">
+                <div className="p-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600">
+                  <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <span className={`font-semibold transition-colors duration-300 ${
+                  isDarkMode ? 'text-white' : 'text-slate-900'
+                }`}>
+                  CodeFlask
+                </span>
               </Link>
             </div>
-            <div className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
+            <div className={`text-xs sm:text-sm transition-colors duration-300 ${
+              isDarkMode ? 'text-slate-400' : 'text-slate-500'
+            }`}>
               © 2025 CodeFlask. All rights reserved.
             </div>
           </div>
