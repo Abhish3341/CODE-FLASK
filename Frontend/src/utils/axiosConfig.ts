@@ -24,7 +24,7 @@ console.log(`🔌 Resolved API URL: ${getApiUrl()}`);
 // Create axios instance with base URL
 const axiosInstance = axios.create({
   baseURL: getApiUrl(),
-  timeout: 15000,
+  timeout: 51000,
   headers: {
     'Content-Type': 'application/json',
   },

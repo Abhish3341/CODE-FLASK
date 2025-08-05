@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Github, Eye, EyeOff, AlertTriangle, Info, Code2, Sun, Moon } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
@@ -10,7 +10,7 @@ import axiosInstance from '../utils/axiosConfig';
 const Login = () => {
   const { login } = useAuth();
   const { theme, toggleTheme, isDarkMode } = useTheme();
-  const navigate = useNavigate();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -495,7 +495,7 @@ const Login = () => {
                   width="320"
                   useOneTap={false}
                   auto_select={false}
-                  disabled={isLoading}
+                  
                 />
               </div>
               <button
