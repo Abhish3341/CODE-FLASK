@@ -25,6 +25,9 @@
   "devDependencies": {
     "nodemon": "^3.0.3"
   },
+  "overrides": {
+    "jws": "3.2.3"
+  },
   "engines": {
     "node": ">=18.0.0"
   }
